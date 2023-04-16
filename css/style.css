@@ -63,12 +63,16 @@ background:#fff;
 padding:2rem 9%;
 display: flex;
 align-items: center;
-justify-contact: space-between;
+justify-content: space-between;
 z-index: 1000;
 box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);
 
 }
-
+header .logo{
+    font-size: 3rem;
+    color:#333;
+    font-weight: bolder;
+}
 
 header .logo span{
     color:var(--pink);

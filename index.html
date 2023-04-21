@@ -1,359 +1,550 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewpart" content="width=device-width,  initial-scale=1.0">
-        <title>helostar.online</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="css/style.css">
+:root{
+    --pink:#e84393;
+}
 
-    </head>
-    <body>
-<header>
-    <input type="checkbox" name="" id="toggler">
-    <label for="toggler" class="fa fa-bars"></label>
-    <a href="#" class="logo">Helostar<span>.</span></a>
+*{
 
-    <nav class="navbar">
-        <a href="#Home">Home</a>
-        <a href="#Movies">Movies</a>
-        <a href="#Audio">Audios</a>
-        <a href="#About">About</a>
-        <a href="#Contact">Contact</a>
-        
-        
-        
-    </nav>
+    margin:0; padding:0;
+    box-sizing:border-box;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    outline:none; border:none;
+    text-transform:capitalize;
+    transition: .2s linear;
 
-    <div class="icons">
-        <a href="#" class="fa fa-heart"></a>
-        <a href="#" class="fa fa-user"></a>
-    </div>
-</header>
+}
 
-<!-- header section ends -->
-<!--home-->
-<section class="Home" id="Home">
-    <div class="content">
-        <br>
-        <h2 style="text-align: center;color: darkblue;">Helostar.Online - Helostar 2023 Audio Songs, and Movies</h2>
-    </br>
-        <br><h2><span>Dwonload Latest 2023 Audio and video song...</span></h2></br>
-        <h3 style="color:darkblue;"><p>Helostar.Online Is A One Of The Top Download Website Serving You latest Audio, mp4 HD video Songs and Dj Remix
-            Songs For Free. Play latest Audio songs online and download free Audio, mp4. 
-            Helostar Audio song Download, Helostar Movies, Helostar 2019,Helostar 2023 Helostar 2022 Music 
-            Song Audio Songs, Audio Song Download Helostar 2021, Audio Song Download Helostar 2022,
-            Helostar Audio Songs A To Z 2023, Helostar Audio Songs A To Z 2022, Helostar Audio song, 
-            Helostar.online, Helostar Bollywood Movies Audio Song Download, Helostar com a to z Audio song,
-            Helostar app, Helostar movie, Helostar Audio songs 2018, Helostar Audio, Helostar hd video song download 2017, Helostar com 2018, 
-            Helostar .com, Helostar com new song, Helostar songs, Helostar Punjabi Music Song Audio Download, Helostar Music Audio Download, 
-            Helostar Song Download, Helostar Punjabi song Download. Helostar Movies Audio Song Online for free HD Download: 
-            Helostar website allows users to download bollywood Tamil Telugu movies, video songs and Audio songs for free download and 
-            HD qulaty Audio download online.
+html{
 
-        </p>
-    </h3>
-        <br>
-        <h1 style="text-align:center;color: black;">Famous Artists</h1>
-    </br>
-    <h3 style="text-align:center;color: darkblue">
-        <p> Awaara - Tulsi Kumar ┊ Mai Tumse Milne Aaunga - Saaj Bhatt, Aishwarya Pandit ┊ 
-            Sab Gazab - Goldkartz, Badshah ┊ Massla - Neha Kakkar, Singhsta ┊ Ebhabe Ke Daake - Arijit Singh ┊ 
-            Boyfriend - Dino James ┊ Mera Na - Sidhu Moose Wala ┊ Tumhare Siva - Pawan Singh, Khushboo Jain ┊ Koi Jaye Toh Leh Aaye - Akasa, Aasa Singh
-            ┊ Darde Dil Ki Dawa - Amarjeet Jaikar ┊ Yaad Aati Hai - Harrdy Sandhu ┊ Adhoore Hum - Gajendra Verma ┊ Aaye Ram Mere - Tulsi Kumar 
-            ┊ Thaa - Varinder Brar ┊ Dil Hai Bhola - Amit Mishra ┊ Tell Me Once - Alfaaz, Yo Yo Honey Singh ┊ Tumpe Mar Jayenge - Amarjeet Jaikar
-            ┊ Chaand Raaton Meinn - Amarjeet Jaikar ┊ Dotara - Jubin Nautiyal, Payal Dev ┊ Daiyya Daiyya - Neha Kakkar ┊Bin Tere Sanam Remix - Ay ┊ Arijit Singh 
-            </h3>
-        <br>
-        <a href="file:///C:/Users/Dharmendra/Desktop/helostar.online/index.html#Movies" class="btn">Download Latest Movies.</a>
-        </br>
-    </div>
-</section>
+    font-size: 62.5%;
+    scroll-behavior: smooth;
+    scroll-padding-top:6rem;
+    overflow-x: hidden;
 
+}
 
+section{
+    padding:2rem 9%;
+}
 
-<h1 style="text-align: center; color: var(--pink);">Viral Video Songs </h3>
-<section class="icons-container">
+.heading{
+    text-align: center;
+    font-size: 4rem;
+    color: #333;
+    padding: 1rem;
+    margin:2rem 0;
+    background: rgba(255,51,153,.05);
+}
+
+.heading{
+    color:var(--pink);
+}
+
+.btn{
+    display:inline-block;
+    margin-top:1rem;
+    border-radius: 5rem;
+    background:#333;
+    color:#fff;
+    padding:.9rem 3.5rem;
+    cursor:pointer;
+    font-size:1.7rem;
+
+}
+
+.btn:hover{
+    background:var(--pink)
+}
+
+header{
+
+position: fixed;
+top:0; left:0; right:0;
+background:#fff;
+padding:2rem 9%;
+display: flex;
+align-items: center;
+justify-content: space-between;
+z-index: 1000;
+box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);
+
+}
+header .logo{
+    font-size: 3rem;
+    color:#333;
+    font-weight: bolder;
+}
+
+header .logo span{
+    color:var(--pink);
+}
+
+header .navbar a{
+    font-size: 2rem;
+    padding:0 1.5rem;
+    color:#666;
+
+}
+
+header .navbar a:hover{
+    color:var(--pink);
+}
+
+header .icons a{
+    font-size: 2.5rem;
+    color: #333;
+    margin-left: 1.5rem;
+
+}
+
+header .icons a:hover{
+    color:var(--pink);
+}
+
+header #toggler{
+    display: none;  
+}
+
+header .fa-bars{
+    font-size: 3rem;
+    color: #333;
+    border-radius: .5rem;
+    padding:.5rem 1.5rem;
+    cursor: pointer;
+    border:0.1rem solid rgba(0,0,0,.3);
+    display: none;
     
-    <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/rout.jpg?raw=true" alt="">
-        <div class="info">
-            <h3>ROUTINE (Download Official HD Video) Gur Sidhu | Jasmine Sandlas | Kaptaan | New Punjabi Song 2023 |Punjabi Song</h3>
-            <a href="https://docs.google.com/uc?export=download&id=1M66ae2-YPePFqQA31F51UMfrlKjQLF16"><span>Download Now</span></a>
+}
+
+
+
+@media (max-width:991px){
+    html{
+        font-size: 55%;
+    }
+    header{
+        padding:2rem;
+    }
+    section{
+        padding:2rem;
+    }
+    
+    .Home{
+        background-position: left;
+    }
+    
+}
+
+
+@media (max-width:768px){
+header .fa-bars{
+    display:block;
+}
+
+@media (max-width:450px){
+    html{
+        font-size:50%;
+    }
+    .heading{
+        font-size: 3rem;
+    }
+}
+
+header .navbar{
+    position:absolute;
+    top:100; left:0; right:0;
+    background:#eee;
+    border-top: .1rem solid rgba(0,0,0,.1);
+    clip-path: polygon(0 0, 100% 0, 100 0, 0 0);
+
+}
+header #toggler:checked ~ .navbar{
+    clip-path:polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+
+}
+header .navbar a{
+    margin:1.5rem;
+    padding:1.5rem;
+    background:#fff;
+    border:.1rem solid rgba(0,0,0,.1);
+    display:block;
+
+}
+.Home .contact h3{
+    font-size: 5rem;
+}
+.Home .contact span{
+    font-size: 2.5rem;
+}
+
+}
+
+.Home{
+    display:flex;
+    align-items: center;
+    min-height: 100vh;
+    background:url(https://github.com/Dharmendra967032/helostar.online/blob/main/img/background.jpg?raw=true) no-repeat;
+    background-size: cover;
+    background-position: center;
+
+}
+
+.Home .contact{
+    max-width: 50rem;
+}
+.Home .contact h3{
+    font-size: 6rem;
+    color: #333;
+
+}
+
+.Home .contact span{
+    font-size: 3.5rem;
+    color:var(--pink);
+    padding:1rem 0;
+    line-height:1.5;
+
+}
+
+.Home .contact span{
+    font-size: 1.5rem;
+    color:#999;
+    padding:1rem 0;
+    line-height:1.5;
+}
+
+
+.icons-container .icons h3{
+    font-size:2rem;
+}
+
+.icons-container .icons span{
+    font-size:1.7rem;
+}
+
+.About .row{
+    display:flex;
+    align-items:center;
+    gap:2rem;
+    flex-wrap: wrap;
+    padding:2rem 0; 
+    padding-bottom: 3rem;
+}
+.About .row .video-container{
+    flex:1 1 20rem;
+    position: sticky;
+}
+ 
+.About .row .video-container video{
+    width:20%;
+    border:1.5rem solid #fff;
+    border-radius: .5rem;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);
+    height: 20;
+    object-fit: scale-down ;
+
+}
+
+.About .row .video-container h3{
+    position: absolute;
+    top:10%; transform: translateY(-10%);
+    font-size: 3rem;
+    color: #333;
+    background: #fff;
+    width:10%;
+    padding:1rem 2rem;
+    text-align: center;
+    mix-blend-mode: screen;
+}
+
+.About .row .contact{
+    flex:1 1 40rem;
+}
+
+.About .row .contact h3{
+    font-size: 3rem;
+    color: #333;
+
+}
+
+.About .row .contact p{
+    font-size: 1.5rem;
+    color: #999;
+    padding: .5rem 0;
+    padding-top: 1rem;
+    line-height: 1.5rem;
+    
+}
+
+
+
+.icons-container{
+    background: #eee;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap:1.5rem;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+
+}
+
+.icons-container .icons{
+    background:#fff;
+    border:.1rem solid rgba(0,0,0,.1);
+    padding:2rem;
+    display:flex;
+    align-items: center;
+    flex:1 1 25rem;
+}
+
+.icons-container .icons img{
+    height:5rem;
+    margin-right: 2rem;
+}
+
+.icons-container .icons h3{
+    color: #333;
+    padding-bottom: .5rem;
+    font-size: 1.5rem;
+}
+
+.icons-container .icons span{
+    color: #555;
+    font-size: 1.3rem;
+    
+}
+
+
+.Movies .box-container{
+    display:contents;
+   
+    gap:.1.7rem;
+    border: 1px solid;
+    
+    width: 100%;
+    box-sizing: border-box;
+
+}
+
+.Movies .box-container .box{
+
+    flex:.30 .30 30rem;
+    box-shadow:0 .5rem 1.5rem rgba(0,0,0,.1);
+    border-radius: .1rem;
+    border: .1rem solid rgba(0,0,0,.1);
+    position:-ms-page;
+
+}
+
+
+
+.Movies .box-container .box .image{
+position: relative;
+text-align: center;
+padding-top: 2rem;
+overflow:hidden;
+}
+
+.Movies .box-container .box .image img{ 
+    height:40rem;
+}
+
+
+.Movies .box-container .box:hover .image img{
+
+    transform:scale(1.1);
+}
+
+.Movies .box-container .box:hover .image .icons{
+
+    position: obsolute;
+    bottom:-7rem; left:0; right:0;
+    display:flex;
+
+}
+
+.Movies .box-container .box:hover .image .icons{
+    bottom:0;
+}
+
+.Movies .box-container .box .image .icons a{
+    height: 5rem;
+    line-height:5rem;
+    font-size: 2rem;
+    width:50%;
+    background:var(--pink);
+    color: #fff;
+
+
+}
+
+
+
+.Movies .box-container .box .image .icons a:hover{
+    background:#333;
+    
+}
+
+
+.Audio .box-container{
+
+    display: flex;
+    flex-wrap: wrap;
+    gap:1.5rem;
+
+}
+
+.Audio .box-container .box{
+
+   flex:1 1 30rem;
+   box-shadow: 0.5rem 1.5rem rgba(0,0,0,.1);
+   border-radius: .5rem;
+   padding: 3rem 2rem;
+   position: relative;
+   border: 1rem solid rgba(0,0,0,.1);
+}
+
+Audio .box-container .box .fa-quote-right{
+
+ position: absolute;
+ bottom: 3rem; right: 3rem;
+ font-size: 6rem;
+ color:#eee;
+ }
+
+ .Audio .box-container .box .stars i{
+    color:var(--pink);
+    font-size: 2rem;
+
+ }
+
+ .Audio .box-container .box p{
+    color: #999;
+    font-size:1.5rem;
+    line-height: 1.5;
+    padding-top:2rem;
+ }
+.Audio .box-container .box .user{
+    display: flex;
+    align-items: center;
+    padding-top: 2rem;
+}
+
+.Audio .box-container .box .user img{
+    height:3rem;
+    width:3rem;
+    border-radius:50%;
+    object-fit:cover;
+    margin-right:1rem;
+
+}
+
+.Audio .box-container .box .user h3{
+    font-size: 2rem;
+    color: #333;
+        
+}
+
+.Audio .box-container .box .user span{
+    font-size: 1.5rem;
+    color: #999; 
+        
+}
+
+.contact .row{
+    display: flex;
+    flex-wrap: wrap-reverse;
+    gap:.5rem;
+    align-items: center;
+
+}
+
+.contact .row form{
+    flex:1 1 40rem;
+    padding:2rem 2.5rem;
+    box-shadow: 0.5rem 1.5rem rgba(0,0,0,.1);
+    border:.1rem solid rgba(0,0,0,.1);
+     background: #fff;
+    border-radius: .5rem;
+}
+
+.contact .raw .image{
+
+    flex: 1 1 40rem;
+}
+.contact .raw .image img{
+    width:100%;
+}
+
+.contact .row form .box{
+    padding:1rem;
+    font-size:1.7rem;
+    color:#333;
+    text-transform: none;
+    border:.1rem solid rgba(0,0,0,.1);
+    border-radius: .5rem;
+    margin:.7rem 0;
+    width: 100%;
+}
+
+.contact .row form .box:focus{
+    border-color: var(--pink);
+
+}
+
+.contact .row form textarea{
+    height: 15rem;
+    resize: none;
+}
+
+
+.footer .box-container{
+    display: flex;
+    flex-wrap: wrap;
+    gap:1.5rem;
+}
+
+.footer .box-container .box{
+    flex:1 1 25rem;
+}
+
+.footer .box-container .box h3{
+color: #333;
+font-size: 2.5rem;
+padding:1rem 0;
+}
+
+.footer .box-container .box a{
+    display: block;
+    color: #666;
+    font-size: 1.5rem;
+    padding:1rem 0;
+    }
+
+    .footer .box-container .box a:hover{
+        color:var(--pink);
+        text-decoration: underline;
+        
+        }
+
+        .footer .box-container .box img{
+           margin-top: 1rem;
             
-        </div>
-    </div>
-</section>
+            }
 
-<section class="icons-container">
-    <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/yent.jpg?raw=true" alt="">
-        <div class="info">
-            <h3>
-                Yentamma - Kisi Ka Bhai Kisi Ki Jaan | Salman Khan,Ram Charan,Venkatesh,Pooja| Vishal,Payal,Raftaar
-            </h3>
-            <a href="https://drive.google.com/u/1/uc?id=1PQiew_LOXF0IMyOMluneO5_9kbnT6FeY&export=download"><span>Download Now</span></a>
-        </div>
-    </div>
-</section>
+        .footer .credit{
+            text-align: center;
+            padding:1.5rem;
+            margin-top: 1.5rem;
+            padding-top: 2.5rem;
+            font-size: 2rem;
+            color:#333;
+            border-top: .1rem solid rgba(0,0,0,.1);
 
-<section class="icons-container">
-    <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/Deewaane.jpg?raw=true" alt="">
-        <div class="info">
-            <h3>
-                Deewaane (Selfiee) - Akshay K | Jacqueline F | Emraan H | Aditya Y | Stebin B | Tanishk B | Kunaal V | HD video 2023
-            </h3>
-            <a href="https://drive.google.com/uc?id=1posWQvxH8mre355s-TLsCKdSWuO3eiop&export=download"><span>Download Now</span></a>
-        </div>
-    </div>
-</section>
-<section class="icons-container">
-    <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/tum.jpg?raw=true" alt="">
-        <div class="info">
-            <h3>
-                Tum Tum - Video Song | Enemy (Tamil) | Vishal,Arya | Anand Shankar | Vinod Kumar | Thaman S
-            </h3>
-            <a href="https://drive.google.com/uc?id=16C2qnmHDVJ2Xeqic5eUcNVORuhpqNb1s&export=download"><span>Download Now</span></a>
-        </div>
-    </div>
-</section>
-<h1 class="heading">Latest<span> Viral Movies </span></h1>
-<!--Movies-->
+        }
 
-    
-<section class="Movies" id="Movies">
-    <div class = "box-container">
-    <div class="box">
-        
-        <h1>  Baaz || Ravi Teja New South Blockbuster Action Dubded Movie 2023 || Ravi Teja New Action Movie</h1>
-        <div class="image">
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/baaz.jpg?raw=true" alt="">
-            <div class="icons">
-                <a href="https://drive.google.com/u/1/uc?id=1Bhey3zH4M5Bnbv-LIp0cDstMCzyQsFEC&export=download"><span>Download Now</span></a>
-            </div>
-        </div>
-    </div>
-    </div>
-</section>
+        .footer .credit span{
+        color:var(--pink);
 
-<section class="Movies" id="Movies">
-  
-    <div class = "box-container">
-    <div class="box">
-        
-        <h1>Gumnaam (Rakshasudu) New Released Hindi Dubbed Movie 2023 | Bellamkonda Sai Sreenivas, Anupama</h1>
-        
-        <div class="image">
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/Gumnaam.jpg?raw=true" alt="">
-            <div class="icons">
-               
-                <a href="https://drive.google.com/u/1/uc?id=1T4r51TURD9jSaiNvPuVvPbojYe7rlBec&export=download">Download Now</a>
-            </div>
-        </div>
-    </div>
-    </div>
-</section>
-
-<section class="Movies" id="Movies">
-  
-    <div class = "box-container">
-    <div class="box">
-        
-        <h1>red (remake of thadam) 2023 new released south hindi dubbed movie | ram pothineni, nivetha pethuraj</h1>
-        
-        <div class="image">
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/Red.jpg?raw=true" alt="">
-            <div class="icons">
-               
-                <a href="https://drive.google.com/u/1/uc?id=1umdo_286BXSgi2WXRuR-D4yw3f7MKA-q&export=download">Download Now</a>
-            </div>
-        </div>
-    </div>
-    </div>
-</section>
-
-<!--Audio section-->
-<section class="Audio" id="Audio">
-    <h1 class="heading">Viral<span> Mp3 Audios </span></h1>
-    <div class="box box-container">
-        <div class="box">
-        <div class="stars">
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-        </div>
-        <h1>Heartfelt Love Mashup 2023</h1>
-        <br>
-        <h3>Sunny Hassan Audio Download</h3></br>
-        <p>Heartfelt Love Mashup 2023 - Sunny Hassan Audio Download Arijit Singh, Darshan RavalThis is amazing websit to Download and watch videos this one is perfect content</p>
-        <div class="user">
-            
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/heartless.jpg?raw=true" alt="">
-            <a href="https://drive.google.com/u/1/uc?id=1Y38t-VG04svbclWu02G1IT3YaDkYdibN&export=download"><h1>Download Now</h1></a>
-            <div class="user-info">
-                
-            </div>
-        </div>
-        <span class="fa fa-qoute-right"></span>
-    </div>
-
-
-    <div class="box">
-        <div class="stars">
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-        </div>
-        <h1>O Bedardeya Audio</h1>
-        <br><h3>Tu Jhoothi Main Makkar (2023)</h3></br><br><br>
-        <p>O Bedardeya Audio song download, Tu Jhoothi Main Makkar 2023 Audio song, O Bedardeya Audio song singer by Arijit Singh.</p></br></br>
-        <div class="user">
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/O%20Bedardeya%20lyrics%20Tu%20Jhoothi%20Main%20Makkaar.jpg?raw=true" alt="">
-            <a href="https://drive.google.com/file/d/18MtQ2vvIYEx6NHzoK6JudyBE2UDMA4BV/view?usp=sharing"><h1>Download Now</h1></a>
-            
-            <div class="user-info">
-               
-            </div>
-        </div>
-    </div>
-
-    <div class="box">
-        <div class="stars">
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-            <i class="fa fa-stars"></i>
-        </div>
-        <h1>Maine Pi Rakhi Hai Audio</h1>
-        <br><h3>Tu Jhoothi Main Makkar (2023)</h3></br>
-        <p>Maine Pi Rakhi Hai Audio song download, Tu Jhoothi Main Makkar 2023 Audio song, Maine Pi Rakhi Hai Audio song singer by Shreya Ghoshal, 
-            Divya Kumar, This Song Music by Pritam. </p>
-        <div class="user">
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/img/mainepi.jpg?raw=true" alt="">
-            <a href="hhttps://drive.google.com/file/d/1_Pebb0IuvBypnQN_1q1odmbLxAh7eMHf/view?usp=share_link"><h1>Download Now</h1></a>
-            <div class="user-info">
-                
-            </div>
-        </div>
-    </div>
-</section>
-<!--Audio ends-->
-<!--About sect start-->
-<section class ="About" id="About">
-    <h1 class="heading"><span>About</span> us</h1>
-    <div class="row">
-        
-        <div class="content">
-            <br><h3>Why Choose us?</h3></br>
-            <h3><p>Helostar.Online Is A One Of The Top Download Website Serving You latest Audio, mp4 HD video Songs and Dj Remix
-                Songs For Free. Play latest Audio songs online and download free Audio, mp4. 
-                Helostar Audio song Download, Helostar Movies, Helostar 2019,Helostar 2023 Helostar 2022 Music 
-                Song Audio Songs, Audio Song Download Helostar 2021, Audio Song Download Helostar 2022,
-                Helostar Audio Songs A To Z 2023, Helostar Audio Songs A To Z 2022, Helostar Audio song, 
-                Helostar.online, Helostar Bollywood Movies Audio Song Download, Helostar com a to z Audio song,
-                Helostar app, Helostar movie, Helostar Audio songs 2018, Helostar Audio, Helostar hd video song download 2017, Helostar com 2018, 
-                Helostar .com, Helostar com new song, Helostar songs, Helostar Punjabi Music Song Audio Download, Helostar Music Audio Download, 
-                Helostar Song Download, Helostar Punjabi song Download. Helostar Movies Audio Song Online for free HD Download: 
-                Helostar website allows users to download bollywood Tamil Telugu movies, video songs and Audio songs for free download and 
-                HD qulaty Audio download online.</p>
-            <p>Our Goal is to povide Quality content to the world.</p></h3>
-            <a href="#" class="btn">learn more</a>
-            </div>
-            <div clas="video-container">
-                <br><h1 style="color: var(--pink);">best vidoes to watch</h1></br>
-                <iframe src="https://drive.google.com/file/d/1M66ae2-YPePFqQA31F51UMfrlKjQLF16/preview" width="420" height="220" allow="autoplay"></iframe>
-               
-        
-            </div>
-    </div>
-    </section>
-    <!-- About section end-->
-
-<!--contact section-->
-<section class="Contact" id="Contact">
-    <h1 class="heading">
-        <span>Contact</span> us
-    </h1>
-    <div class="row">
-        <from  action="">
-            
-            <br><input type="text" placeholder="name" class="box"></br>
-            <br><input type="email" placeholder="email" class="box"></br>
-            <br><input type="number" placeholder="number" class="box"></br>
-            <br><textarea name="Your message" class="box" placeholder="message" id="message" cols="30" rows="5">
-            </textarea></br>
-         
-            <br>
-            <input type="submit" value="send message" class="btn">
-         </br>
-        
-        </from> <br><br>
-        <div class="image">
-        <iframe src="https://drive.google.com/file/d/1posWQvxH8mre355s-TLsCKdSWuO3eiop/preview" width="420" height="220" allow="autoplay"></iframe>  
-        </div>
-    </br>
-</br>
-    
-</section>
-<!--Contact Ends-->
-
-<section class="footer">
-    <div class="box-container">
-        <div class="box">
-            <h3>Quick Links</h3>
-            <a href="#">Home</a>
-            <a href="#">About</a>
-            <a href="#">Movies</a>
-            <a href="#">Audio</a>
-           
-        </div>
-    
-    
-        <div class="box">
-            <h3>Extra Links</h3>
-            <a href="#">My Account</a>
-            <a href="#">My faivorite</a>
-            <a href="#">My Download</a>
-        
-            
-        </div>
-
- <div class="box">
-                    <h3>Locations</h3>
-                    <a href="#">India</a>
-                    <a href="#">USA</a>
-                    <a href="#">UK</a>
-                    <a href="#">Russia</a>
- </div>
-
-<div class="box">
-        <h3>Contact Info</h3>
-        <a href="#">helpdesk@helostar.online</a>
-        <a href="#">Facebook</a>
-        <a href="#">Youtube</a>
-        <a href="#">Instagram</a>
-</div>
-
-    
-<div class="credit"><span>©2023 Copyright -helostar.online | All Rights Reserved</span>
-    <!-- hitwebcounter Code START -->
-  
-    <p><br>
-        <a href="https://www.hitwebcounter.com" target="_blank">
-            <img src="https://hitwebcounter.com/counter/counter.php?page=8422720&style=0036&nbdigits=5&type=page&initCount=0" title="Free Counter" Alt="web counter"   border="0" /></a> 
-            </p>
-        </br>
-</div>
-
-</section>
-    </body>
-</html>
-
+}

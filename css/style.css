@@ -204,7 +204,7 @@ header .fa-bars{
     display: flex;
     align-items: center;
     min-height: 100vh;
-    background: url(https://github.com/Dharmendra967032/helostar.online/blob/main/css/24.webp) no-repeat;
+    background: url(https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/css/24.webp) no-repeat;
     background-size: cover;
     background-position: center;
 }

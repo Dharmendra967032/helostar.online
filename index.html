@@ -26,6 +26,57 @@
 <a href="#products">products</a>
 <a href="#review">review</a>
 <a href="#contact">contact</a>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JPG to PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <input type="file" id="upload" accept="image/jpeg">
+    <button id="convert">Convert to PDF</button>
+
+    <script>
+        document.getElementById('convert').addEventListener('click', async () => {
+            const fileInput = document.getElementById('upload');
+            if (!fileInput.files.length) {
+                alert('Please upload a JPG file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+
+                img.onload = () => {
+                    const { jsPDF } = window.jspdf;
+
+                    // Create a new jsPDF instance
+                    const pdf = new jsPDF();
+
+                    // Calculate the dimensions for the PDF
+                    const width = pdf.internal.pageSize.getWidth();
+                    const height = (img.height * width) / img.width;
+
+                    // Add the image to the PDF
+                    pdf.addImage(img, 'JPEG', 0, 0, width, height);
+
+                    // Save the PDF
+                    pdf.save('converted.pdf');
+                };
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
+
 </nav>
 
 <div class="icons">

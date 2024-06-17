@@ -90,7 +90,60 @@
             reader.readAsDataURL(file);
         });
     </script>
+<h2>Convert word to pdf</h2>
+const fs = require('fs');
+const mammoth = require('mammoth');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 
+async function convertDocxToPdf(docxPath, pdfPath) {
+    // Read the .docx file
+    const { value: text } = await mammoth.extractRawText({ path: docxPath });
+
+    // Create a new PDF document
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
+    const { width, height } = page.getSize();
+
+    // Embed a font
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 12;
+    const lineHeight = fontSize * 1.2;
+    const margin = 50;
+
+    // Define the maximum text width and initial Y position
+    const maxWidth = width - 2 * margin;
+    let y = height - margin;
+
+    // Split text into lines and add to the PDF page
+    const lines = text.split('\n');
+    lines.forEach(line => {
+        if (y < margin) {
+            page = pdfDoc.addPage();
+            y = height - margin;
+        }
+        page.drawText(line, {
+            x: margin,
+            y,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+            maxWidth,
+            lineHeight,
+        });
+        y -= lineHeight;
+    });
+
+    // Save the PDF document
+    const pdfBytes = await pdfDoc.save();
+    fs.writeFileSync(pdfPath, pdfBytes);
+}
+
+// Example usage
+convertDocxToPdf('example.docx', 'output.pdf')
+    .then(() => console.log('Conversion to PDF complete.'))
+    .catch(err => console.error('Error converting to PDF:', err));
+
+        
 
 <div>
         <h2>Lets Go Online With Helostar.online</h2>

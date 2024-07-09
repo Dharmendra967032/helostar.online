@@ -110,6 +110,46 @@ Free conversion without registration</p>
           
     </div></div>
     </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word to PDF Converter</title>
+</head>
+<body>
+    <input type="file" id="fileInput" accept=".docx">
+    <button onclick="convertToPDF()">Convert to PDF</button>
+    <script>
+        async function convertToPDF() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a .docx file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('docx', file);
+
+            try {
+                const response = await fetch('http://localhost:3000/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    throw new Error('Conversion failed');
+                }
+                const data = await response.json();
+                alert('Conversion successful! PDF file available at: ' + data.pdfUrl);
+            } catch (error) {
+                console.error('Conversion error:', error);
+                alert('Conversion failed. Please try again later.');
+            }
+        }
+    </script>
+</body>
+</html>
 
 </section>
 

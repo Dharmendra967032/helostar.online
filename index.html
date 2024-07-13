@@ -99,44 +99,7 @@ Free conversion without registration</p>
         
 
 <div>
-npm install pdf-lib mammoth
 
-const fs = require('fs');
-const mammoth = require('mammoth');
-const { PDFDocument, rgb } = require('pdf-lib');
-
-async function convertWordToPdf(inputPath, outputPath) {
-    try {
-        // Read the Word file
-        const wordBuffer = fs.readFileSync(inputPath);
-
-        // Convert Word document to HTML
-        const result = await mammoth.convertToHtml({ buffer: wordBuffer });
-
-        // Create a new PDF document
-        const pdfDoc = await PDFDocument.create();
-        const page = pdfDoc.addPage();
-
-        // Add HTML content to PDF
-        page.drawText(result.value, {
-            x: 50,
-            y: page.getHeight() - 50,
-            size: 12,
-            color: rgb(0, 0, 0),
-        });
-
-        // Save the PDF document to a file
-        const pdfBytes = await pdfDoc.save();
-        fs.writeFileSync(outputPath, pdfBytes);
-
-        console.log('Conversion complete.');
-    } catch (error) {
-        console.error('Error during conversion:', error);
-    }
-}
-
-// Usage example
-convertWordToPdf('example.docx', 'output.pdf');
 
 
         <h2>Lets Go Online With Helostar.online</h2>

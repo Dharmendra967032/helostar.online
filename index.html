@@ -124,6 +124,28 @@ Free conversion without registration</p>
 <section class="products" id="products">
     <h1 class="heading"> <span>Latest Products & Videos</span></h1>
     <div class="box-container">
+
+        <style>
+        .zoom {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .zoomed {
+            transform: scale(1.5); /* Adjust the scale factor as needed */
+        }
+    </style>
+</head>
+<body>
+    <img id="zoomImage" src="img30.jpg" alt="Zoomable Image" class="zoom" width="300" height="200">
+
+    <script>
+        const img = document.getElementById('zoomImage');
+        
+        img.addEventListener('click', function() {
+            this.classList.toggle('zoomed');
+        });
+    </script>
+</body>
         
         <div class="box">
             <span class="discount">-20%</span>

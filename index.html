@@ -126,26 +126,7 @@ Free conversion without registration</p>
     <div class="box-container">
 
         <style>
-        .zoom {
-            transition: transform 0.3s ease;
-            cursor: pointer;
-        }
-        .zoomed {
-            transform: scale(1.5); /* Adjust the scale factor as needed */
-        }
-    </style>
-</head>
-<body>
-    <img id="zoomImage" src="img30.jpg" alt="Zoomable Image" class="zoom" width="300" height="200">
-
-    <script>
-        const img = document.getElementById('zoomImage');
         
-        img.addEventListener('click', function() {
-            this.classList.toggle('zoomed');
-        });
-    </script>
-</body>
         
         <div class="box">
             <span class="discount">-20%</span>
@@ -270,8 +251,27 @@ Length - 46 🌸🌸
         
                 <div class="box">
             <span class="discount">-20%</span>
-            <div class ="image">
-                <img src="img30.jpg" alt="">
+            <div class ="image">.zoom {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .zoomed {
+            transform: scale(1.5); /* Adjust the scale factor as needed */
+        }
+    </style>
+</head>
+<body>or
+    <img id="zoomImage" src="img30.jpg" alt="Zoomable Image" class="zoom" width="300" height="200">
+
+    <script>
+        const img = document.getElementById('zoomImage');
+        
+        img.addEventListener('click', function() {
+            this.classList.toggle('zoomed');
+        });
+    </script>
+</body>
+                <img src="img30.jpg" alt="Zoomable Image" class="zoom">
                 <div class="icons">
                     <a href="http://youtube.com/post/UgkxB-siZsz4r_esrtB7O1Xp_hjv6aKnSIbr?si=4Kif9NFEkz44MQ-7" class="fa fa-heart"></a>
                     <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>

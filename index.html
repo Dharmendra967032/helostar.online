@@ -123,7 +123,41 @@ Free conversion without registration</p>
 <!--products section-->
 <section class="products" id="products">
     <h1 class="heading"> <span>Latest Products & Videos</span></h1>
-    <div class="box-container">        
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Pause Example</title>
+</head>
+<body>
+    <video id="vid8" width="320" height="240" controls>
+        <source src="vid8.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <video id="video2" width="320" height="240" controls>
+        <source src="vid9.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <script>
+        const videos = document.querySelectorAll('video');
+
+        videos.forEach(video => {
+            video.addEventListener('play', function() {
+                videos.forEach(v => {
+                    if (v !== video) {
+                        v.pause();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+    
+    <div class="box-container">     
+        
         <div class="box">
             <span class="discount">-20%</span>
             <div class ="image">

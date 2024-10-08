@@ -218,13 +218,13 @@ header .fa-bars{
 .home .content h1{
 
     font-size: 6rem;
-    color:#ffffff;
+    color:#0277BD;
 }
 
 .home .content h2{
 
     font-size: 4rem;
-    color:#ffffff;
+    color:#0277BD;
     padding: 1rem 0;
     line-height: 1.5;
 }
@@ -232,7 +232,7 @@ header .fa-bars{
 .home .content p{
 
     font-size: 1.5rem;
-    color:#ffffff;
+    color:#0277BD;
     padding: 1rem 0;
     line-height: 1.5;
 

@@ -169,39 +169,28 @@ Free conversion without registration</p>
    
 <div class="box-container">
 
-     <script>
-        // Get all the video elements on the page
-        const videos = document.querySelectorAll('video');
-
-        // Loop through each video element
-        videos.forEach(video => {
-            // Add an event listener for when the video starts to play
-            video.addEventListener('play', () => {
-                // Loop through all videos again
-                videos.forEach(otherVideo => {
-                    // Check if the current video is NOT the one that just started playing
+    <div class="box">
+            <div class ="image">
+           
+    <div class="box">
+             <div class="image">
+        <video width="355" controls id="video1">
+            <source src="vid1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <script>
+        // Ensure only one video plays at a time
+        document.querySelectorAll('video').forEach(video => {
+            video.addEventListener('play', function() {
+                document.querySelectorAll('video').forEach(otherVideo => {
                     if (otherVideo !== video) {
-                        // If it's another video and it's not paused, pause it
-                        if (!otherVideo.paused) {
-                            otherVideo.pause();
-                        }
+                        otherVideo.pause();
                     }
                 });
             });
         });
     </script>
-    
-    <div class="box">
-            <div class ="image">
-           
-             <video width ="355" controls id="video1">
-        <source src="vid1.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-
-
- 
-
                   <div>a/a</div>
                   <div>a/a</div>
                   <div>a/a</div>
@@ -220,13 +209,25 @@ Free conversion without registration</p>
     
     
     <div class="box">
-            <div class ="image">
-           
-
-            <video width ="355" controls id="video2">
-        <source src="vid15.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+      <div class="box">
+             <div class="image">
+        <video width="355" controls id="video1">
+            <source src="vid15.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <script>
+        // Ensure only one video plays at a time
+        document.querySelectorAll('video').forEach(video => {
+            video.addEventListener('play', function() {
+                document.querySelectorAll('video').forEach(otherVideo => {
+                    if (otherVideo !== video) {
+                        otherVideo.pause();
+                    }
+                });
+            });
+        });
+    </script>
 
                   <div>a/a</div>
                   <div>a/a</div>
@@ -245,10 +246,25 @@ Free conversion without registration</p>
         </div>
     
     <div class="box">
-            <div class ="image">
-            <video width="355" controls>
-                    <source src="vid16.mp4" type="video/mp4">
-                  </video>
+            <div class="box">
+             <div class="image">
+        <video width="355" controls id="video1">
+            <source src="vid16.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <script>
+        // Ensure only one video plays at a time
+        document.querySelectorAll('video').forEach(video => {
+            video.addEventListener('play', function() {
+                document.querySelectorAll('video').forEach(otherVideo => {
+                    if (otherVideo !== video) {
+                        otherVideo.pause();
+                    }
+                });
+            });
+        });
+    </script>
                   <div>a/a</div>
                   <div>a/a</div>
                   <div>a/a</div>
@@ -267,10 +283,25 @@ Free conversion without registration</p>
 
     
         <div class="box">
-            <div class ="image">
-            <video width="355" controls>
-                    <source src="vid2.mp4" type="video/mp4">
-                  </video>
+          <div class="box">
+             <div class="image">
+        <video width="355" controls id="video1">
+            <source src="vid2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <script>
+        // Ensure only one video plays at a time
+        document.querySelectorAll('video').forEach(video => {
+            video.addEventListener('play', function() {
+                document.querySelectorAll('video').forEach(otherVideo => {
+                    if (otherVideo !== video) {
+                        otherVideo.pause();
+                    }
+                });
+            });
+        });
+    </script>
                   <div>a/a</div>
                   <div>a/a</div>
                   <div>a/a</div>
@@ -964,6 +995,7 @@ Length - 46 🌸🌸
 
 
 </html>
+
 
 
 

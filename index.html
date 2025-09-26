@@ -162,6 +162,62 @@ Free conversion without registration</p>
 <!--products section-->
 <section class="products" id="products">
     <h1 class="heading"> <span>Latest Products & Videos</span></h1>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        video {
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Video Player</h1>
+    <p>Click on a video to play it. The others will automatically pause.</p>
+
+    <video controls id="video1">
+        <source src="vid1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <video controls id="video2">
+        <source src="vid15.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <script>
+        // Get all the video elements on the page
+        const videos = document.querySelectorAll('video');
+
+        // Loop through each video element
+        videos.forEach(video => {
+            // Add an event listener for when the video starts to play
+            video.addEventListener('play', () => {
+                // Loop through all videos again
+                videos.forEach(otherVideo => {
+                    // Check if the current video is NOT the one that just started playing
+                    if (otherVideo !== video) {
+                        // If it's another video and it's not paused, pause it
+                        if (!otherVideo.paused) {
+                            otherVideo.pause();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+    
 <div class="box-container">
     <div class="box">
             <div class ="image">
@@ -926,3 +982,4 @@ Length - 46 🌸🌸
 
 
 </html>
+

@@ -4,51 +4,12 @@
 <meta charet="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>helostar.online</title>
+<title>complete responsive flower website desgin tutorial</title>
 <!--font awesome-->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4598159113879484"
-     crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <!--cutom css file-->
 
 <link rel="stylesheet" href="css/style.css">
-<style>
-.dropbtn {
-  background-color: #04AA6D;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-}
-
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropdown-content a:hover {background-color: #ddd;}
-
-.dropdown:hover .dropdown-content {display: block;}
-
-.dropdown:hover .dropbtn {background-color: #3e8e41;}
-</style>
-        
     </head>
 <body>
 <!--Header-->
@@ -59,23 +20,18 @@
 
     <a href="#" class="logo">Helostar<span>.</span>online</a>
 
-
 <nav class="navbar">
 <a href="#home">home</a>
 <a href="#about">about</a>
-<a href="#products">products</a>     
+<a href="#products">products</a>
 <a href="#review">review</a>
 <a href="#contact">contact</a>
-    
-
 </nav>
 
 <div class="icons">
 <a href="#" class="fa fa-heart"></a>
-<a link href="check.php" class="fa fa-shopping-cart"></a>
-
-    
-    <a href="index1.html" class = "fa fa-user"></a>
+<a href="http://localhost/test/check.php" class="fa fa-shopping-cart"></a>
+<a href="http://localhost/test/index1.html" class="fa fa-user"></a>
 </div>
 
 
@@ -88,71 +44,14 @@
 <section class="home" id="home">
     
     <div class="content">
-        <h2>Convert jpg to pdf </h2>
-        <p>Convert Images to PDF for free online. Our JPG to PDF Converter turns any image file into a custom PDF file (No size limits, no watermarks).
-
-Easy-to-use online JPG to PDF converter
-No installation–works in your browser
-Free conversion without registration</p>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <input type="file" id="upload" accept="image/jpeg">
-    <button id="convert">Convert to PDF</button>
-
-    <script>
-        document.getElementById('convert').addEventListener('click', async () => {
-            const fileInput = document.getElementById('upload');
-            if (!fileInput.files.length) {
-                alert('Please upload a JPG file.');
-                return;
-            }
-
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = async (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-
-                img.onload = () => {
-                    const { jsPDF } = window.jspdf;
-
-                    // Create a new jsPDF instance
-                    const pdf = new jsPDF();
-
-                    // Calculate the dimensions for the PDF
-                    const width = pdf.internal.pageSize.getWidth();
-                    const height = (img.height * width) / img.width;
-
-                    // Add the image to the PDF
-                    pdf.addImage(img, 'JPEG', 0, 0, width, height);
-
-                    // Save the PDF
-                    pdf.save('converted.pdf');
-                };
-            };
-
-            reader.readAsDataURL(file);
-        });
-    </script>
-
-        
-
-<div>
-
-
 
         <h2>Lets Go Online With Helostar.online</h2>
+
+        <h2>Become *</h2>
+
         <p>A place where stars Lives</p><p>Get You and Your Busssiness Online with Helostar.online</p>
-<span>Become A </span> <span class="fa fa-star checked"></span>
-
-      <div> <div> <a href="#products" class="btn">Watch Sample </a></div>
-
-          
-          
-    </div></div>
+        <a href="#products" class="btn">Explore Now</a>
     </div>
-
 
 </section>
 
@@ -161,147 +60,13 @@ Free conversion without registration</p>
 
 <!--products section-->
 <section class="products" id="products">
-    <h1 class="heading"> <span>Latest Products & Videos</span></h1>
-
-
-
-  
-   
-<div class="box-container">
-
-    <div class="box">
-            <div class ="image">
-           
-    <div class="box">
-             <div class="image">
-        <video width="355" controls id="video1">
-            <source src="vid1.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    <script>
-        // Ensure only one video plays at a time
-        document.querySelectorAll('video').forEach(video => {
-            video.addEventListener('play', function() {
-                document.querySelectorAll('video').forEach(otherVideo => {
-                    if (otherVideo !== video) {
-                        otherVideo.pause();
-                    }
-                });
-            });
-        });
-    </script>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div class="icons">
-                    <a href="#" class="fa fa-heart"></a>
-                    <a href="https://youtu.be/UaUjepxXeq4" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/UaUjepxXeq4" class="fa fa-share"></a>
-                  </div>
-            </div>
-            <div class="content">
-                <h2>Sample1|  Sach Keh Rha Hai Diwana Dil | Dharmendra Kumar Shuklaa | Rahna Hai Tere Dil Me | Helostar.online new</h2>
-          
-            </div>   
-        </div>
-    
-    
-    <div class="box">
-      <div class="box">
-             <div class="image">
-        <video width="355" controls id="video1">
-            <source src="vid15.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    <script>
-        // Ensure only one video plays at a time
-        document.querySelectorAll('video').forEach(video => {
-            video.addEventListener('play', function() {
-                document.querySelectorAll('video').forEach(otherVideo => {
-                    if (otherVideo !== video) {
-                        otherVideo.pause();
-                    }
-                });
-            });
-        });
-    </script>
-
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div class="icons">
-                    <a href="#" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/lhOLeT1zkCU?si=ZStzDRpqGHxstLJn" class="fa fa-share"></a>
-                  </div>
-            </div>
-            <div class="content">
-                <h2>Sample1|kar diya | Dharmendra | </h2>
-          
-            </div>   
-        </div>
-    
-    <div class="box">
-            <div class="box">
-             <div class="image">
-        <video width="355" controls id="video1">
-            <source src="vid16.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    <script>
-        // Ensure only one video plays at a time
-        document.querySelectorAll('video').forEach(video => {
-            video.addEventListener('play', function() {
-                document.querySelectorAll('video').forEach(otherVideo => {
-                    if (otherVideo !== video) {
-                        otherVideo.pause();
-                    }
-                });
-            });
-        });
-    </script>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div>a/a</div>
-                  <div class="icons">
-                    <a href="#" class="fa fa-heart"></a>
-                    <a href="https://youtu.be/G5gfkg1XMzA" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/G5gfkg1XMzA" class="fa fa-share"></a>
-                  </div>
-            </div>
-            <div class="content">
-                <h2>Loving nature with Flute and fresh morning  #radhekrishna #morningvibes #flute #naturelovers</h2>
-          
-            </div>   
-        </div>
-
-    
+    <h1 class="heading"> <span>Latest Videos</span></h1>
+    <div class="box-container">
         <div class="box">
-          <div class="box">
-             <div class="image">
-        <video width="355" controls id="video1">
-            <source src="vid2.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    <script>
-        // Ensure only one video plays at a time
-        document.querySelectorAll('video').forEach(video => {
-            video.addEventListener('play', function() {
-                document.querySelectorAll('video').forEach(otherVideo => {
-                    if (otherVideo !== video) {
-                        otherVideo.pause();
-                    }
-                });
-            });
-        });
-    </script>
+            <div class ="image">
+            <video width="355" controls>
+                    <source src="vid1.mp4" type="video/mp4">
+                  </video>
                   <div>a/a</div>
                   <div>a/a</div>
                   <div>a/a</div>
@@ -313,11 +78,37 @@ Free conversion without registration</p>
                   </div>
             </div>
             <div class="content">
-                <h2>Sample2 | kadar hamari remix | Dharmendra </h2>
+                <h2>kar diya | Dharmendra | I don't know dance | #crazydancer #dance,#shorts ,#viral #trending #helostar.online </h2>
           
-            </div> 
+            </div>
+            
+          
         </div>
-<div class="box">
+
+        <div class="box">
+            <div class ="image">
+            <video width="355" controls>
+                    <source src="vid2.mp4" type="video/mp4">
+                  </video>
+                  <div>a/a</div>
+                  <div>a/a</div>
+                  <div>a/a</div>
+                  <div>a/a</div>
+                  <div class="icons">
+                    <a href="#" class="fa fa-heart"></a>
+                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
+                    <a href="https://youtu.be/lhOLeT1zkCU?si=ZStzDRpqGHxstLJn" class="fa fa-share"></a>
+                  </div>
+            </div>
+            <div class="content">
+                <h2>kadar hamari remix | Dharmendra #viral #trending #crazydancer #dance #reels #shorts #new #sadstatus #helostar.online</h2>
+          
+            </div>
+            
+          
+        </div>
+        
+        <div class="box">
             <div class ="image">
             <video width="355" controls>
                     <source src="vid3.mp4" type="video/mp4">
@@ -333,7 +124,7 @@ Free conversion without registration</p>
                   </div>
             </div>
             <div class="content">
-                <h2>Sample3 | Lut gaye | Dharmendra</h2>
+                <h2>Lut gaye | Dharmendra #latest #viral #shorts #dance #trending #crazydancer #editor l #viral #2024</h2>
           
             </div>
             
@@ -357,11 +148,13 @@ Free conversion without registration</p>
             </div>
 
             <div class="content">
-                <h2>Sample4 | Ashiqui Mein Teri 3.0 Official Song -2024 | Dharmendra</h2>
+                <h2>Ashiqui Mein Teri 3.0 Official Song -2024 | Dharmendra | #Dharmendra9670 #helostar.online</h2>
           
             </div>
-            </div>
-           <div class="box">
+            
+          
+        </div>
+        <div class="box">
             <div class ="image">
             <video width="355" controls>
                     <source src="vid5.mp4" type="video/mp4">
@@ -377,7 +170,7 @@ Free conversion without registration</p>
                   </div>
             </div>
             <div class="content">
-                <h2>Sample5 | Dance performance | kites song | By Dharmendra</h2>
+                <h2>Dance performance | kites song | By Dharmendra | #helostar.online | Hrithik Roshan | #Dharmendrashukla</h2>
           
             </div>
             
@@ -406,307 +199,7 @@ Free conversion without registration</p>
           
         </div>
 
-    
-    
-    <iframe width="560" height="315" src="https://youtube.com/embed/akBviYhyp4M" frameborder="0" allowfullscreen></iframe>
-    
-<h1>khadagwasala dam open #shorts , #trending, #viral #dam #khadagwasla ❤️💗🌍🫠😶‍🌫️🌸🤷⛈️🫠 nature beuti</h1>
-    
-    <iframe width="560" height="315" src="https://youtube.com/embed/UaUjepxXeq4" frameborder="0" allowfullscreen></iframe>
-    <h1>Sach Keh Rha Hai Diwana Dil | Dharmendra Kumar Shuklaa | Rahna Hai Tere Dil Me | Helostar.online new</h1>
-    
-    <iframe width="560" height="315" src="https://youtube.com/embed/zBLyPSmuZdg" frameborder="0" allowfullscreen></iframe>
-    <h1>most beutifull view of dam during sunset 🤷🥰☁️🥰❤️☔🌳🌍💝💝💝 #viral #shorts #trending #goodnight ❤️💗🥰💗😱💝😱🤪</h1>
-    
-    <h1></h1>
-<iframe width="560" height="315" src="https://youtube.com/embed/sCmgtSTPwdY" frameborder="0" allowfullscreen></iframe>
-    <h1>lut Gaye tere pyar me dance performance | Dharmendra ❤️😱😱😱🤷🤷 #helostar.online #jubinnautiyal #shorts</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/z1wBiLGqMtA" frameborder="0" allowfullscreen></iframe>
-    <h1>A most beautiful greenery scane of my village Atheha Pratapgarh UP India 230125 #greenery #viral</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/6wbxiCTdaf4" frameborder="0" allowfullscreen></iframe>
-    <h1>Heavy rain fall☔💦⛈️☁️😱🤷 in morning offices and roads are block #viral #rain #shorts #latestnews ⛈️☔💦</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/IniFOqFOV1U" frameborder="0" allowfullscreen></iframe>
-    <h1>remix on das bahne kar ke le gayi | #trending #viral #short #reels #kolkata #anantnagencounter</h1>
-
-    <h1></h1>
-<iframe width="560" height="315" src="https://youtube.com/embed/CHetxQAa6Xk" frameborder="0" allowfullscreen></iframe>
-    <h1>enjoy at office top floor | helostar.online | gabru | Dharmendra9670 </h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/ogsR2NlkoRI" frameborder="0" allowfullscreen></iframe>
-    <h1>SHIV TANDAV REMIX - DJ  ( OFFICIAL MUSIC VIDEO ) |  #Dharmendra9670 #helostar.online</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/Mw9QHEPz3Iw" frameborder="0" allowfullscreen></iframe>
-    <h1>Latest song 2020 | Full HD VIDEO | helostar.online| latest English song | #Dharmendra9670 | OOO ooo </h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/L_Crqo3w-o0" frameborder="0" allowfullscreen></iframe>
-    <h1>helostar.online Algorithmic Boost Request - 45000000 #YTBoostRequest</h1>
-
-    
-<iframe width="560" height="315" src="https://youtube.com/embed/Ll21avnXf5I" frameborder="0" allowfullscreen></iframe>
-    <h1>ABC #2024 helostar.onli #Dharmendra | #enjoy | latest song #music #dance #vral #trending #crazdancer</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/i68gGSTiM6M" frameborder="0" allowfullscreen></iframe>
-    <h1>पद्मावत  काव्य लिखने वाले मलिक मोहम्मद जायसी and sati maharani mandir amethi #helostsr.online</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/NpgeWTSNmok" frameborder="0" allowfullscreen></iframe>
-    <h1>super whatsapp Facebook good morning wishes funny videos latest 2024 in hindi #helostar </h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/wm9-h6dZ8C4" frameborder="0" allowfullscreen></iframe>
-    <h1>हिंदी जोक्स ~ TOP BEST Funny Hindi Jokes - SMS ... - JokeScoff #trending </h1>
-
-    
-<iframe width="560" height="315" src="https://youtube.com/embed/FlcmMdg_XoA" frameborder="0" allowfullscreen></iframe>
-    <h1>Saiyan Syco | FULL HD | performance | #helostar.online | #Dharmendra9670 priyanka reddy</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/XJyEYBzxXrA" frameborder="0" allowfullscreen></iframe>
-    <h1>visit in Gurudwara Shri Guru Singh Sabha, Nainital, Uttarakhand, India</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/AlTg1m4JIlo" frameborder="0" allowfullscreen></iframe>
-    <h1>Dil Deewana Bin Sajna || Superhit Romantic Song | Music on #helostar</h1>
-
-    <iframe width="560" height="315" src="https://youtube.com/embed/TMGVQ72K4Is" frameborder="0" allowfullscreen></iframe>
-    <h1>R city mall LBS Rd, Amrut Nagar, Ghatkopar West, Mumbai, Maharashtra 400086 car driving #helostar</h1>
-    
-        
-        <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <video width="355" controls>
-                    <source src="vid8.mp4" type="video/mp4">
-                  </video>
-                
-                
-                <div class="icons">
-                    <a href="https://youtu.be/BGUNgVuGbqE?si=ZUmahEj48POW4wuD" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="https://youtu.be/BGUNgVuGbqE?si=ZUmahEj48POW4wuD" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>❣️ 🌸🌸Most Demanding Soft & breezy Summer Essentials Pure Cotton Dyed Colors Plasso Set 💞🌼 💫
-                    
-*Sizes - 36 38 40 42 44* 🌸🌸
-</h3>
-                <div class="price"> Price Rs 1450/-<span>Rs 2500/-</span></div>
-            </div>
-        </div>
-
-      <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <video width="355" controls>
-                    <source src="vid9.mp4" type="video/mp4">
-                  </video>
-                
-                
-                <div class="icons">
-                    <a href="https://youtu.be/BGUNgVuGbqE?si=ZUmahEj48POW4wuD" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="https://youtu.be/BGUNgVuGbqE?si=ZUmahEj48POW4wuD" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>🌸🌸
-Most Demanding Soft & breezy Summer Essentials Fabric - Pure Cotton Dyed Colors Plasso Set With Mukesh Work
-Kurti Length - "44"
-                    
-*Sizes - 36 38 40 42 44* 🌸🌸
-</h3>
-                <div class="price"> Price Rs 1950/-<span>Rs 2500/-</span></div>
-            </div>
-        </div>  
-        
-<div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <video width="355" controls>
-                    <source src="vid10.mp4" type="video/mp4">
-                  </video>
-                <div class="icons">
-                    <a href="https://youtube.com/shorts/4mCZ1mQw3FY?si=HzNBZdXEd-fdxsWp" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="https://youtube.com/shorts/4mCZ1mQw3FY?si=HzNBZdXEd-fdxsWp" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>🌸🌸 Unstitched Muslim silk with chiffon dupatta full suit Price 🌸🌸
-
-</h3>
-                <div class="price">Price Rs 2800/-<span>₹3500/-</span></div>
-            </div>
-        </div>
-
-        <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <video width="355" controls>
-                    <source src="vid11.mp4" type="video/mp4">
-                  </video>
-                <div class="icons">
-                    <a href="https://youtube.com/shorts/i2CEJydRAV4?si=m-s6WeHr-O4Wks7e" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="https://youtube.com/shorts/i2CEJydRAV4?si=m-s6WeHr-O4Wks7e" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>🌸🌸 Cotton kurti  size 38 to 40 🌸🌸
-
-</h3>
-                <div class="price">Price Rs 699/-<span>Rs 1500/-</span></div>
-            </div>
-        </div>
-<div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <video width="355" controls>
-                    <source src="vid12.mp4" type="video/mp4">
-                  </video>
-                <div class="icons">
-                    <a href="https://youtube.com/shorts/_QpewNgtHx0?si=wwoquafK9yNPDZ23" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="https://youtube.com/shorts/_QpewNgtHx0?si=wwoquafK9yNPDZ23" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>🌸🌸 Cotton kurti 
-                    size 38 to 40 🌸🌸
-</h3>
-                <div class="price">Price Rs 699/-<span> Rs1500/-</span></div>
-            </div>
-        </div>
-        
-        <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <video width="355" controls>
-                    <source src="vid9.mp4" type="video/mp4">
-                  </video>
-                <div class="icons">
-                    <a href="https://youtube.com/shorts/am0lhBRlmmU?si=P23AB8jI5mGJLJ-0" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="https://youtube.com/shorts/am0lhBRlmmU?si=P23AB8jI5mGJLJ-0" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3> Pure Cotton Hand-painted  Suit  with Chiffon dupatta
-</h3>
-                <div class="price">Price Only ₹1950/-<span>₹3000/-</span></div>
-            </div>
-        </div>
-    
-        <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <video width="355" controls>
-                    <source src="vid7.mp4" type="video/mp4">
-                  </video>
-                <div class="icons">
-                    <a href="https://youtube.com/shorts/ZgYYakK8wQk?si=4cE2phnCm_xyy4hr" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="https://youtube.com/shorts/ZgYYakK8wQk?si=4cE2phnCm_xyy4hr" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>🌸🌸 Fabric - modal Kurta. Can be dyed in any colour 
-size - 38-40-42-44-46
-Length - 46 🌸🌸
-</h3>
-                <div class="price">Price ₹2475/-<span>₹4000/-</span></div>
-            </div>
-        </div>
-        
-                <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <img src="img30.jpg" alt="Zoomable Image" class="zoom">
-                <div class="icons">
-                    <a href="http://youtube.com/post/UgkxB-siZsz4r_esrtB7O1Xp_hjv6aKnSIbr?si=4Kif9NFEkz44MQ-7" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="http://youtube.com/post/UgkxB-siZsz4r_esrtB7O1Xp_hjv6aKnSIbr?si=4Kif9NFEkz44MQ-7" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>Muslin silk</h3>
-                <div class="price">Price ₹2800<span>₹4000</span></div>
-            </div>
-        </div>
-        
-        <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <img src="img31.jpg" alt="">
-                <div class="icons">
-                    <a href="http://youtube.com/post/UgkxzZpj8TsBJmx7dgvDTSWBhsluAGKnY_nl?si=--HKjLgp3Ixwltqi" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="http://youtube.com/post/UgkxzZpj8TsBJmx7dgvDTSWBhsluAGKnY_nl?si=--HKjLgp3Ixwltqi" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>Unstitched Muslim silk with chiffon dupatta Full suit </h3>
-                <div class="price">Price Rs 2800/-<span>Price Rs 4000</span></div>
-            </div>
-        </div>
-        
-<div class="box">
-            <span class="discount">-65%</span>
-            <div class ="image">
-                <img src="bin.jpg" alt="">
-                <div class="icons">
-                    <a href="http://youtube.com/post/UgkxzZpj8TsBJmx7dgvDTSWBhsluAGKnY_nl?si=--HKjLgp3Ixwltqi" class="fa fa-heart"></a>
-                    <a href="tel:+919670321858" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="http://youtube.com/post/UgkxzZpj8TsBJmx7dgvDTSWBhsluAGKnY_nl?si=--HKjLgp3Ixwltqi" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>Premium thermocol Balls Beans Premium 1 kg Beans for Bean Bag 
-                    Filling Bean Bag Filler 1 kg High Density White Balls- Sun White (1 kg Beans) White </h3>
-                <div class="price">Price Rs 369/-<span>Price Rs 1000</span></div>
-            </div>
-        </div>
-        
-<div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <img src="img32.jpg" alt="">
-                <div class="icons">
-                    <a href="http://youtube.com/post/UgkxDirXdlTu8qVyy7ChSRPCpzI3_OOANO01?si=OWtE5w5IuOGqs9Kc" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="http://youtube.com/post/UgkxDirXdlTu8qVyy7ChSRPCpzI3_OOANO01?si=OWtE5w5IuOGqs9Kc" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>🌸🌸 Unstitched Pure cotton hand painted with chiffon dupatta Full Suit 🌸🌸</h3>
-                <div class="price">Price Rs 1950/-<span>Rs 4000/-</span></div>
-            </div>
-        </div>
-
-        <div class="box">
-            <span class="discount">-20%</span>
-            <div class ="image">
-                <img src="img33.jpg" alt="">
-                <div class="icons">
-                    <a href="http://youtube.com/post/UgkxDirXdlTu8qVyy7ChSRPCpzI3_OOANO01?si=OWtE5w5IuOGqs9Kc" class="fa fa-heart"></a>
-                    <a href="tel:+919811036532" class="cart-btn">To Buy It Contact Now</a>
-                    <a href="http://youtube.com/post/UgkxDirXdlTu8qVyy7ChSRPCpzI3_OOANO01?si=OWtE5w5IuOGqs9Kc" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h3>🌸🌸 Unstitched Pure cotton hand painted with chiffon dupatta Full Suit 🌸🌸</h3>
-                <div class="price">Price Rs 1950/-<span>Rs 4000/-</span></div>
-            </div>
-        </div>
-
-        
-        
-        
-        
-          
-        </div>
-        <div cl
-    <a href="https://www.youtube.com/@helostar.online" class="btn">Watch More On Youtube</a>
+    </div>
 </section>
 
 <!--products section-->
@@ -718,7 +211,7 @@ Length - 46 🌸🌸
     <h1 class="heading"> <span> about  us </span></h1>
     <div class="row">
         <div class="video-container">
-            <video src="vid5.mp4" loop autoplay muted></video>
+            <video src="vid3.mp4" loop autoplay muted></video>
             
     
         </div>
@@ -754,7 +247,7 @@ Length - 46 🌸🌸
 <!--Icons-->
 <section class="icons-container">
     <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/free.jpg?raw=true" alt="">
+        <img src="http://localhost/test/free.jpg" alt="">
         <div class="info">
             <h3>free delivery</h3>
             <span>on all orders</span>
@@ -763,7 +256,7 @@ Length - 46 🌸🌸
     </div>
 
     <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/ret.jpg?raw=true" alt="">
+        <img src="http://localhost/test/ret.jpg" alt="">
         <div class="info">
             <h3>10 days returns</h3>
             <span>moneyback garntee</span>
@@ -772,7 +265,7 @@ Length - 46 🌸🌸
     </div>
 
     <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/offer.jpg?raw=true" alt="">
+        <img src="http://localhost/test/offer.jpg" alt="">
         <div class="info">
             <h3>offer and gift</h3>
             <span>on all orders</span>
@@ -780,7 +273,7 @@ Length - 46 🌸🌸
         </div>
     </div>
     <div class="icons">
-        <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/sec.jpg?raw=true" alt="">
+        <img src="http://localhost/test/sec.jpg" alt="">
         <div class="info">
             <h3>secure payment</h3>
             <span>protected by paypal</span>
@@ -811,7 +304,7 @@ Length - 46 🌸🌸
         </p>
         <div class="user">
            
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/prem.jpg?raw=true" alt="">
+            <img src="http://localhost/test/prem.jpg" alt="">
 
             <div class="user-info">
                 <h3>Prem Tiwari</h3>
@@ -839,7 +332,7 @@ Length - 46 🌸🌸
         <p>It is best place to provide all syber security and computer related queris</p>
         <div class="user">
            
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/prit.jpg?raw=true" alt="">
+            <img src="http://localhost/test/prit.jpg" alt="">
             <div class="user-info">
                 <h3>Preeti Nath</h3>
                 <span>happy customer</span>
@@ -867,7 +360,7 @@ Length - 46 🌸🌸
         <p>It is a nice Place and good for all of us. It is able to provide all types of Services to us. We must go there. </p>
         <div class="user">
            
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/2.jpg?raw=true" alt="">
+            <img src="http://localhost/test/dh.jpg" alt="">
             <div class="user-info">
                 <h3>Dharmendra Shukla</h3>
                 <span>Happy Customer</span>
@@ -895,7 +388,7 @@ Length - 46 🌸🌸
         <p>A Best place to get solution for all technical queris.</p>
         <div class="user">
            
-            <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/lis.jpg?raw=true" alt="">
+            <img src="http://localhost/test/lis.jpg" alt="">
 
             <div class="user-info">
                 <h3>Lisa Reinhart</h3>
@@ -929,7 +422,7 @@ Length - 46 🌸🌸
 </form>
 
 <div class="image">
-    <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/ab1.jpg?raw=true"">
+    <img src="http://localhost/test/2.jpg" alt="">
 </div>
 
     </div>
@@ -942,15 +435,6 @@ Length - 46 🌸🌸
 <!--Footer Section -->
 <section class="footer">
     <div class="box-container">
-        
-           <div class="box">
-            <h3>Contact Info</h3>
-           <a href="https://www.facebook.com/profile.php?id=100091623769679&sk=photos" class="fa fa-facebook">  Facebook</a>
-           <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="fa fa-youtube"> Youtube</a>
-           <a href="https://www.instagram.com/dharmendrashukla9670?utm_source=qr&igsh=c3hra3dqM254M21x " class="fa fa-instagram" >  Instagram</a>
-           <a href="https://x.com/dharmen32810094?t=N1zp2rnmoN_7gtD_56HuZg&s=08" class="fa fa-twitter">  X </a>
-               <a href="#">helpdesk</a>
-           </div>
         <div class="box">
             <h3>Quick links</h3>
             <a href="#">home</a>
@@ -977,16 +461,20 @@ Length - 46 🌸🌸
                     <a href="#">Russia</a>
                    </div>
 
-           <img src="https://github.com/Dharmendra967032/helostar.online/blob/main/pay2.jpg?raw=true" alt="">
-               
-            
+           <div class="box">
+            <h3>Contact Info</h3>
+           <a href="#">helpdesk</a>
+           <a href="https://www.facebook.com/profile.php?id=100091623769679&sk=photos" class="fa fa-facebook">  Facebook</a>
+           <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="fa fa-youtube"> Youtube</a>
+           <a href="https://www.instagram.com/dharmendrashukla9670?utm_source=qr&igsh=c3hra3dqM254M21x " class="fa fa-instagram" >  Instagram</a>
+           <a href="https://x.com/dharmen32810094?t=N1zp2rnmoN_7gtD_56HuZg&s=08" class="fa fa-twitter">  X </a>
+           <img src="http://localhost/test/pay2.jpg" alt="">
+            </div>
      </div>
    
      <div class="credit">&copy2024 credit To Dharmendra Kumar Shuklaa |<span> Helostar.online </span>all Rights Reserved </div>
 
 </section>
-    
-<a href="https://www.freecounterstat.com" title="hit counter"><img src="https://counter4.optistats.ovh/private/freecounterstat.php?c=3mynhrk79lbrxcanrhk5nht3ml33gn4f" border="0" title="hit counter" alt="hit counter"></a>
 
 
 <!--Footer Section -->
@@ -995,14 +483,3 @@ Length - 46 🌸🌸
 
 
 </html>
-
-
-
-
-
-
-
-
-
-
-

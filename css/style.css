@@ -348,6 +348,36 @@ header .fa-bars{
    
 }
 
+<!-- small dropdown CSS so the "products" navbar item becomes a dropdown -->
+<style>
+/* Dropdown in navbar */
+.dropdown { position: relative; display: inline-block; }
+.dropbtn { color: inherit; text-decoration: none; padding: 0.5rem; display: inline-block; }
+.dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    background: #fff;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.dropdown .dropdown-content a {
+    color: #333;
+    padding: 10px 14px;
+    text-decoration: none;
+    display: block;
+    white-space: nowrap;
+}
+.dropdown .dropdown-content a:hover { background: #f1f1f1; }
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content { display: block; }
+/* keep dropdown inline with other navbar links */
+.navbar .dropdown { margin: 0 6px; }
+</style>
+
+
 .products .box-container{
 
     display: flex;
@@ -613,6 +643,7 @@ padding-top: 1rem;
         color:var(--pink);
    
     }
+
 
 
 

@@ -1,0 +1,45 @@
+Import-Module ActiveDirectory
+
+$OU = "OU=IT,DC=helostar,DC=online" 
+
+$FirstName     = "Dharmendra"
+$LastName      = "Shuklaa"
+$DisplayName = "$FirstName $LastName"
+$SamAccountName = "dshuklaa"
+$Department    = "IT"
+$EmailAddress  = "dharmendra.shuklaa@helostar.online"
+$UserPrincipalName = "dharmendra.shuklaa@helostar.online"
+$Domain        = "helostar.online" # Used for constructing the path if needed
+
+Write-Host " Please enter the password for new user ($SamAccountName)." -ForegroundColor Yellow
+$Password = ConvertTo-SecureString "P@ssword1234!" -AsPlainText -Force
+
+
+
+
+
+    Write-Host "Attempting to create user '$DisplayName'..." -ForegroundColor Cyan
+
+   try {
+    New-ADUser -Name $DisplayName `
+        -GivenName $FirstName `
+        -Surname $LastName `
+        -SamAccountName $SamAccountName `
+        -UserPrincipalName $UserPrincipalName `
+	-Path $OU `
+	-AccountPassword $Password `
+	-Enabled $true `
+	-ChangePasswordAtLogon $true `
+        -EmailAddress $EmailAddress `
+        -Department $Department `
+        -PassThru
+        
+   
+        
+    Write-Host "Success! User '$DisplayName' has been created and enabled." -ForegroundColor Green
+
+}
+catch {
+    Write-Host "Error creating user " -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Red
+}

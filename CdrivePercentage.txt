@@ -1,0 +1,3 @@
+PowerShell Script to check C drive Space And percentage
+
+Get-Psdrive c | % { $_.free/($_.used + $_.free) } | % tostring p

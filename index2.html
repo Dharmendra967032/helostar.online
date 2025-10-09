@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+<meta charet="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Helostar.Online</title>
+<!--font awesome-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!--cutom css file-->
+
+<link rel="stylesheet" href="css/style.css">
+<!-- small dropdown CSS so the "products" navbar item becomes a dropdown -->
+<style>
+/* Dropdown in navbar */
+.dropdown { position: relative; display: inline-block; }
+.dropbtn { color: inherit; text-decoration: none; padding: 0.5rem; display: inline-block; }
+.dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    background: #fff;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.dropdown .dropdown-content a {
+    color: #333;
+    padding: 10px 14px;
+    text-decoration: none;
+    display: block;
+    white-space: nowrap;
+}
+.dropdown .dropdown-content a:hover { background: #f1f1f1; }
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content { display: block; }
+/* keep dropdown inline with other navbar links */
+.navbar .dropdown { margin: 0 6px; }
+</style>
+    </head>
+<body>
+<!--Header-->
+<header>
+
+    <input type="checkbox" name="" id="toggler">
+    <label for="toggler" class="fa fa-bars"></label>
+
+    <a href="#" class="logo">Helostar<span>.</span>online</a>
+
+<nav class="navbar">
+<a href="#products">Audio Librery</a>
+</nav>
+
+
+</header>
+
+<!--header ends-->
+<!--home-->
+
+
+
+<!--products section-->
+
+<section class="products" id="products">
+  <br></br>
+  <br></br>
+  
+  
+    <h1 class="heading"> <span>Latest Audio Songs</h1>
+    <div class="box-container">
+        
+     
+
+        <div class="box">
+            <div class="image">
+
+                  <audio widith = "355" controls>
+  <source src="JaiSreeKrsihnaByDharmendra.mp3" type="audio/mp3">
+</audio>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div class="icons">
+                    <a href="https://youtu.be/HpJpfAL1U30?si=sR8fzVQDQs_6RTUM" class="fa fa-heart"></a>
+                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
+                    <a href="https://youtu.be/HpJpfAL1U30?si=sR8fzVQDQs_6RTUM" class="fa fa-share"></a>
+                </div>
+            </div>
+            <div class="content">
+                <h2>Yesa Jeevan Na Ho Na ho Yesi Ghadi | Jai Sree JaiSreeKrsihna | Dharmendra Shukla | Helostar.online</h2>
+            </div>
+        </div>
+
+             <div class="box">
+            <div class="image">
+
+                  <audio widith = "355" controls>
+  <source src="HeRaghunandanJanki.mp3" type="audio/mp3">
+
+Your browser does not support the audio element.
+</audio>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div class="icons">
+                    <a href="https://youtu.be/QLCF47-NrsI?si=OgnR-DhM__jinjfd" class="fa fa-heart"></a>
+                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
+                    <a href="https://youtu.be/QLCF47-NrsI?si=OgnR-DhM__jinjfd" class="fa fa-share"></a>
+                </div>
+            </div>
+            <div class="content">
+                <h2>He Raghunandan Janki | Dharmendra Shukla | helostar.online </h2>
+            </div>
+        </div>
+
+             <div class="box">
+            <div class="image">
+
+                  <audio widith = "355" controls>
+  <source src="SyamRadheySyam Jai.mp3" type="audio/mp3">
+
+Your browser does not support the audio element.
+</audio>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div class="icons">
+                    <a href="#" class="fa fa-heart"></a>
+                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
+                    <a href="https://youtu.be/lhOLeT1zkCU?si=ZStzDRpqGHxstLJn" class="fa fa-share"></a>
+                </div>
+            </div>
+            <div class="content">
+                <h2>Syam Radhey Radhey Syam Radhey Jai Jai Syam New Released bhakti Audio Song | Helostar.Online | Female Version</h2>
+            </div>
+        </div>
+
+        
+    </div>
+</section>
+
+<script>
+    /**
+     * JavaScript to ensure only one Audio plays at a time.
+     * This script listens for any Audio to start playing ('play' event) 
+     * and pauses all other Audios on the page.
+     */
+    
+    // 1. Select all Audio elements on the page
+    const allAudios = document.querySelectorAll('Audio');
+
+    // 2. Loop through each Audio element
+    allAudios.forEach(currentAudio => {
+        // 3. Attach a listener for when the Audio starts to play
+        currentAudio.addEventListener('play', () => {
+            
+            // 4. When a Audio starts, loop through all Audios again
+            allAudios.forEach(otherAudio => {
+                
+                // 5. If the Audio in this loop is NOT the one that just started playing...
+                if (otherAudio !== currentAudio) {
+                    
+                    // 6. ...then pause it
+                    otherAudio.pause();
+                }
+            });
+        });
+    });
+</script>
+
+<!--Footer Section -->
+<section class="footer">
+    <div class="box-container">
+        <div class="box">
+            <h3>Quick links</h3>
+            <a href="index.html">home</a>
+            <a href="Windows.html">Windows server</a>
+            <a href="Python.html">Python</a>
+            <a href="index.html">review</a>
+            <a href="index.html">contact</a>
+           
+        </div>
+   
+
+        <div class="box">
+            <h3>Extra Links</h3>
+            <a href="#">my Account</a>
+            <a href="#">my Lists</a>
+            <a href="#">my faivorite</a> 
+        </div>
+
+                  <div class="box">
+                    <h3>Locations</h3>
+                    <a href="#">India</a>
+                    <a href="#">USA</a>
+                    <a href="#">UK</a>
+                    <a href="#">Russia</a>
+                   </div>
+
+           <div class="box">
+            <h3>Contact Info</h3>
+            <a href="https://www.facebook.com/helostar.online" class="fa fa-facebook">  Facebook</a>
+           <a href="https://www.youtube.com/@helostar.online" class="fa fa-youtube"> Youtube</a>
+           <a href="https://www.instagram.com/helostar.online" class="fa fa-instagram" >  Instagram</a>
+           <a href="https://x.com/helostaronline" class="fa fa-twitter">  X </a>
+           <a href="#">helpdesk</a>
+            </div>
+     </div>
+   
+     <div class="credit">&copy2024 credit To Dharmendra Kumar Shuklaa |<span> Helostar.online </span>all Rights Reserved </div>
+
+</section>
+
+
+<!--Footer Section -->
+
+</body>
+
+
+</html>

@@ -1,422 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+    <head>
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4598159113879484"
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4598159113879484"
      crossorigin="anonymous"></script>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Python Tutorial 🐍 - helostar.online</title>
-    <style>
-        /* --- Basic CSS Styling --- */
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
+<meta charet="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-        header {
-            background-color: #36699a; /* Dark Blue/Python Blue */
-            color: white;
-            padding: 20px 0;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+<title>Helostar.Online</title>
+<!--font awesome-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!--cutom css file-->
 
-        .header-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+<link rel="stylesheet" href="css/style.css">
+<!-- small dropdown CSS so the "products" navbar item becomes a dropdown -->
 
-        .logo {
-            font-size: 2.5em; /* Larger for a prominent logo */
-            font-weight: bold;
-            color: #ffda44; /* A contrasting yellow for the logo text */
-            text-decoration: none;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .logo span {
-            font-size: 0.6em; /* Smaller for the .online part */
-            color: rgba(255, 255, 255, 0.8);
-            letter-spacing: 0;
-            text-shadow: none;
-        }
-
-        header h1 {
-            font-size: 2.2em;
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            margin: 5px 0;
-            font-size: 1.1em;
-        }
-
-        .author-credit {
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-
-        nav {
-            background-color: #2a5275; /* Slightly darker blue */
-            padding: 10px 0;
-            text-align: center;
-            position: sticky; /* Make navigation stick at the top */
-            top: 0;
-            z-index: 1000; /* Ensure it stays above other content */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            display: inline-block;
-            transition: background-color 0.3s;
-            font-weight: bold;
-        }
-
-        nav a:hover {
-            background-color: #1a3854;
-            border-radius: 4px;
-        }
-
-        .container {
-            width: 85%;
-            max-width: 1000px; /* Limit max width for better readability */
-            margin: auto;
-            overflow: hidden;
-            padding: 20px 0;
-        }
-
-        .content-section {
-            background: white;
-            padding: 20px 30px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        h1, h2, h3 {
-            color: #36699a;
-        }
-
-        h2 {
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-            margin-top: 30px;
-            position: relative;
-        }
-        h2::after { /* Add a small python icon next to H2 titles */
-            content: '🐍';
-            position: absolute;
-            right: 0;
-            top: 5px;
-            font-size: 0.8em;
-            color: #ffda44;
-        }
-
-
-        code {
-            background-color: #eee;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: 'Consolas', monospace;
-            color: #d44950; /* Reddish for inline code */
-            font-size: 0.95em;
-        }
-
-        pre {
-            background-color: #272822; /* Dracula/Monokai background */
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            font-family: 'Consolas', monospace;
-            margin: 20px 0;
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-
-        ul {
-            list-style: disc inside;
-            padding-left: 20px;
-        }
-
-        footer {
-            background-color: #36699a;
-            color: white;
-            text-align: center;
-            padding: 15px 0;
-            margin-top: 20px;
-            font-size: 0.9em;
-        }
-        footer a {
-            color: #ffda44;
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        .key-concept {
-            font-style: italic;
-            font-weight: bold;
-            color: #007bff; /* Bright blue for key terms */
-        }
-    </style>
-</head>
+    </head>
 <body>
+<!--Header-->
+<header>
 
-    <header>
-        <div class="header-content">
-            <a href="#" class="logo">helo<span style="color:#ffda44;">star</span><span>.online</span></a>
+    <input type="checkbox" name="" id="toggler">
+    <label for="toggler" class="fa fa-bars"></label>
+
+    <a href="https://helostar.online" class="logo">Helostar<span>.</span>online</a>
+
+<nav class="navbar">
+<a href="#products">Python</a>
+<a href="side.html">Full Tutorial</a>
+
+</nav>
+
+
+</header>
+
+<!--header ends-->
+<!--home-->
+
+
+
+<!--products section-->
+
+<section class="products" id="products">
+    
+  <br></br>
+  <br></br>
+  
+  
+    <h1 class="heading"> <span>Python Introduction</h1>
+  
+
+                  
+                <br><h3 style="color:var(--green)">Python is a popular programming language, created by Guido van Rossum, and released in 1991. It is used for web development (server-side), 
+                    software development, mathematics, system scripting.</h3></br>
+<br><h1 style="color:green; display:block; margin:auto; text-align:center;">Python Can be used for</h1></br>
+<br><h3 style="color:rgb(32, 32, 29)"> Python can be used on a server to create web applications, alongside software to create workflows,
+    connect to database systems. It can also read and modify files, used to handle big data and perform complex mathematics.</h3></br>
+
+<br><h1 style="color:green; display:block; margin:auto; text-align:center;">Why Python?</h1></br>
+<h3 style="color:rgb(32, 32, 29)">
+<br><li>Python works on different platforms (Windows, Mac, Linux etc.).</li></br>
+<br><li>It has a simple syntax similar to the English language.</li></br>
+<br><li>It has syntax that allows developers to write programs with fewer lines than some other programming languages.</li></br>
+<br><li>It runs on an interpreter system, meaning that code can be executed as soon as it is written. This means that prototyping can be very quick.</li></br>
+<br><li>The most recent major version of Python is Python 3.14.0.</li></br></h3>
+
+<br><h1 style="color:green; display:block; margin:auto; text-align:center;">Example:</h1></br>
+
+<h2 style="display:block; margin:auto; text-align:center;">print("Hello, World!") </h2>
+
+<br>
+<h1 style="color:green; display:block; margin:auto; text-align:center;">Output will be: Hello, World!</h1>
+</br>
+
+<img  src="http://localhost/hello.jpg" style="display:block; margin:auto;" alt="A centered image">
             
-            <p>Start your coding journey with the world's most popular programming language.</p>
-            <p class="author-credit">Authored by Dharmendra Shuklaa</p>
-        </div>
-    </header>
+</section>
 
-    <nav>
-        <a href="#intro">Introduction</a>
-        <a href="#basics">The Basics</a>
-        <a href="#control-flow">Control Flow</a>
-        <a href="#data-structures">Data Structures</a>
-        <a href="#functions">Functions</a>
-        <a href="#oop">OOP</a>
-        <a href="#modules-packages">Modules</a>
-    </nav>
+<section>
 
-    <div class="container">
-
-        <div id="intro" class="content-section">
-            <h2>Welcome to Python!</h2>
-            <p><strong>Python</strong> is an interpreted, high-level, general-purpose programming language. It's known for its clear syntax and readability, making it an excellent choice for beginners and professionals alike.</p>
-            <p>It's used everywhere: **web development** (Django, Flask), **data science** (Pandas, NumPy), **machine learning** (TensorFlow, PyTorch), and automation.</p>
-        </div>
-
-        <hr>
-
-        <div id="basics" class="content-section">
-            <h2>1. Setup and Syntax Basics</h2>
-
-            <h3>1.1 Installation and Running Code</h3>
+<h3>1.1 Installation and Running Code</h3>
             <p>Download the latest version from <a href="https://www.python.org/" target="_blank">python.org</a>. You can run Python code using an <span class="key-concept">Integrated Development Environment (IDE)</span> like **VS Code** or **PyCharm**, or directly from your terminal/command prompt.</p>
 
-            <h3>1.2 Variables and Data Types</h3>
-            <p>A variable is a container for storing data values. Python is <span class="key-concept">dynamically typed</span>, meaning you don't declare the type explicitly.</p>
-            <pre>
-# Integer (int)
-age = 30
 
-# Floating Point (float)
-price = 19.99
+</section>
 
-# String (str)
-name = "Alice"
 
-# Boolean (bool)
-is_student = True
-            </pre>
+<!--Footer Section -->
+<section class="footer">
+    <div class="box-container">
+        <div class="box">
+            <h3>Quick links</h3>
+            <a href="index.html">home</a>
+            <a href="Windows.html">Windows server</a>
+            <a href="Python.html">Python</a>
+            <a href="index.html">review</a>
+            <a href="index.html">contact</a>
+           
+        </div>
+   
 
-            <h3>1.3 Basic Input and Output</h3>
-            <p>Use the built-in functions <code>print()</code> for output and <code>input()</code> for receiving user input.</p>
-            <pre>
-# Output
-print("Hello, World!")
-
-# Input
-user_name = input("Enter your name: ")
-print("Welcome,", user_name)
-            </pre>
+        <div class="box">
+            <h3>Extra Links</h3>
+            <a href="#">my Account</a>
+            <a href="#">my Lists</a>
+            <a href="#">my faivorite</a> 
         </div>
 
-        <hr>
+                  <div class="box">
+                    <h3>Locations</h3>
+                    <a href="#">India</a>
+                    <a href="#">USA</a>
+                    <a href="#">UK</a>
+                    <a href="#">Russia</a>
+                   </div>
 
-        <div id="control-flow" class="content-section">
-            <h2>2. Control Flow: Decisions and Loops</h2>
+           <div class="box">
+            <h3>Contact Info</h3>
+            <a href="https://www.facebook.com/helostar.online" class="fa fa-facebook">  Facebook</a>
+           <a href="https://www.youtube.com/@helostar.online" class="fa fa-youtube"> Youtube</a>
+           <a href="https://www.instagram.com/helostar.online" class="fa fa-instagram" >  Instagram</a>
+           <a href="https://x.com/helostaronline" class="fa fa-twitter">  X </a>
+           <a href="#">helpdesk</a>
+            </div>
+     </div>
+   
+     <div class="credit">&copy2025-26 credit To Dharmendra Kumar Shuklaa |<span> Helostar.online </span>all Rights Reserved </div>
 
-            <h3>2.1 Conditional Statements (if, elif, else)</h3>
-            <p>Control the execution of your code based on conditions. **Indentation is mandatory** in Python to define blocks of code!</p>
-            <pre>
-score = 85
-if score >= 90:
-    print("A Grade")
-elif score >= 80:
-    print("B Grade") # This block executes
-else:
-    print("C Grade or lower")
-            </pre>
-
-            <h3>2.2 Loops (for and while)</h3>
-            <p>**For loops** iterate over a sequence (like a list or a string). **While loops** execute as long as a condition is true.</p>
-            <h4>For Loop Example:</h4>
-            <pre>
-fruits = ["apple", "banana", "cherry"]
-for fruit in fruits:
-    print(fruit)
-            </pre>
-            <h4>While Loop Example:</h4>
-            <pre>
-count = 0
-while count < 3:
-    print("Count:", count)
-    count += 1
-            </pre>
-        </div>
-
-        <hr>
-
-        <div id="data-structures" class="content-section">
-            <h2>3. Python Data Structures</h2>
-            <p>Python has powerful built-in collections. Understanding these is crucial for efficient programming.</p>
-
-            <h3>3.1 Lists (Mutable, Ordered)</h3>
-            <p>Lists are ordered collections that can be modified (mutable).</p>
-            <pre>
-my_list = [10, "hello", 3.14]
-my_list.append(50) # Adds 50 to the end
-print(my_list[0]) # Output: 10
-            </pre>
-
-            <h3>3.2 Tuples (Immutable, Ordered)</h3>
-            <p>Tuples are ordered collections that **cannot be changed** after creation (immutable).</p>
-            <pre>
-my_tuple = (1, 2, "three")
-# my_tuple[0] = 99 # This would cause an error!
-            </pre>
-
-            <h3>3.3 Dictionaries (Mutable, Key-Value Pairs)</h3>
-            <p>Dictionaries store data in <span class="key-concept">key: value</span> pairs and are unordered (in versions before 3.7, ordered in 3.7+).</p>
-            <pre>
-person = {
-    "name": "Bob",
-    "age": 25,
-    "city": "New York"
-}
-print(person["name"]) # Output: Bob
-            </pre>
-        </div>
-
-        <hr>
-
-        <div id="functions" class="content-section">
-            <h2>4. Functions: Organizing Your Code</h2>
-            <p>Functions allow you to break down your program into reusable, manageable pieces.</p>
-
-            <h3>4.1 Defining and Calling Functions</h3>
-            <p>Use the <code>def</code> keyword to define a function.</p>
-            <pre>
-def greet(name):
-    """This function greets the person passed in as a parameter."""
-    return "Hello, " + name + "!"
-
-message = greet("Charlie")
-print(message) # Output: Hello, Charlie!
-            </pre>
-            <p class="key-concept">Note: The text in triple quotes is a **docstring**, which explains what the function does.</p>
-        </div>
-
-        <hr>
-
-        <div id="oop" class="content-section">
-            <h2>5. Object-Oriented Programming (OOP)</h2>
-            <p>OOP structures programs around **objects** (instances of **classes**), rather than just functions and data.</p>
-
-            <h3>5.1 Classes and Objects</h3>
-            <p>A **Class** is a blueprint, and an **Object** is an instance of that blueprint.</p>
-            <pre>
-class Dog:
-    # The constructor method
-    def __init__(self, name, age):
-        self.name = name
-        self.age = age
-
-    # A regular method
-    def bark(self):
-        return f"{self.name} says Woof!"
-
-# Create an object (instance)
-my_dog = Dog("Buddy", 5)
-print(my_dog.bark()) # Output: Buddy says Woof!
-            </pre>
-
-            <h3>5.2 Inheritance</h3>
-            <p>Classes can inherit properties and methods from other classes.</p>
-            <pre>
-class GoldenRetriever(Dog): # GoldenRetriever inherits from Dog
-    def __init__(self, name, age, color):
-        super().__init__(name, age) # Call parent constructor
-        self.color = color
-
-    def fetch(self):
-        return f"{self.name} is fetching the ball!"
-
-my_golden = GoldenRetriever("Goldie", 3, "golden")
-print(my_golden.bark())  # Inherited method
-print(my_golden.fetch()) # New method
-            </pre>
-        </div>
-
-        <hr>
-
-        <div id="modules-packages" class="content-section">
-            <h2>6. Modules and Packages</h2>
-            <p>Python's strength lies in its vast ecosystem of modules and packages, which are simply Python files containing functions, classes, and variables that you can use in your own code.</p>
-
-            <h3>6.1 Importing Modules</h3>
-            <p>Use the <code>import</code> statement to bring modules into your current script.</p>
-            <pre>
-import math
-print(math.pi) # Output: 3.14159...
-
-from datetime import date
-today = date.today()
-print(today)
-            </pre>
-
-            <h3>6.2 Creating Your Own Modules</h3>
-            <p>Any <code>.py</code> file can be a module. For example, if you have <code>my_module.py</code>:</p>
-            <pre>
-# my_module.py
-def say_hello(name):
-    return f"Hello, {name} from my_module!"
-            </pre>
-            <p>You can then import it in another script:</p>
-            <pre>
-# main_script.py
-import my_module
-print(my_module.say_hello("World")) # Output: Hello, World from my_module!
-            </pre>
-        </div>
-        <hr>
-        
-        <div class="content-section" style="text-align: center; background-color: #e6f7ff; border: 1px solid #cceeff;">
-            <h3>Ready to Code?</h3>
-            <p>This tutorial covers the fundamentals. The best way to learn is by doing!</p>
-            <p>Try building small projects, experimenting with code, and exploring more advanced topics like file I/O, error handling, and web frameworks.</p>
-            <p><a href="https://www.helostar.online" target="_blank" style="display: inline-block; background-color: #36699a; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 15px;">Visit helostar.online for more!</a></p>
-        </div>
+</section>
 
 
-    </div>
-
-    <footer>
-        <p>&copy; 2025 <a href="https://www.helostar.online" target="_blank">helostar.online</a> | Authored by Dharmendra Shuklaa | Built with 💙 and Python 🐍</p>
-    </footer>
+<!--Footer Section -->
 
 </body>
 
-</html>
 
+</html>

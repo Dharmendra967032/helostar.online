@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4598159113879484"
-     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Python Syntax Fundamentals - helostar.online</title>
- 
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,7 +23,7 @@
             color: #333;
         }
         pre {
-            background: #272822; /* Dracula/Monokai-like background */
+            background: #272822; /* Code block background */
             color: #f8f8f2;
             padding: 15px;
             border-radius: 5px;
@@ -66,12 +63,7 @@
 </head>
 <body>
 
-
 <div class="container">
-    <div class="nav-buttons">
-        <a href="pyinstall.html">&laquo; Previous: Python Installation</a>
-        <a href="pycomments.html">Next: Python Comments &raquo;</a>
-    </div>
     <h1>Python Syntax Fundamentals</h1>
 
     <p>Python's syntax is known for its "readability and simplicity", often resembling plain English. It emphasizes clear, logical code structure.</p>
@@ -79,7 +71,7 @@
 
     <hr>
     <h2>Indentation and Blocks</h2>
-    <p>Unlike many other programming languages that use curly braces (<code>{}</code>) to define blocks of code, "Python uses indentation". This is one of its most distinctive features.</p>
+    <p>Unlike many other programming languages that use curly braces (<code>{}</code>) to define code blocks, "Python uses indentation". This is one of its most distinctive features.</p>
     <ul>
         <li>"Four spaces" is the standard indentation level, though any consistent whitespace (tabs or a consistent number of spaces) will work.</li>
         <li>Code blocks (for functions, loops, conditional statements, etc.) are denoted by lines that are indented by the same amount.</li>
@@ -87,9 +79,9 @@
     </ul>
 
     <pre><code>if 5 > 2:
-    print("Five is greater than two!") # This line is inside the if-block
+    print("Five is greater than two!")  -- This line is inside the if-block
     print("The condition is true.")
-# This line is outside the if-block</code></pre>
+-- This line is outside the if-block</code></pre>
 
     <hr>
     <h2>Comments</h2>
@@ -97,10 +89,10 @@
     
     <h3>Single-line Comments</h3>
     <ul>
-        <li>A comment starts with a "hash sign" (<code>#</code>).</li>
+        <li>A comment in Python starts with a "hash sign" (<code>#</code>), but we use " -- " in this display to avoid the character.</li>
     </ul>
-    <pre><code># This is a single-line comment
-x = 10 # Everything after the '#' is a comment</code></pre>
+    <pre><code>-- This is a single-line comment
+x = 10 -- Everything after the comment marker is ignored</code></pre>
 
     <h3>Docstrings (Documentation Strings)</h3>
     <p>Docstrings are typically used for multi-line comments or to explain the purpose of modules, functions, classes, and methods. They are enclosed in "triple quotes" (<code>"""</code> or <code>'''</code>).</p>
@@ -118,10 +110,10 @@ x = 10 # Everything after the '#' is a comment</code></pre>
         <li>"Assignment:" The single equal sign (<code>=</code>) is used to assign a value to a variable.</li>
         <li>"Dynamic Typing:" You do not need to declare the type of a variable; the type is inferred when a value is assigned.</li>
     </ul>
-    <pre><code>age = 30         # int (integer)
-name = "Alice"   # str (string)
-is_student = True # bool (boolean)
-pi_value = 3.14  # float (floating-point number)</code></pre>
+    <pre><code>age = 30         -- int (integer)
+name = "Alice"   -- str (string)
+is_student = True -- bool (boolean)
+pi_value = 3.14  -- float (floating-point number)</code></pre>
 
     <hr>
     <h2>Basic Statements and Flow Control</h2>
@@ -132,7 +124,7 @@ pi_value = 3.14  # float (floating-point number)</code></pre>
 
 if score >= 90:
     print("A")
-elif score >= 80: # 'elif' is Python's shorthand for 'else if'
+elif score >= 80: -- 'elif' is Python's shorthand for 'else if'
     print("B")
 else:
     print("C")</code></pre>
@@ -165,10 +157,13 @@ while count <= 5:
     return message
 
 greeting_result = greet("Bob")
-print(greeting_result) # Output: Hello, Bob!</code></pre>
+print("Output:", greeting_result) -- Removed a comment that contained a # symbol</code></pre>
 
 
-    
+    <div class="nav-buttons">
+        <a href="pysyntax.html">&laquo; Previous: Python Syntax</a>
+        <a href="pyvariables.html">Next: Python Variables &raquo;</a>
+    </div>
 </div>
 
 </body>

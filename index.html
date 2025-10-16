@@ -54,7 +54,7 @@
     <a href="https://helostar.online" class="logo">Helostar<span>.</span>online</a>
 
 <nav class="navbar">
-<a href="#home">home</a>
+
     <!-- products dropdown -->
 <div class="dropdown">
     <a href="#products" class="dropbtn">Our Services<i class="fa fa-caret-down"></i></a>
@@ -65,6 +65,7 @@
         <a href="#products-vmware">VMware</a>
     </div>
 </div>
+<a href="#home">home</a>
 <a href="#about">about</a>
 <a href="#review">review</a>
 <a href="#contact">contact</a>
@@ -90,7 +91,78 @@
 <br></br>
         <br></br>
 
-        
+        <div class="box draggable" style="position:relative; touch-action:none;"></div>
+            <div class="drag-btn" title="Drag to move" style="position:absolute; top:6px; right:6px; z-index:1000; cursor:move; background:rgba(0,0,0,0.4); color:#fff; padding:4px 6px; border-radius:4px; font-size:14px;">☰</div>
+
+            <div class="image">
+                <video width="355" controls>
+                    <source src="pawan.mp4" type="video/mp4">
+                </video>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div>a/a</div>
+                <div class="icons">
+                    <a href="https://youtu.be/Mg3Pnv820u0?si=b1Rj1raT1bONNSv3" class="fa fa-heart"></a>
+                    <a href="Pawan.html" class="cart-btn">Watch Lyrics</a>
+                    <a href="https://youtu.be/Mg3Pnv820u0?si=b1Rj1raT1bONNSv3" class="fa fa-share"></a>
+                </div>
+            </div>
+
+            <div class="content">
+                <h2>पवन जब द्वार पे आए, मन ॐ नमः शिवाय गाए | Dharmendra Shukla | Helostar.online | Offical Morning Shiv Bhakti Song</h2>
+            </div>
+        </div>
+
+        <script>
+        /* Simple pointer-based drag to adjust position of this .box.
+           The script makes the .box position:fixed while dragging so you can place it anywhere. */
+        (function(){
+            const box = document.currentScript.previousElementSibling;
+            const handle = box.querySelector('.drag-btn');
+            let dragging = false;
+            let startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+            handle.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                handle.setPointerCapture(e.pointerId);
+                const rect = box.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                origLeft = rect.left;
+                origTop = rect.top;
+                // Switch to fixed so it follows the viewport while dragging
+                box.style.position = 'fixed';
+                box.style.left = origLeft + 'px';
+                box.style.top = origTop + 'px';
+                box.style.zIndex = 2000;
+            });
+
+            document.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                box.style.left = (origLeft + dx) + 'px';
+                box.style.top = (origTop + dy) + 'px';
+            });
+
+            document.addEventListener('pointerup', (e) => {
+                if (!dragging) return;
+                dragging = false;
+                try { handle.releasePointerCapture(e.pointerId); } catch (err) {}
+            });
+
+            // Optional: double-click to reset to flow (no absolute positioning)
+            box.addEventListener('dblclick', () => {
+                box.style.position = '';
+                box.style.left = '';
+                box.style.top = '';
+                box.style.zIndex = '';
+            });
+        })();
+        </script>
+
 <div class="box">
             <div class="image">
                 <video width="355" controls>

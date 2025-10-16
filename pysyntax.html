@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Syntax Fundamentals - helostar.online</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        pre {
+            background: #272822; /* Dracula/Monokai-like background */
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .nav-buttons a {
+            text-decoration: none;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .nav-buttons a:hover {
+            background-color: #0056b3;
+        }
+        .note {
+            font-style: italic;
+            color: #555;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Python Syntax Fundamentals</h1>
+
+    <p>Python's syntax is known for its **readability and simplicity**, often resembling plain English. It emphasizes clear, logical code structure.</p>
+    <p>Here's a breakdown of some fundamental Python syntax elements:</p>
+
+    <hr>
+    <h2>Indentation and Blocks</h2>
+    <p>Unlike many other programming languages that use curly braces (<code>{}</code>) to define blocks of code, **Python uses indentation**. This is one of its most distinctive features.</p>
+    <ul>
+        <li>**Four spaces** is the standard indentation level, though any consistent whitespace (tabs or a consistent number of spaces) will work.</li>
+        <li>Code blocks (for functions, loops, conditional statements, etc.) are denoted by lines that are indented by the same amount.</li>
+        <li>A **colon (<code>:</code>)** marks the start of an indented block.</li>
+    </ul>
+
+    <pre><code>if 5 > 2:
+    print("Five is greater than two!") # This line is inside the if-block
+    print("The condition is true.")
+# This line is outside the if-block (no indentation)</code></pre>
+
+    <hr>
+    <h2>Comments</h2>
+    <p>Comments are used to explain code and are ignored by the Python interpreter.</p>
+    
+    <h3>Single-line Comments</h3>
+    <ul>
+        <li>A comment starts with a **hash sign** (<code>#</code>).</li>
+    </ul>
+    <pre><code># This is a single-line comment
+x = 10 # Everything after the '#' is a comment</code></pre>
+
+    <h3>Docstrings (Documentation Strings)</h3>
+    <p>Docstrings are typically used for multi-line comments or to explain the purpose of modules, functions, classes, and methods. They are enclosed in **triple quotes** (<code>"""</code> or <code>'''</code>).</p>
+    <pre><code>def multiply(a, b):
+    """
+    This function takes two numbers and returns their product.
+    This is a docstring.
+    """
+    return a * b</code></pre>
+
+    <hr>
+    <h2>Variables and Data Types</h2>
+    <ul>
+        <li>**Variable Names:** Must start with a letter or an underscore, and can contain alphanumeric characters and underscores. They are **case-sensitive** (e.g., <code>myVar</code> is different from <code>myvar</code>).</li>
+        <li>**Assignment:** The single equal sign (<code>=</code>) is used to assign a value to a variable.</li>
+        <li>**Dynamic Typing:** You do not need to declare the type of a variable; the type is inferred when a value is assigned.</li>
+    </ul>
+    <pre><code>age = 30         # int (integer)
+name = "Alice"   # str (string)
+is_student = True # bool (boolean)
+pi_value = 3.14  # float (floating-point number)</code></pre>
+
+    <hr>
+    <h2>Basic Statements and Flow Control</h2>
+
+    <h3>Conditional Statements (<code>if</code>, <code>elif</code>, <code>else</code>)</h3>
+    <p>Used for making decisions in your code.</p>
+    <pre><code>score = 85
+
+if score >= 90:
+    print("A")
+elif score >= 80: # 'elif' is Python's shorthand for 'else if'
+    print("B")
+else:
+    print("C")</code></pre>
+
+    <h3>Loops (<code>for</code>, <code>while</code>)</h3>
+    <p>Used to execute a block of code repeatedly.</p>
+
+    <h4><code>for</code> loop</h4>
+    <p>Iterates over a sequence (like a list, tuple, dictionary, set, or string).</p>
+    <pre><code>fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)</code></pre>
+
+    <h4><code>while</code> loop</h4>
+    <p>Executes a set of statements as long as a condition is true.</p>
+    <pre><code>count = 1
+while count <= 5:
+    print(count)
+    count = count + 1</code></pre>
+
+    <hr>
+    <h2>Functions</h2>
+    <p>Functions are blocks of reusable code defined using the keyword **<code>def</code>**.</p>
+    <ul>
+        <li>Functions can optionally take **arguments** (inputs) and can return a value using the **<code>return</code>** keyword.</li>
+    </ul>
+    <pre><code>def greet(person):
+    """Greets the person passed in as argument."""
+    message = "Hello, " + person + "!"
+    return message
+
+greeting_result = greet("Bob")
+print(greeting_result) # Output: Hello, Bob!</code></pre>
+
+
+    <div class="nav-buttons">
+        <a href="pyinstall.html">&laquo; Previous: Python Installation</a>
+        <a href="#">Next: Data Structures &raquo;</a>
+    </div>
+</div>
+
+</body>
+</html>

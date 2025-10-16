@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Syntax Fundamentals - helostar.online</title>
+    <title>Python Comments - helostar.online</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,6 +21,12 @@
         }
         h1, h2, h3 {
             color: #333;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+            margin: 30px 0;
         }
         pre {
             background: #272822; /* Code block background */
@@ -48,118 +54,102 @@
             padding: 10px 15px;
             border-radius: 5px;
             transition: background-color 0.3s;
+            font-weight: bold;
         }
         .nav-buttons a:hover {
             background-color: #0056b3;
         }
         .note {
-            font-style: italic;
-            color: #555;
-            margin-top: -10px;
-            margin-bottom: 20px;
-            display: block;
+            background-color: #f0f8ff;
+            border-left: 5px solid #007bff;
+            padding: 10px 15px;
+            margin: 20px 0;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Python Syntax Fundamentals</h1>
+    <!-- Navigation Buttons - Top -->
+    <div class="nav-buttons">
+        <a href="pysyntax.html">&laquo; Previous: Python Syntax</a>
+        <a href="pyvariables.html">Next: Python Variables &raquo;</a>
+    </div>
+    <h1>Python Comments</h1>
 
-    <p>Python's syntax is known for its "readability and simplicity", often resembling plain English. It emphasizes clear, logical code structure.</p>
-    <p>Here's a breakdown of some fundamental Python syntax elements:</p>
+    <p>Python comments are "non-executable lines of text" within code that are used to explain what the code does. They are completely ignored by the Python interpreter during execution.</p>
 
-    <hr>
-    <h2>Indentation and Blocks</h2>
-    <p>Unlike many other programming languages that use curly braces (<code>{}</code>) to define code blocks, "Python uses indentation". This is one of its most distinctive features.</p>
-    <ul>
-        <li>"Four spaces" is the standard indentation level, though any consistent whitespace (tabs or a consistent number of spaces) will work.</li>
-        <li>Code blocks (for functions, loops, conditional statements, etc.) are denoted by lines that are indented by the same amount.</li>
-        <li>A "colon (<code>:</code>)" marks the start of an indented block.</li>
-    </ul>
+    <div class="note">
+        <p>Comments are essential for writing "clean, readable, and maintainable code" that other programmers (and your future self!) can easily understand.</p>
+    </div>
 
-    <pre><code>if 5 > 2:
-    print("Five is greater than two!")  -- This line is inside the if-block
-    print("The condition is true.")
--- This line is outside the if-block</code></pre>
-
-    <hr>
-    <h2>Comments</h2>
-    <p>Comments are used to explain code and are ignored by the Python interpreter.</p>
     
-    <h3>Single-line Comments</h3>
-    <ul>
-        <li>A comment in Python starts with a "hash sign" (<code>#</code>), but we use " -- " in this display to avoid the character.</li>
-    </ul>
-    <pre><code>-- This is a single-line comment
-x = 10 -- Everything after the comment marker is ignored</code></pre>
-
-    <h3>Docstrings (Documentation Strings)</h3>
-    <p>Docstrings are typically used for multi-line comments or to explain the purpose of modules, functions, classes, and methods. They are enclosed in "triple quotes" (<code>"""</code> or <code>'''</code>).</p>
-    <pre><code>def multiply(a, b):
-    """
-    This function takes two numbers and returns their product.
-    This is a docstring.
-    """
-    return a * b</code></pre>
 
     <hr>
-    <h2>Variables and Data Types</h2>
+
+    <h2>1. Single-Line Comments</h2>
+
+    <p>The most common way to create a comment is by using the "hash symbol" (<code>#</code>). Everything following the <code>#</code> on that line is treated as a comment.</p>
+
+    <h3>Syntax</h3>
+    <pre><code># This entire line is a comment.
+
+x = 10  # This is an inline comment, explaining the code on the left.
+</code></pre>
+
+    <h3>Purpose</h3>
     <ul>
-        <li>"Variable Names:" Must start with a letter or an underscore, and can contain alphanumeric characters and underscores. They are "case-sensitive" (e.g., <code>myVar</code> is different from <code>myvar</code>).</li>
-        <li>"Assignment:" The single equal sign (<code>=</code>) is used to assign a value to a variable.</li>
-        <li>"Dynamic Typing:" You do not need to declare the type of a variable; the type is inferred when a value is assigned.</li>
+        <li><strong>Explain a specific line</strong> of code or a variable's purpose.</li>
+        <li><strong>Temporarily disable (comment out)</strong> a line of code for testing or debugging.</li>
     </ul>
-    <pre><code>age = 30         -- int (integer)
-name = "Alice"   -- str (string)
-is_student = True -- bool (boolean)
-pi_value = 3.14  -- float (floating-point number)</code></pre>
 
     <hr>
-    <h2>Basic Statements and Flow Control</h2>
 
-    <h3>Conditional Statements (<code>if</code>, <code>elif</code>, <code>else</code>)</h3>
-    <p>Used for making decisions in your code.</p>
-    <pre><code>score = 85
+    <h2>2. Multi-Line Comments (Docstrings)</h2>
 
-if score >= 90:
-    print("A")
-elif score >= 80: -- 'elif' is Python's shorthand for 'else if'
-    print("B")
-else:
-    print("C")</code></pre>
+    <p>While Python doesn't have a dedicated syntax for multi-line comments, developers use "docstrings" for this purpose. Docstrings are documentation strings enclosed in triple quotes (<code>"""</code> or <code>'''</code>).</p>
 
-    <h3>Loops (<code>for</code>, <code>while</code>)</h3>
-    <p>Used to execute a block of code repeatedly.</p>
+    <h3>Syntax</h3>
+    <pre><code>"""
+This is a docstring.
+It spans multiple lines and is primarily used
+to document a function, class, or module.
+"""
+def add_numbers(a, b):
+    # ... function code here
+    return a + b
+</code></pre>
 
-    <h4><code>for</code> loop</h4>
-    <p>Iterates over a sequence (like a list, tuple, dictionary, set, or string).</p>
-    <pre><code>fruits = ["apple", "banana", "cherry"]
-for fruit in fruits:
-    print(fruit)</code></pre>
+    <p>Using single quotes works the same way:</p>
+    <pre><code>'''
+This also works as a docstring.
+'''
+</code></pre>
 
-    <h4><code>while</code> loop</h4>
-    <p>Executes a set of statements as long as a condition is true.</p>
-    <pre><code>count = 1
-while count <= 5:
-    print(count)
-    count = count + 1</code></pre>
+    <h3>Purpose of Docstrings</h3>
+    <ul>
+        <li><strong>Official Documentation:</strong> Docstrings are crucial for generating automatic documentation (using tools like Sphinx).</li>
+        <li><strong>Accessibility:</strong> Docstrings are stored in the <code>__doc__</code> attribute of a function or class and can be accessed programmatically at runtime (e.g., using the <code>help()</code> function).</li>
+    </ul>
+
+    <div class="note">
+        <strong>Style Tip (PEP 8):</strong> Triple quotes used *outside* a function or class definition are technically just multi-line string literals that are ignored, effectively serving as a comment. If they are the *first* statement inside a function or class, they become an official docstring.
+    </div>
 
     <hr>
-    <h2>Functions</h2>
-    <p>Functions are blocks of reusable code defined using the keyword "<code>def</code>".</p>
+
+    <h2>PEP 8 Guidelines for Comments</h2>
+
+    <p><strong>PEP 8</strong> (Python Enhancement Proposal 8) is the official style guide for Python code. It provides important recommendations for writing clear comments:</p>
     <ul>
-        <li>Functions can optionally take "arguments" (inputs) and can return a value using the "<code>return</code>" keyword.</li>
+        <li>Comments should be "complete sentences" and start with a "capital letter".</li>
+        <li>Leave a "space" after the <code>#</code> (e.g., <code># This is correct</code>).</li>
+        <li>Comments should be updated when the code changes; "obsolete comments are worse than no comments."</li>
+        <li>"Block comments" (comments that apply to several lines of code) should be indented to the same level as the code they describe.</li>
     </ul>
-    <pre><code>def greet(person):
-    """Greets the person passed in as argument."""
-    message = "Hello, " + person + "!"
-    return message
 
-greeting_result = greet("Bob")
-print("Output:", greeting_result) -- Removed a comment that contained a # symbol</code></pre>
-
-
+    <!-- Navigation Buttons - Bottom -->
     <div class="nav-buttons">
         <a href="pysyntax.html">&laquo; Previous: Python Syntax</a>
         <a href="pyvariables.html">Next: Python Variables &raquo;</a>

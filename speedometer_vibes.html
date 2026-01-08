@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speedometer Vibes - Dharmendra The Desi King</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Orbitron', sans-serif; /* Racing/Tech style font */
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
+                url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+        }
+
+        .track-container {
+            max-width: 750px;
+            width: 100%;
+            border: 1px solid #333;
+            background: rgba(20, 20, 20, 0.95);
+            padding: 50px;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.2);
+        }
+
+        .track-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(90deg, #ff0000, #990000, #ff0000);
+        }
+
+        h1 {
+            color: #ff0000;
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        .artist-tag {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9em;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .verse {
+            margin-bottom: 35px;
+            line-height: 1.8;
+            font-size: 1.1em;
+            border-left: 2px solid #444;
+            padding-left: 20px;
+        }
+
+        .chorus {
+            background: #111;
+            padding: 30px;
+            border: 1px solid #ff0000;
+            border-radius: 4px;
+            margin: 40px 0;
+            text-align: center;
+            color: #fff;
+            font-size: 1.25em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1);
+        }
+
+        .rap-section {
+            background: #1a1a1a;
+            padding: 25px;
+            font-family: 'Courier New', Courier, monospace;
+            border-right: 4px solid #ff0000;
+            margin: 30px 0;
+            font-size: 1em;
+            color: #00ff00; /* Neon green for the rap flow */
+        }
+
+        .highlight {
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+        .speed-bar {
+            height: 2px;
+            background: #ff0000;
+            width: 80%;
+            margin: 20px auto;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        .adlibs {
+            font-style: italic;
+            color: #777;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="track-container">
+    <h1>SPEEDOMETER</h1>
+    <div class="artist-tag">DHARMENDRA — THE DESI KING</div>
+
+    <div class="verse">
+        Slow-mo chaundi gaddi, par rukna nahi<br>
+        Saari raat party, assi jhukna nahi<br>
+        Bass heavy chale, ni tu hile kamaal<br>
+        Ajj saara shehar vekhu tera nakhra-e-chaal
+    </div>
+
+    <div class="verse">
+        Dashboard te phone tera vajje baar-o-baar<br>
+        Ignore kar, baby, aah leya nava pyaar<br>
+        Kamm tera hove, mera hove bas ik<br>
+        Dancefloor te fire, no time for the click!
+    </div>
+
+    <div class="chorus">
+        Lakk thumkda jaawe tera, haaye ni rukna nahi<br>
+        <span class="highlight">Gaddi Speed-o-meter, hundred ton thalle ni</span><br>
+        Dil dhak-dhak vajje mera, haaye ni rukna nahi<br>
+        Gaddi Speed-o-meter, hundred ton thalle ni!
+    </div>
+
+    <div class="verse">
+        Ankhaan ch kaajal, par disda ae spark<br>
+        Tu hai lightning baby, main haan teri dark<br>
+        Duniya de rules saare tod ke dikha de<br>
+        Music nu high kar, gallan chhad de purane!
+    </div>
+
+    <div class="rap-section">
+        <strong>[RAP VERSE]</strong><br>
+        Check-check! The Desi King, let's go!<br>
+        Sunn meri baat, ye club nahi hai racetrack<br>
+        Har mod pe naya hookup, naya comeback<br>
+        Teri entry, baby, jaise koi earthquake<br>
+        Saare log dekhein, floor pe ho raha great shake!<br>
+        Pata hai kya scene hai? Tu hai meri adrenaline<br>
+        Teri Vibe full high, jaise koi methamphetamine...
+    </div>
+
+    <div class="chorus">
+        Lakk thumkda jaawe tera, haaye ni rukna nahi<br>
+        Gaddi Speed-o-meter, hundred ton thalle ni!
+    </div>
+
+    <div class="speed-bar"></div>
+
+    <div class="verse" style="text-align: center; border: none;">
+        Ho geya main Crazy tere Moves de agge<br>
+        Na koi Brake lagge, na koi Gear lagge!
+    </div>
+
+    <div class="artist-tag" style="margin-top: 40px; color: #ff0000; font-weight: 900;">
+        DHARMENDRA, THE DESI KING, PARTY ON!<br>
+        <span class="adlibs">(Woo! Thalle ni! Aha!)</span>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helostar.online | Premium Video Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #121212;
+            --helostar-pink: #d3159d;
+            --text-white: #ffffff;
+            --text-gray: #999999;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-white);
+            margin: 0; padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        /* Header Styling */
+        header {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0; z-index: 1000;
+            border-bottom: 1px solid var(--glass);
+        }
+
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; letter-spacing: -1px; }
+
+        .search-bar { flex-grow: 1; max-width: 400px; margin: 0 20px; position: relative; }
+        .search-bar input {
+            width: 100%; background: #1a1a1a; border: 1px solid var(--glass);
+            padding: 10px 40px; border-radius: 50px; color: white; outline: none;
+            transition: 0.3s;
+        }
+        .search-bar input:focus { border-color: var(--helostar-pink); }
+        .search-bar i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-gray); }
+
+        /* Content Layout */
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; padding-bottom: 100px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+
+        /* Video Card Design */
+        .video-card {
+            background: var(--card-bg); border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--glass); transition: 0.3s;
+        }
+        .video-card:hover { border-color: var(--helostar-pink); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        video { width: 100%; height: 100%; display: block; object-fit: cover; }
+
+        .video-info { padding: 18px; }
+        .video-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; display: block; }
+        .uploader-name { font-size: 0.85rem; color: var(--text-gray); margin-bottom: 15px; }
+
+        /* Social Actions */
+        .actions { display: flex; gap: 20px; border-top: 1px solid var(--glass); padding-top: 15px; }
+        .action-btn { background: none; border: none; color: var(--text-white); cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .action-btn i { font-size: 1.2rem; transition: 0.2s; }
+        .action-btn .fa-heart.active { color: #ff3366; transform: scale(1.1); }
+        .action-btn:hover i { color: var(--helostar-pink); }
+
+        /* Owner Controls */
+        .owner-menu { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-edit { flex: 1; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .btn-edit:hover { background: var(--helostar-pink); border-color: var(--helostar-pink); }
+
+        /* Mobile FAB */
+        .fab-upload {
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--helostar-pink); color: white;
+            border: none; font-size: 1.5rem; cursor: pointer; box-shadow: 0 8px 25px rgba(211, 21, 157, 0.4);
+            display: flex; align-items: center; justify-content: center; z-index: 1001;
+        }
+
+        @media (max-width: 600px) {
+            .search-bar { display: none; }
+            .video-grid { grid-template-columns: 1fr; }
+            header { padding: 10px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="Helostar.html" class="logo">HELOSTAR</a>
+        <div class="search-bar">
+            <i class="fa fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search creators or titles...">
+        </div>
+        <select id="userSelect" onchange="switchUser(this.value)" style="background:#1a1a1a; color:white; border:1px solid var(--helostar-pink); border-radius:15px; padding:6px 12px; outline:none; font-size:0.85rem;">
+            <option value="Creator_Alpha">Creator Alpha</option>
+            <option value="Viewer_Beta">Viewer Beta</option>
+        </select>
+    </header>
+
+    <div class="container">
+        <div id="videoContainer" class="video-grid"></div>
+    </div>
+
+    <input type="file" id="fileUpload" style="display:none" accept="video/*">
+    <button class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
+
+    <script>
+        let db;
+        let currentUser = "Creator_Alpha";
+        const container = document.getElementById('videoContainer');
+
+        // 1. DATABASE INITIALIZATION
+        const request = indexedDB.open("HelostarProDB", 1);
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            db.createObjectStore("videos", { keyPath: "id", autoIncrement: true });
+        };
+        request.onsuccess = (e) => {
+            db = e.target.result;
+            loadFeed();
+            initPlaybackEngine();
+        };
+
+        // 2. PLAYBACK ENGINE (Single Play & Auto-Next)
+        function initPlaybackEngine() {
+            // Stop others when one starts
+            document.addEventListener('play', (e) => {
+                if (e.target.tagName === 'VIDEO') {
+                    document.querySelectorAll('video').forEach(v => {
+                        if(v !== e.target) v.pause();
+                    });
+                }
+            }, true);
+
+            // Play next and scroll when finished
+            document.addEventListener('ended', (e) => {
+                if (e.target.tagName === 'VIDEO') {
+                    const videos = Array.from(document.querySelectorAll('video'));
+                    const nextVid = videos[videos.indexOf(e.target) + 1];
+                    if (nextVid) {
+                        nextVid.play();
+                        nextVid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, true);
+        }
+
+        // 3. UI RENDERING
+        function loadFeed(query = "") {
+            container.innerHTML = '';
+            const tx = db.transaction(["videos"], "readonly");
+            tx.objectStore("videos").getAll().onsuccess = (e) => {
+                e.target.result.filter(v => 
+                    v.desc.toLowerCase().includes(query.toLowerCase()) || 
+                    v.owner.toLowerCase().includes(query.toLowerCase())
+                ).reverse().forEach(v => renderVideoCard(v));
+            };
+        }
+
+        function renderVideoCard(v) {
+            const url = URL.createObjectURL(v.blob);
+            const isOwner = v.owner === currentUser;
+            const likes = v.likedBy || [];
+            const hasLiked = likes.includes(currentUser);
+            
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.innerHTML = `
+                <div class="video-wrapper">
+                    ${isOwner ? `<i class="fa fa-trash-alt" style="position:absolute;top:15px;right:15px;z-index:10;cursor:pointer;background:rgba(0,0,0,0.6);padding:8px;border-radius:50%;" onclick="deleteVideo(${v.id})"></i>` : ''}
+                    <video src="${url}" controls playsinline preload="metadata"></video>
+                </div>
+                <div class="video-info">
+                    <span class="video-title">${v.desc}</span>
+                    <div class="uploader-name">@${v.owner}</div>
+                    <div class="actions">
+                        <button class="action-btn" onclick="likeVideo(${v.id})">
+                            <i class="fa-heart ${hasLiked ? 'fa-solid active' : 'fa-regular'}"></i> 
+                            <span>${likes.length}</span>
+                        </button>
+                        <a href="${v.ytLink || '#'}" target="_blank" class="action-btn">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> 
+                            <span>Link</span>
+                        </a>
+                    </div>
+                    ${isOwner ? `
+                        <div class="owner-menu">
+                            <button class="btn-edit" onclick="editVideo(${v.id}, 'desc')">Edit Description</button>
+                            <button class="btn-edit" onclick="editVideo(${v.id}, 'ytLink')">YouTube Link</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            container.appendChild(card);
+        }
+
+        // 4. FUNCTIONALITY HANDLERS
+        function switchUser(val) { currentUser = val; loadFeed(); }
+        
+        document.getElementById('searchInput').addEventListener('input', (e) => loadFeed(e.target.value));
+
+        document.getElementById('fileUpload').addEventListener('change', function() {
+            const file = this.files[0];
+            if(!file) return;
+            const tx = db.transaction(["videos"], "readwrite");
+            tx.objectStore("videos").add({
+                blob: file, owner: currentUser, desc: "New Story on Helostar", likedBy: [], ytLink: ""
+            }).onsuccess = () => loadFeed();
+            this.value = ''; // Reset input
+        });
+
+        function likeVideo(id) {
+            const tx = db.transaction(["videos"], "readwrite");
+            const store = tx.objectStore("videos");
+            store.get(id).onsuccess = (e) => {
+                const data = e.target.result;
+                const idx = data.likedBy.indexOf(currentUser);
+                if(idx === -1) data.likedBy.push(currentUser);
+                else data.likedBy.splice(idx, 1);
+                store.put(data).onsuccess = () => loadFeed(document.getElementById('searchInput').value);
+            };
+        }
+
+        function editVideo(id, field) {
+            const val = prompt(`Update ${field}:`);
+            if(!val) return;
+            const tx = db.transaction(["videos"], "readwrite");
+            const store = tx.objectStore("videos");
+            store.get(id).onsuccess = (e) => {
+                const data = e.target.result;
+                data[field] = val;
+                store.put(data).onsuccess = () => loadFeed();
+            };
+        }
+
+        function deleteVideo(id) {
+            if(confirm('Permanently remove this video from your Helostar profile?')) {
+                db.transaction(["videos"], "readwrite").objectStore("videos").delete(id).onsuccess = () => loadFeed();
+            }
+        }
+    </script>
+</body>
+</html>

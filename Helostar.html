@@ -21,23 +21,39 @@
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; }
+        
+        /* Auth Overlay */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; }
-        .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
         header { background: rgba(18, 18, 18, 0.95); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
         .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
+        
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
-        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); }
+        
+        /* Video Cards */
+        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; }
+        .video-card:hover { border-color: var(--helostar-pink); }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
+        
         .video-info { padding: 15px; }
         .video-title { font-weight: 600; margin-bottom: 5px; display: block; }
+        .video-meta { font-size: 0.8rem; color: var(--text-gray); }
+        
+        /* Controls */
         .owner-controls { margin-top: 10px; display: flex; gap: 10px; border-top: 1px solid var(--glass); padding-top: 10px; }
-        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.75rem; flex: 1; }
-        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; }
-        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: var(--helostar-pink); padding: 15px; border-radius: 8px; display: none; color: white; }
+        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.75rem; flex: 1; transition: 0.2s; }
+        .btn-action:hover { background: rgba(255,255,255,0.1); }
+        .btn-delete { color: #ff4444; }
+
+        /* Upload Floating Button */
+        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); }
+        
+        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: var(--card-bg); border: 1px solid var(--helostar-pink); padding: 15px; border-radius: 12px; display: none; color: white; z-index: 1002; width: 250px; }
     </style>
 </head>
 <body>
@@ -45,61 +61,104 @@
     <div id="authOverlay">
         <div class="auth-card">
             <h2 style="color:var(--helostar-pink)">HELOSTAR GLOBAL</h2>
-            <input type="email" id="userEmail" class="auth-input" placeholder="Display Name (Optional)">
-            <button class="auth-btn" onclick="signInWithGoogle()">Sign in with Google</button>
-            <button class="auth-btn" style="margin-top:10px" onclick="continueAnonymously()">Continue Anonymously</button>
-            <p style="margin-top:15px; font-size:0.8rem; cursor:pointer; color:var(--text-gray)" onclick="guestMode()">View as Guest</p>
+            <p style="color:var(--text-gray); font-size: 0.9rem;">Sign in to upload and manage your videos</p>
+            
+            <button class="auth-btn" onclick="signInWithGoogle()">
+                <i class="fab fa-google"></i> Sign in with Google
+            </button>
+            
+            <div style="margin: 15px 0; color: var(--text-gray); font-size: 0.8rem;">— OR —</div>
+            
+            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Nickname (Optional)">
+            <button class="auth-btn" style="background: #333;" onclick="guestMode()">
+                Continue as Guest
+            </button>
+            <p style="margin-top:15px; font-size:0.75rem; color:var(--text-gray)">
+                Guests have view-only access.
+            </p>
         </div>
     </div>
 
-    <header><a href="Helostar.html" class="logo">HELOSTAR</a><div id="userDisplay"></div></header>
+    <header>
+        <a href="Helostar.html" class="logo">HELOSTAR</a>
+        <div id="userDisplay" style="font-size: 0.85rem; color: var(--text-gray);"></div>
+    </header>
 
-    <div class="container"><div id="videoContainer" class="video-grid"></div></div>
+    <div class="container">
+        <div id="videoContainer" class="video-grid">
+            </div>
+    </div>
 
-    <div id="uploadStatus">Working...</div>
+    <div id="uploadStatus">
+        <input type="text" id="videoDescInput" class="auth-input" placeholder="Video description...">
+        <div id="statusMessage" style="font-size: 0.8rem; margin-top: 5px;">Ready to upload</div>
+    </div>
+    
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
+    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()">
+        <i class="fa fa-plus"></i>
+    </button>
 
 <script>
-    // --- 1. CONFIG ---
+    // --- 1. FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
       authDomain: "helostar-134d9.firebaseapp.com",
       projectId: "helostar-134d9",
-      // storageBucket: "helostar-134d9.firebasestorage.app",
       messagingSenderId: "698470895907",
       appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
     };
 
+    // CHANGE THIS TO YOUR GMAIL TO BE THE SITE OWNER
+    const ADMIN_EMAIL = "your-gmail@gmail.com"; 
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    let currentUserEmail = null;
-    let isEditor = false;
 
-    // --- 2. AUTH ---
-    function startApp() {
+    let currentUserEmail = null;
+    let isEditor = false; // Can upload
+    let isOwner = false;  // Can delete/edit EVERYTHING
+
+    // --- 2. AUTHENTICATION ---
+    function startApp(user) {
         document.getElementById('authOverlay').style.display = 'none';
-        document.getElementById('userDisplay').innerText = `Logged as: ${currentUserEmail}`;
-        if(isEditor) document.getElementById('uploadBtn').style.display = 'flex';
+        
+        if (user) {
+            currentUserEmail = user.email || "Anonymous User";
+            isEditor = true;
+            isOwner = (user.email === ADMIN_EMAIL);
+            
+            document.getElementById('userDisplay').innerHTML = isOwner ? 
+                `<b style="color:var(--helostar-pink)">OWNER MODE</b>` : 
+                `Logged in as: ${currentUserEmail}`;
+            
+            document.getElementById('uploadBtn').style.display = 'flex';
+        } else {
+            // Guest Setup
+            currentUserEmail = document.getElementById('guestUsername').value || "Guest";
+            isEditor = false;
+            isOwner = false;
+            document.getElementById('userDisplay').innerText = `Viewing as: ${currentUserEmail}`;
+        }
         listenForVideos();
     }
 
     async function signInWithGoogle() {
-        const result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-        currentUserEmail = result.user.email; isEditor = true; startApp();
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const result = await auth.signInWithPopup(provider);
+            startApp(result.user);
+        } catch (error) {
+            alert("Login failed: " + error.message);
+        }
     }
 
-    function continueAnonymously() {
-        auth.signInAnonymously().then(() => {
-            currentUserEmail = document.getElementById('userEmail').value || "Anonymous";
-            isEditor = true; startApp();
-        });
+    function guestMode() {
+        startApp(null);
     }
 
-    function guestMode() { isEditor = false; currentUserEmail = "Guest"; startApp(); }
-
-    // --- 3. CORE LOGIC ---
+    // --- 3. DATA HANDLING ---
     function listenForVideos() {
         db.collection("videos").orderBy("createdAt", "desc").onSnapshot(snap => {
             const container = document.getElementById('videoContainer');
@@ -109,28 +168,47 @@
     }
 
     function renderVideo(id, data) {
-        const isOwner = (data.owner === currentUserEmail);
+        // Permissions: Site Owner gets control of everything. Users get control of their own.
+        const canManage = isOwner || (data.owner === currentUserEmail && currentUserEmail !== "Guest");
+        
         const card = document.createElement('div');
         card.className = 'video-card';
         card.innerHTML = `
-            <div class="video-wrapper"><video src="${data.url}" controls playsinline></video></div>
+            <div class="video-wrapper">
+                <video src="${data.url}" controls playsinline preload="metadata"></video>
+            </div>
             <div class="video-info">
                 <span class="video-title">${data.description}</span>
-                ${isOwner ? `<div class="owner-controls">
-                    <button class="btn-action" onclick="deleteVideo('${id}', '${data.storagePath}', '${data.sha}')">Delete</button>
+                <div class="video-meta">By: ${data.owner}</div>
+                ${canManage ? `
+                <div class="owner-controls">
+                    <button class="btn-action" onclick="editVideoDesc('${id}')">Edit</button>
+                    <button class="btn-action btn-delete" onclick="deleteVideo('${id}', '${data.storagePath}', '${data.sha}')">Delete</button>
                 </div>` : ''}
             </div>`;
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    // --- 4. SECURE UPLOAD & DELETE (Via Vercel API) ---
+    async function editVideoDesc(id) {
+        const newDesc = prompt("Enter new video description:");
+        if (newDesc) {
+            await db.collection("videos").doc(id).update({ description: newDesc });
+        }
+    }
+
+    // --- 4. UPLOAD & DELETE (Via GitHub/Vercel API) ---
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if(!file || file.size > 25 * 1024 * 1024) return alert("File missing or exceeds 25MB limit.");
+        const description = document.getElementById('videoDescInput').value || "No description";
+        
+        if(!file) return;
+        if(file.size > 25 * 1024 * 1024) return alert("File too large (Max 25MB)");
 
-        const status = document.getElementById('uploadStatus');
-        status.style.display = 'block';
-        status.innerText = "Encrypting & Uploading...";
+        const statusBox = document.getElementById('uploadStatus');
+        const statusMsg = document.getElementById('statusMessage');
+        
+        statusBox.style.display = 'block';
+        statusMsg.innerText = "Uploading... please wait.";
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -139,6 +217,7 @@
                 const base64 = reader.result.split(',')[1];
                 const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
 
+                // Call your Vercel API
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -146,29 +225,42 @@
                 });
 
                 const gitData = await response.json();
-                if(!response.ok) throw new Error("Server Error");
+                if(!response.ok) throw new Error("GitHub Upload Failed");
 
+                // Save to Firestore
                 await db.collection("videos").add({
-                    url: `https://raw.githubusercontent.com/Dharmendra967032/helostar.online/${fileName}`,
+                    url: `https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/videos/${fileName}`,
                     storagePath: fileName,
                     sha: gitData.content.sha,
                     owner: currentUserEmail,
-                    description: "Check out my video!",
+                    description: description,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                status.style.display = 'none';
-            } catch (err) { alert("Upload failed"); status.style.display = 'none'; }
+
+                statusBox.style.display = 'none';
+                document.getElementById('videoDescInput').value = '';
+            } catch (err) {
+                alert("Upload Error: " + err.message);
+                statusBox.style.display = 'none';
+            }
         };
     });
 
     async function deleteVideo(id, fileName, sha) {
-        if(!confirm("Delete forever?")) return;
-        const res = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fileName, sha, method: 'DELETE' })
-        });
-        if(res.ok) await db.collection("videos").doc(id).delete();
+        if(!confirm("Delete this video forever?")) return;
+        
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fileName, sha, method: 'DELETE' })
+            });
+            
+            // Even if storage delete fails (file missing), we remove from database
+            await db.collection("videos").doc(id).delete();
+        } catch (err) {
+            alert("Error deleting video.");
+        }
     }
 </script>
 </body>

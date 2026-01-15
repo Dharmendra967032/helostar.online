@@ -149,7 +149,7 @@
                 if(!response.ok) throw new Error("Server Error");
 
                 await db.collection("videos").add({
-                    url: `https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/videos/${fileName}`,
+                    url: `https://raw.githubusercontent.com/dharmendra967032/helostar.online/main/videos/${fileName}`,
                     storagePath: fileName,
                     sha: gitData.content.sha,
                     owner: currentUserEmail,

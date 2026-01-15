@@ -3,9 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar.online | Premium Video Feed</title>
+    <title>Helostar.online | Global Video Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
     <style>
         :root {
             --bg-color: #050505;
@@ -17,237 +23,249 @@
         }
 
         body { 
-            font-family: 'Inter', system-ui, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             background: var(--bg-color); 
             color: var(--text-white);
             margin: 0; padding: 0;
-            scroll-behavior: smooth;
         }
 
-        /* Header Styling */
+        /* Auth Overlay */
+        #authOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        .auth-card {
+            background: var(--card-bg); padding: 40px; border-radius: 20px;
+            border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px;
+        }
+        .auth-input {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
+            border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box;
+        }
+        .auth-btn {
+            width: 100%; padding: 12px; background: var(--helostar-pink);
+            border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+        .auth-btn + .auth-btn { /* For spacing between buttons */
+            margin-top: 10px;
+        }
+
         header {
             background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 12px 5%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0; z-index: 1000;
-            border-bottom: 1px solid var(--glass);
+            padding: 15px 5%; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass);
         }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
 
-        .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; letter-spacing: -1px; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
 
-        .search-bar { flex-grow: 1; max-width: 400px; margin: 0 20px; position: relative; }
-        .search-bar input {
-            width: 100%; background: #1a1a1a; border: 1px solid var(--glass);
-            padding: 10px 40px; border-radius: 50px; color: white; outline: none;
-            transition: 0.3s;
-        }
-        .search-bar input:focus { border-color: var(--helostar-pink); }
-        .search-bar i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-gray); }
-
-        /* Content Layout */
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; padding-bottom: 100px; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-
-        /* Video Card Design */
-        .video-card {
-            background: var(--card-bg); border-radius: 16px; overflow: hidden;
-            border: 1px solid var(--glass); transition: 0.3s;
-        }
-        .video-card:hover { border-color: var(--helostar-pink); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
+        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
-        video { width: 100%; height: 100%; display: block; object-fit: cover; }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
-        .video-info { padding: 18px; }
-        .video-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; display: block; }
-        .uploader-name { font-size: 0.85rem; color: var(--text-gray); margin-bottom: 15px; }
+        .video-info { padding: 15px; }
+        .video-title { font-weight: 600; margin-bottom: 5px; display: block; }
+        .uploader-name { font-size: 0.8rem; color: var(--text-gray); }
 
-        /* Social Actions */
-        .actions { display: flex; gap: 20px; border-top: 1px solid var(--glass); padding-top: 15px; }
-        .action-btn { background: none; border: none; color: var(--text-white); cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 8px; text-decoration: none; }
-        .action-btn i { font-size: 1.2rem; transition: 0.2s; }
-        .action-btn .fa-heart.active { color: #ff3366; transform: scale(1.1); }
-        .action-btn:hover i { color: var(--helostar-pink); }
+        .owner-controls { margin-top: 10px; display: flex; gap: 10px; border-top: 1px solid var(--glass); padding-top: 10px; }
+        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.75rem; flex: 1; }
+        .btn-action:hover { background: var(--helostar-pink); }
 
-        /* Owner Controls */
-        .owner-menu { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-edit { flex: 1; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
-        .btn-edit:hover { background: var(--helostar-pink); border-color: var(--helostar-pink); }
-
-        /* Mobile FAB */
         .fab-upload {
             position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
             border-radius: 50%; background: var(--helostar-pink); color: white;
-            border: none; font-size: 1.5rem; cursor: pointer; box-shadow: 0 8px 25px rgba(211, 21, 157, 0.4);
-            display: flex; align-items: center; justify-content: center; z-index: 1001;
+            border: none; font-size: 1.5rem; cursor: pointer; display: none;
+            align-items: center; justify-content: center; z-index: 1001;
         }
 
-        @media (max-width: 600px) {
-            .search-bar { display: none; }
-            .video-grid { grid-template-columns: 1fr; }
-            header { padding: 10px 20px; }
-        }
+        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: var(--helostar-pink); padding: 10px; border-radius: 8px; display: none; }
     </style>
 </head>
 <body>
 
-    <header>
-        <a href="Helostar.html" class="logo">HELOSTAR</a>
-        <div class="search-bar">
-            <i class="fa fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Search creators or titles...">
+    <div id="authOverlay">
+        <div class="auth-card">
+            <h2 style="color:var(--helostar-pink)">HELOSTAR GLOBAL</h2>
+            <input type="email" id="userEmail" class="auth-input" placeholder="Enter Display Name (Optional)">
+            <button class="auth-btn" onclick="signInWithGoogle()">Sign in with Google</button>
+            <button class="auth-btn" onclick="continueWithProvidedEmailAnonymously()">Continue Anonymously</button>
+            <p style="margin-top:15px; font-size:0.8rem; cursor:pointer; color:var(--text-gray)" onclick="guestMode()">View as Guest (No Editor)</p>
         </div>
-        <select id="userSelect" onchange="switchUser(this.value)" style="background:#1a1a1a; color:white; border:1px solid var(--helostar-pink); border-radius:15px; padding:6px 12px; outline:none; font-size:0.85rem;">
-            <option value="Creator_Alpha">Creator Alpha</option>
-            <option value="Viewer_Beta">Viewer Beta</option>
-        </select>
+    </div>
+
+    <header>
+        <a href="#" class="logo">HELOSTAR</a>
+        <div id="userDisplay" style="font-size: 0.8rem; color: var(--text-gray);"></div>
     </header>
 
     <div class="container">
         <div id="videoContainer" class="video-grid"></div>
     </div>
 
+    <div id="uploadStatus">Uploading... 0%</div>
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <button class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
+    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
 
-    <script>
-        let db;
-        let currentUser = "Creator_Alpha";
-        const container = document.getElementById('videoContainer');
+<script>
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
+      authDomain: "helostar-134d9.firebaseapp.com",
+      projectId: "helostar-134d9",
+      storageBucket: "helostar-134d9.firebasestorage.app",
+      messagingSenderId: "698470895907",
+      appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96",
+      measurementId: "G-QGEM30WDQD"
+    };
 
-        // 1. DATABASE INITIALIZATION
-        const request = indexedDB.open("HelostarProDB", 1);
-        request.onupgradeneeded = (e) => {
-            db = e.target.result;
-            db.createObjectStore("videos", { keyPath: "id", autoIncrement: true });
-        };
-        request.onsuccess = (e) => {
-            db = e.target.result;
-            loadFeed();
-            initPlaybackEngine();
-        };
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage(); 
 
-        // 2. PLAYBACK ENGINE (Single Play & Auto-Next)
-        function initPlaybackEngine() {
-            // Stop others when one starts
-            document.addEventListener('play', (e) => {
-                if (e.target.tagName === 'VIDEO') {
-                    document.querySelectorAll('video').forEach(v => {
-                        if(v !== e.target) v.pause();
-                    });
-                }
-            }, true);
+    // Initialize Google Auth Provider
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-            // Play next and scroll when finished
-            document.addEventListener('ended', (e) => {
-                if (e.target.tagName === 'VIDEO') {
-                    const videos = Array.from(document.querySelectorAll('video'));
-                    const nextVid = videos[videos.indexOf(e.target) + 1];
-                    if (nextVid) {
-                        nextVid.play();
-                        nextVid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            }, true);
+    let currentUserEmail = null;
+    let isEditor = false;
+
+    // --- 2. AUTHENTICATION ---
+
+    // Function for signing in with Google
+    async function signInWithGoogle() {
+        try {
+            const result = await auth.signInWithPopup(googleProvider);
+            // The signed-in user info.
+            const user = result.user;
+            currentUserEmail = user.email; // Use the email from their Google account
+            isEditor = true; // Assuming Google users are editors
+            startApp();
+        } catch (error) {
+            console.error("Error during Google Sign-In:", error);
+            alert("Failed to sign in with Google: " + error.message);
         }
+    }
 
-        // 3. UI RENDERING
-        function loadFeed(query = "") {
+    // Renamed and clarified original login function for anonymous access
+    function continueWithProvidedEmailAnonymously() {
+        const emailInput = document.getElementById('userEmail');
+        const email = emailInput.value;
+        
+        // Firebase Anonymous Auth provides a temporary user, not tied to the email itself.
+        // We're using the provided email here as a display name if the user enters one.
+        auth.signInAnonymously().then(() => {
+            if (email) {
+                currentUserEmail = email;
+                // You could optionally update the anonymous user's profile with this email
+                // auth.currentUser.updateProfile({ displayName: email }).then(() => { /* ... */ });
+            } else {
+                currentUserEmail = "Anonymous User";
+            }
+            isEditor = true; // As per your original logic, anonymous users who "log in" are editors
+            startApp();
+        }).catch(error => {
+            console.error("Error during anonymous sign-in:", error);
+            alert("Failed to sign in anonymously: " + error.message);
+        });
+    }
+
+    function guestMode() {
+        isEditor = false;
+        currentUserEmail = "Guest";
+        startApp();
+    }
+
+    function startApp() {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('userDisplay').innerText = `Logged as: ${currentUserEmail}`;
+        if(isEditor) document.getElementById('uploadBtn').style.display = 'flex';
+        listenForVideos();
+    }
+
+    // --- 3. DATABASE LISTENERS (THE WORLD VIEW) ---
+    function listenForVideos() {
+        db.collection("videos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+            const container = document.getElementById('videoContainer');
             container.innerHTML = '';
-            const tx = db.transaction(["videos"], "readonly");
-            tx.objectStore("videos").getAll().onsuccess = (e) => {
-                e.target.result.filter(v => 
-                    v.desc.toLowerCase().includes(query.toLowerCase()) || 
-                    v.owner.toLowerCase().includes(query.toLowerCase())
-                ).reverse().forEach(v => renderVideoCard(v));
-            };
-        }
+            snapshot.forEach(doc => {
+                renderVideo(doc.id, doc.data());
+            });
+        });
+    }
 
-        function renderVideoCard(v) {
-            const url = URL.createObjectURL(v.blob);
-            const isOwner = v.owner === currentUser;
-            const likes = v.likedBy || [];
-            const hasLiked = likes.includes(currentUser);
-            
-            const card = document.createElement('div');
-            card.className = 'video-card';
-            card.innerHTML = `
+    function renderVideo(id, data) {
+        const isOwner = (data.owner === currentUserEmail);
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
                 <div class="video-wrapper">
-                    ${isOwner ? `<i class="fa fa-trash-alt" style="position:absolute;top:15px;right:15px;z-index:10;cursor:pointer;background:rgba(0,0,0,0.6);padding:8px;border-radius:50%;" onclick="deleteVideo(${v.id})"></i>` : ''}
-                    <video src="${url}" controls playsinline preload="metadata"></video>
+                    <video src="${data.url}" controls playsinline></video>
                 </div>
                 <div class="video-info">
-                    <span class="video-title">${v.desc}</span>
-                    <div class="uploader-name">@${v.owner}</div>
-                    <div class="actions">
-                        <button class="action-btn" onclick="likeVideo(${v.id})">
-                            <i class="fa-heart ${hasLiked ? 'fa-solid active' : 'fa-regular'}"></i> 
-                            <span>${likes.length}</span>
-                        </button>
-                        <a href="${v.ytLink || '#'}" target="_blank" class="action-btn">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> 
-                            <span>Link</span>
-                        </a>
-                    </div>
+                    <span class="video-title">${data.description}</span>
+                    <div class="uploader-name">Uploaded by: ${data.owner}</div>
                     ${isOwner ? `
-                        <div class="owner-menu">
-                            <button class="btn-edit" onclick="editVideo(${v.id}, 'desc')">Edit Description</button>
-                            <button class="btn-edit" onclick="editVideo(${v.id}, 'ytLink')">YouTube Link</button>
+                        <div class="owner-controls">
+                            <button class="btn-action" onclick="deleteVideo('${id}', '${data.storagePath}')">Delete</button>
+                            <button class="btn-action" onclick="editDesc('${id}')">Edit Text</button>
                         </div>
                     ` : ''}
                 </div>
             `;
-            container.appendChild(card);
-        }
+        document.getElementById('videoContainer').appendChild(card);
+    }
 
-        // 4. FUNCTIONALITY HANDLERS
-        function switchUser(val) { currentUser = val; loadFeed(); }
+    // --- 4. UPLOAD LOGIC ---
+    document.getElementById('fileUpload').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const path = `videos/${Date.now()}_${file.name}`;
+        const ref = storage.ref().child(path);
+        const status = document.getElementById('uploadStatus');
         
-        document.getElementById('searchInput').addEventListener('input', (e) => loadFeed(e.target.value));
+        status.style.display = 'block';
+        const uploadTask = ref.put(file);
 
-        document.getElementById('fileUpload').addEventListener('change', function() {
-            const file = this.files[0];
-            if(!file) return;
-            const tx = db.transaction(["videos"], "readwrite");
-            tx.objectStore("videos").add({
-                blob: file, owner: currentUser, desc: "New Story on Helostar", likedBy: [], ytLink: ""
-            }).onsuccess = () => loadFeed();
-            this.value = ''; // Reset input
-        });
-
-        function likeVideo(id) {
-            const tx = db.transaction(["videos"], "readwrite");
-            const store = tx.objectStore("videos");
-            store.get(id).onsuccess = (e) => {
-                const data = e.target.result;
-                const idx = data.likedBy.indexOf(currentUser);
-                if(idx === -1) data.likedBy.push(currentUser);
-                else data.likedBy.splice(idx, 1);
-                store.put(data).onsuccess = () => loadFeed(document.getElementById('searchInput').value);
-            };
-        }
-
-        function editVideo(id, field) {
-            const val = prompt(`Update ${field}:`);
-            if(!val) return;
-            const tx = db.transaction(["videos"], "readwrite");
-            const store = tx.objectStore("videos");
-            store.get(id).onsuccess = (e) => {
-                const data = e.target.result;
-                data[field] = val;
-                store.put(data).onsuccess = () => loadFeed();
-            };
-        }
-
-        function deleteVideo(id) {
-            if(confirm('Permanently remove this video from your Helostar profile?')) {
-                db.transaction(["videos"], "readwrite").objectStore("videos").delete(id).onsuccess = () => loadFeed();
+        uploadTask.on('state_changed', 
+            (snap) => {
+                const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+                status.innerText = `Uploading... ${pct}%`;
+            },
+            (err) => alert(err.message),
+            async () => {
+                const url = await uploadTask.snapshot.ref.getDownloadURL();
+                await db.collection("videos").add({
+                    url: url,
+                    storagePath: path,
+                    owner: currentUserEmail,
+                    description: "Check out my new video!",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                status.style.display = 'none';
             }
+        );
+    });
+
+    // --- 5. EDITOR FUNCTIONS ---
+    async function deleteVideo(id, path) {
+        if(confirm("Delete globally?")) {
+            await db.collection("videos").doc(id).delete();
+            await storage.ref().child(path).delete();
         }
-    </script>
+    }
+
+    async function editDesc(id) {
+        const newDesc = prompt("Enter new description:");
+        if(newDesc) {
+            await db.collection("videos").doc(id).update({ description: newDesc });
+        }
+    }
+</script>
+
 </body>
 </html>

@@ -6,11 +6,9 @@
     <title>Helostar.online | Global Video Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
     <style>
         :root {
@@ -22,66 +20,24 @@
             --glass: rgba(255, 255, 255, 0.05);
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg-color); 
-            color: var(--text-white);
-            margin: 0; padding: 0;
-        }
-
-        /* Auth Overlay */
-        #authOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 2000;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px);
-        }
-        .auth-card {
-            background: var(--card-bg); padding: 40px; border-radius: 20px;
-            border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px;
-        }
-        .auth-input {
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
-            border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box;
-        }
-        .auth-btn {
-            width: 100%; padding: 12px; background: var(--helostar-pink);
-            border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;
-        }
-        .auth-btn + .auth-btn { /* For spacing between buttons */
-            margin-top: 10px;
-        }
-
-        header {
-            background: rgba(18, 18, 18, 0.95);
-            padding: 15px 5%; display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass);
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; }
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        header { background: rgba(18, 18, 18, 0.95); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
         .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
-
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
-
         .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
-
         .video-info { padding: 15px; }
         .video-title { font-weight: 600; margin-bottom: 5px; display: block; }
-        .uploader-name { font-size: 0.8rem; color: var(--text-gray); }
-
         .owner-controls { margin-top: 10px; display: flex; gap: 10px; border-top: 1px solid var(--glass); padding-top: 10px; }
         .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.75rem; flex: 1; }
-        .btn-action:hover { background: var(--helostar-pink); }
-
-        .fab-upload {
-            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
-            border-radius: 50%; background: var(--helostar-pink); color: white;
-            border: none; font-size: 1.5rem; cursor: pointer; display: none;
-            align-items: center; justify-content: center; z-index: 1001;
-        }
-
-        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: var(--helostar-pink); padding: 10px; border-radius: 8px; display: none; }
+        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; }
+        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: var(--helostar-pink); padding: 15px; border-radius: 8px; display: none; color: white; }
     </style>
 </head>
 <body>
@@ -89,96 +45,39 @@
     <div id="authOverlay">
         <div class="auth-card">
             <h2 style="color:var(--helostar-pink)">HELOSTAR GLOBAL</h2>
-            <input type="email" id="userEmail" class="auth-input" placeholder="Enter Display Name (Optional)">
+            <input type="email" id="userEmail" class="auth-input" placeholder="Display Name (Optional)">
             <button class="auth-btn" onclick="signInWithGoogle()">Sign in with Google</button>
-            <button class="auth-btn" onclick="continueWithProvidedEmailAnonymously()">Continue Anonymously</button>
-            <p style="margin-top:15px; font-size:0.8rem; cursor:pointer; color:var(--text-gray)" onclick="guestMode()">View as Guest (No Editor)</p>
+            <button class="auth-btn" style="margin-top:10px" onclick="continueAnonymously()">Continue Anonymously</button>
+            <p style="margin-top:15px; font-size:0.8rem; cursor:pointer; color:var(--text-gray)" onclick="guestMode()">View as Guest</p>
         </div>
     </div>
 
-    <header>
-        <a href="#" class="logo">HELOSTAR</a>
-        <div id="userDisplay" style="font-size: 0.8rem; color: var(--text-gray);"></div>
-    </header>
+    <header><a href="#" class="logo">HELOSTAR</a><div id="userDisplay"></div></header>
 
-    <div class="container">
-        <div id="videoContainer" class="video-grid"></div>
-    </div>
+    <div class="container"><div id="videoContainer" class="video-grid"></div></div>
 
-    <div id="uploadStatus">Uploading... 0%</div>
+    <div id="uploadStatus">Working...</div>
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
     <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
 
 <script>
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    // --- 1. CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
       authDomain: "helostar-134d9.firebaseapp.com",
       projectId: "helostar-134d9",
       storageBucket: "helostar-134d9.firebasestorage.app",
       messagingSenderId: "698470895907",
-      appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96",
-      measurementId: "G-QGEM30WDQD"
+      appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
     };
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const storage = firebase.storage(); 
-
-    // Initialize Google Auth Provider
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
-
+    const auth = firebase.auth();
     let currentUserEmail = null;
     let isEditor = false;
 
-    // --- 2. AUTHENTICATION ---
-
-    // Function for signing in with Google
-    async function signInWithGoogle() {
-        try {
-            const result = await auth.signInWithPopup(googleProvider);
-            // The signed-in user info.
-            const user = result.user;
-            currentUserEmail = user.email; // Use the email from their Google account
-            isEditor = true; // Assuming Google users are editors
-            startApp();
-        } catch (error) {
-            console.error("Error during Google Sign-In:", error);
-            alert("Failed to sign in with Google: " + error.message);
-        }
-    }
-
-    // Renamed and clarified original login function for anonymous access
-    function continueWithProvidedEmailAnonymously() {
-        const emailInput = document.getElementById('userEmail');
-        const email = emailInput.value;
-        
-        // Firebase Anonymous Auth provides a temporary user, not tied to the email itself.
-        // We're using the provided email here as a display name if the user enters one.
-        auth.signInAnonymously().then(() => {
-            if (email) {
-                currentUserEmail = email;
-                // You could optionally update the anonymous user's profile with this email
-                // auth.currentUser.updateProfile({ displayName: email }).then(() => { /* ... */ });
-            } else {
-                currentUserEmail = "Anonymous User";
-            }
-            isEditor = true; // As per your original logic, anonymous users who "log in" are editors
-            startApp();
-        }).catch(error => {
-            console.error("Error during anonymous sign-in:", error);
-            alert("Failed to sign in anonymously: " + error.message);
-        });
-    }
-
-    function guestMode() {
-        isEditor = false;
-        currentUserEmail = "Guest";
-        startApp();
-    }
-
+    // --- 2. AUTH ---
     function startApp() {
         document.getElementById('authOverlay').style.display = 'none';
         document.getElementById('userDisplay').innerText = `Logged as: ${currentUserEmail}`;
@@ -186,14 +85,26 @@
         listenForVideos();
     }
 
-    // --- 3. DATABASE LISTENERS (THE WORLD VIEW) ---
+    async function signInWithGoogle() {
+        const result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        currentUserEmail = result.user.email; isEditor = true; startApp();
+    }
+
+    function continueAnonymously() {
+        auth.signInAnonymously().then(() => {
+            currentUserEmail = document.getElementById('userEmail').value || "Anonymous";
+            isEditor = true; startApp();
+        });
+    }
+
+    function guestMode() { isEditor = false; currentUserEmail = "Guest"; startApp(); }
+
+    // --- 3. CORE LOGIC ---
     function listenForVideos() {
-        db.collection("videos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        db.collection("videos").orderBy("createdAt", "desc").onSnapshot(snap => {
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
-            snapshot.forEach(doc => {
-                renderVideo(doc.id, doc.data());
-            });
+            snap.forEach(doc => renderVideo(doc.id, doc.data()));
         });
     }
 
@@ -202,70 +113,63 @@
         const card = document.createElement('div');
         card.className = 'video-card';
         card.innerHTML = `
-                <div class="video-wrapper">
-                    <video src="${data.url}" controls playsinline></video>
-                </div>
-                <div class="video-info">
-                    <span class="video-title">${data.description}</span>
-                    <div class="uploader-name">Uploaded by: ${data.owner}</div>
-                    ${isOwner ? `
-                        <div class="owner-controls">
-                            <button class="btn-action" onclick="deleteVideo('${id}', '${data.storagePath}')">Delete</button>
-                            <button class="btn-action" onclick="editDesc('${id}')">Edit Text</button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
+            <div class="video-wrapper"><video src="${data.url}" controls playsinline></video></div>
+            <div class="video-info">
+                <span class="video-title">${data.description}</span>
+                ${isOwner ? `<div class="owner-controls">
+                    <button class="btn-action" onclick="deleteVideo('${id}', '${data.storagePath}', '${data.sha}')">Delete</button>
+                </div>` : ''}
+            </div>`;
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    // --- 4. UPLOAD LOGIC ---
+    // --- 4. SECURE UPLOAD & DELETE (Via Vercel API) ---
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if(!file) return;
+        if(!file || file.size > 25 * 1024 * 1024) return alert("File missing or exceeds 25MB limit.");
 
-        const path = `videos/${Date.now()}_${file.name}`;
-        const ref = storage.ref().child(path);
         const status = document.getElementById('uploadStatus');
-        
         status.style.display = 'block';
-        const uploadTask = ref.put(file);
+        status.innerText = "Encrypting & Uploading...";
 
-        uploadTask.on('state_changed', 
-            (snap) => {
-                const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-                status.innerText = `Uploading... ${pct}%`;
-            },
-            (err) => alert(err.message),
-            async () => {
-                const url = await uploadTask.snapshot.ref.getDownloadURL();
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            try {
+                const base64 = reader.result.split(',')[1];
+                const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileName, content: base64, method: 'PUT' })
+                });
+
+                const gitData = await response.json();
+                if(!response.ok) throw new Error("Server Error");
+
                 await db.collection("videos").add({
-                    url: url,
-                    storagePath: path,
+                    url: `https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/videos/${fileName}`,
+                    storagePath: fileName,
+                    sha: gitData.content.sha,
                     owner: currentUserEmail,
-                    description: "Check out my new video!",
+                    description: "Check out my video!",
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 status.style.display = 'none';
-            }
-        );
+            } catch (err) { alert("Upload failed"); status.style.display = 'none'; }
+        };
     });
 
-    // --- 5. EDITOR FUNCTIONS ---
-    async function deleteVideo(id, path) {
-        if(confirm("Delete globally?")) {
-            await db.collection("videos").doc(id).delete();
-            await storage.ref().child(path).delete();
-        }
-    }
-
-    async function editDesc(id) {
-        const newDesc = prompt("Enter new description:");
-        if(newDesc) {
-            await db.collection("videos").doc(id).update({ description: newDesc });
-        }
+    async function deleteVideo(id, fileName, sha) {
+        if(!confirm("Delete forever?")) return;
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName, sha, method: 'DELETE' })
+        });
+        if(res.ok) await db.collection("videos").doc(id).delete();
     }
 </script>
-
 </body>
 </html>

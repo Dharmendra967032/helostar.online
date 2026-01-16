@@ -218,9 +218,10 @@
             const base64 = reader.result.split(',')[1];
 
             try {
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+
+                const response = await fetch('/api/upload', { 
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         fileName: `videos/${Date.now()}_v.mp4`, 
                         content: base64, 
@@ -228,7 +229,8 @@
                         owner: currentUserEmail, 
                         method: 'UPLOAD_VIDEO' 
                     })
-                });
+   
+});
 
                 if(response.ok) {
                     pBar.style.width = '100%';

@@ -8,7 +8,6 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
@@ -22,7 +21,6 @@
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; }
         
-        /* Auth Overlay */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; }
@@ -31,10 +29,13 @@
         header { background: rgba(18, 18, 18, 0.95); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
         .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
         
+        .user-section { display: flex; align-items: center; gap: 15px; }
+        .logout-btn { background: none; border: 1px solid #444; color: var(--text-gray); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+        .logout-btn:hover { border-color: var(--helostar-pink); color: white; }
+
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
         
-        /* Video Cards */
         .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; }
         .video-card:hover { border-color: var(--helostar-pink); }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
@@ -44,15 +45,11 @@
         .video-title { font-weight: 600; margin-bottom: 5px; display: block; }
         .video-meta { font-size: 0.8rem; color: var(--text-gray); }
         
-        /* Controls */
         .owner-controls { margin-top: 10px; display: flex; gap: 10px; border-top: 1px solid var(--glass); padding-top: 10px; }
         .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.75rem; flex: 1; transition: 0.2s; }
-        .btn-action:hover { background: rgba(255,255,255,0.1); }
         .btn-delete { color: #ff4444; }
 
-        /* Upload Floating Button */
         .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); }
-        
         #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: var(--card-bg); border: 1px solid var(--helostar-pink); padding: 15px; border-radius: 12px; display: none; color: white; z-index: 1002; width: 250px; }
     </style>
 </head>
@@ -61,32 +58,25 @@
     <div id="authOverlay">
         <div class="auth-card">
             <h2 style="color:var(--helostar-pink)">HELOSTAR GLOBAL</h2>
-            <p style="color:var(--text-gray); font-size: 0.9rem;">Sign in to upload and manage your videos</p>
-            
             <button class="auth-btn" onclick="signInWithGoogle()">
                 <i class="fab fa-google"></i> Sign in with Google
             </button>
-            
             <div style="margin: 15px 0; color: var(--text-gray); font-size: 0.8rem;">— OR —</div>
-            
-            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Nickname (Optional)">
-            <button class="auth-btn" style="background: #333;" onclick="guestMode()">
-                Continue as Guest
-            </button>
-            <p style="margin-top:15px; font-size:0.75rem; color:var(--text-gray)">
-                Guests have view-only access.
-            </p>
+            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Nickname">
+            <button class="auth-btn" style="background: #333;" onclick="guestMode()">Continue as Guest</button>
         </div>
     </div>
 
     <header>
-        <a href="Helostar.html" class="logo">HELOSTAR</a>
-        <div id="userDisplay" style="font-size: 0.85rem; color: var(--text-gray);"></div>
+        <a href="#" class="logo">HELOSTAR</a>
+        <div class="user-section">
+            <div id="userDisplay" style="font-size: 0.85rem; color: var(--text-gray);"></div>
+            <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()">Logout</button>
+        </div>
     </header>
 
     <div class="container">
-        <div id="videoContainer" class="video-grid">
-            </div>
+        <div id="videoContainer" class="video-grid"></div>
     </div>
 
     <div id="uploadStatus">
@@ -100,7 +90,6 @@
     </button>
 
 <script>
-    // --- 1. FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
       authDomain: "helostar-134d9.firebaseapp.com",
@@ -109,158 +98,132 @@
       appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
     };
 
-    // CHANGE THIS TO YOUR GMAIL TO BE THE SITE OWNER
     const ADMIN_EMAIL = "your-gmail@gmail.com"; 
 
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
     const auth = firebase.auth();
 
     let currentUserEmail = null;
-    let isEditor = false; // Can upload
-    let isOwner = false;  // Can delete/edit EVERYTHING
+    let isOwner = false;
 
-    // --- 2. AUTHENTICATION ---
+    // Monitor Auth State
+    auth.onAuthStateChanged(user => {
+        if (user) startApp(user);
+    });
+
     function startApp(user) {
         document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'block';
         
         if (user) {
-            currentUserEmail = user.email || "Anonymous User";
-            isEditor = true;
+            currentUserEmail = user.email;
             isOwner = (user.email === ADMIN_EMAIL);
-            
-            document.getElementById('userDisplay').innerHTML = isOwner ? 
-                `<b style="color:var(--helostar-pink)">OWNER MODE</b>` : 
-                `Logged in as: ${currentUserEmail}`;
-            
+            document.getElementById('userDisplay').innerHTML = isOwner ? `<b style="color:var(--helostar-pink)">OWNER</b>` : user.email;
             document.getElementById('uploadBtn').style.display = 'flex';
         } else {
-            // Guest Setup
             currentUserEmail = document.getElementById('guestUsername').value || "Guest";
-            isEditor = false;
-            isOwner = false;
-            document.getElementById('userDisplay').innerText = `Viewing as: ${currentUserEmail}`;
+            document.getElementById('userDisplay').innerText = `Guest: ${currentUserEmail}`;
+            document.getElementById('logoutBtn').innerText = "Exit Guest Mode";
         }
-        listenForVideos();
+        fetchVideos();
     }
 
     async function signInWithGoogle() {
-        try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            const result = await auth.signInWithPopup(provider);
-            startApp(result.user);
-        } catch (error) {
-            alert("Login failed: " + error.message);
-        }
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
     }
 
-    function guestMode() {
-        startApp(null);
-    }
+    function guestMode() { startApp(null); }
 
-    // --- 3. DATA HANDLING ---
-    function listenForVideos() {
-        db.collection("videos").orderBy("createdAt", "desc").onSnapshot(snap => {
-            const container = document.getElementById('videoContainer');
-            container.innerHTML = '';
-            snap.forEach(doc => renderVideo(doc.id, doc.data()));
+    function logout() {
+        auth.signOut().then(() => {
+            window.location.reload();
         });
     }
 
-    function renderVideo(id, data) {
-        // Permissions: Site Owner gets control of everything. Users get control of their own.
-        const canManage = isOwner || (data.owner === currentUserEmail && currentUserEmail !== "Guest");
-        
+    // --- GITHUB "DATABASE" LOGIC ---
+    async function fetchVideos() {
+        try {
+            // We fetch your database.json from GitHub
+            const res = await fetch('https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/database.json');
+            const data = await res.json();
+            const container = document.getElementById('videoContainer');
+            container.innerHTML = '';
+            
+            // Sort by newest first
+            data.videos.reverse().forEach(video => renderVideo(video));
+        } catch (e) {
+            console.log("Database empty or missing.");
+        }
+    }
+
+    function renderVideo(video) {
+        const canManage = isOwner || (video.owner === currentUserEmail && currentUserEmail !== "Guest");
         const card = document.createElement('div');
         card.className = 'video-card';
         card.innerHTML = `
             <div class="video-wrapper">
-                <video src="${data.url}" controls playsinline preload="metadata"></video>
+                <video src="${video.url}" controls playsinline></video>
             </div>
             <div class="video-info">
-                <span class="video-title">${data.description}</span>
-                <div class="video-meta">By: ${data.owner}</div>
+                <span class="video-title">${video.description}</span>
+                <div class="video-meta">By: ${video.owner}</div>
                 ${canManage ? `
                 <div class="owner-controls">
-                    <button class="btn-action" onclick="editVideoDesc('${id}')">Edit</button>
-                    <button class="btn-action btn-delete" onclick="deleteVideo('${id}', '${data.storagePath}', '${data.sha}')">Delete</button>
+                    <button class="btn-action btn-delete" onclick="deleteVideo('${video.id}', '${video.sha}')">Delete</button>
                 </div>` : ''}
             </div>`;
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    async function editVideoDesc(id) {
-        const newDesc = prompt("Enter new video description:");
-        if (newDesc) {
-            await db.collection("videos").doc(id).update({ description: newDesc });
-        }
-    }
-
-    // --- 4. UPLOAD & DELETE (Via GitHub/Vercel API) ---
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         const description = document.getElementById('videoDescInput').value || "No description";
-        
         if(!file) return;
-        if(file.size > 25 * 1024 * 1024) return alert("File too large (Max 25MB)");
 
         const statusBox = document.getElementById('uploadStatus');
-        const statusMsg = document.getElementById('statusMessage');
-        
         statusBox.style.display = 'block';
-        statusMsg.innerText = "Uploading... please wait.";
+        document.getElementById('statusMessage').innerText = "Uploading to GitHub...";
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
-            try {
-                const base64 = reader.result.split(',')[1];
-                const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+            const base64 = reader.result.split(',')[1];
+            const fileName = `videos/${Date.now()}_video.mp4`;
 
-                // Call your Vercel API
+            try {
+                // Sending to your API which handles GitHub commits
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fileName, content: base64, method: 'PUT' })
+                    body: JSON.stringify({ 
+                        fileName, 
+                        content: base64, 
+                        description, 
+                        owner: currentUserEmail,
+                        method: 'UPLOAD_VIDEO' 
+                    })
                 });
 
-                const gitData = await response.json();
-                if(!response.ok) throw new Error("GitHub Upload Failed");
-
-                // Save to Firestore
-                await db.collection("videos").add({
-                    url: `https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/videos/${fileName}`,
-                    storagePath: fileName,
-                    sha: gitData.content.sha,
-                    owner: currentUserEmail,
-                    description: description,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                statusBox.style.display = 'none';
-                document.getElementById('videoDescInput').value = '';
+                if(response.ok) {
+                    alert("Uploaded successfully! It may take a minute for GitHub to refresh.");
+                    location.reload();
+                }
             } catch (err) {
-                alert("Upload Error: " + err.message);
+                alert("Upload failed.");
                 statusBox.style.display = 'none';
             }
         };
     });
 
-    async function deleteVideo(id, fileName, sha) {
-        if(!confirm("Delete this video forever?")) return;
-        
-        try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fileName, sha, method: 'DELETE' })
-            });
-            
-            // Even if storage delete fails (file missing), we remove from database
-            await db.collection("videos").doc(id).delete();
-        } catch (err) {
-            alert("Error deleting video.");
-        }
+    async function deleteVideo(videoId, sha) {
+        if(!confirm("Delete this video?")) return;
+        await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId, sha, method: 'DELETE_VIDEO' })
+        });
+        location.reload();
     }
 </script>
 </body>

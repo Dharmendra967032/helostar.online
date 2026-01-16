@@ -19,45 +19,68 @@
             --glass: rgba(255, 255, 255, 0.05);
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; overflow-x: hidden; }
         
+        /* Auth Overlay */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; outline: none; }
         .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         
-        header { background: rgba(18, 18, 18, 0.95); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
+        /* Header & Search */
+        header { background: rgba(18, 18, 18, 0.95); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); backdrop-filter: blur(10px); }
         .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
         
+        .search-container { position: relative; flex: 0 1 400px; margin: 0 20px; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 0.9rem; }
+        #searchInput { width: 100%; padding: 10px 15px 10px 35px; background: #1a1a1a; border: 1px solid var(--glass); border-radius: 20px; color: white; outline: none; transition: 0.3s; }
+        #searchInput:focus { border-color: var(--helostar-pink); }
+
         .user-section { display: flex; align-items: center; gap: 15px; }
-        .logout-btn { background: none; border: 1px solid #444; color: var(--text-gray); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+        .logout-btn { background: none; border: 1px solid #444; color: var(--text-gray); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
         .logout-btn:hover { border-color: var(--helostar-pink); color: white; }
 
+        /* Video Grid */
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
         
-        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; }
-        .video-card:hover { border-color: var(--helostar-pink); }
+        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; position: relative; }
+        .video-card:hover { border-color: var(--helostar-pink); transform: translateY(-3px); }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         
         .video-info { padding: 15px; }
-        .video-title { font-weight: 600; margin-bottom: 5px; display: block; }
+        .video-title { font-weight: 600; margin-bottom: 5px; display: block; color: var(--text-white); }
         .video-meta { font-size: 0.8rem; color: var(--text-gray); }
         
-        .owner-controls { margin-top: 10px; display: flex; gap: 10px; border-top: 1px solid var(--glass); padding-top: 10px; }
-        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.75rem; flex: 1; transition: 0.2s; }
+        /* Controls */
+        .owner-controls { margin-top: 12px; display: flex; gap: 8px; border-top: 1px solid var(--glass); padding-top: 12px; }
+        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; flex: 1; transition: 0.2s; }
         .btn-delete { color: #ff4444; }
+        .btn-share { background: rgba(211, 21, 157, 0.1); border: 1px solid rgba(211, 21, 157, 0.3); color: var(--helostar-pink); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; flex: 0.4; }
+        .hidden-card { display: none !important; }
 
-        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); }
-        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: var(--card-bg); border: 1px solid var(--helostar-pink); padding: 15px; border-radius: 12px; display: none; color: white; z-index: 1002; width: 250px; }
+        /* Upload UI */
+        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 20px rgba(211, 21, 157, 0.4); }
+        
+        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: rgba(18, 18, 18, 0.95); border: 1px solid var(--helostar-pink); padding: 20px; border-radius: 16px; display: none; color: white; z-index: 1002; width: 280px; backdrop-filter: blur(15px); }
+        .progress-container { width: 100%; background: #222; border-radius: 10px; height: 6px; margin: 15px 0; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #d3159d, #ff66cc); transition: width 0.3s ease; }
+        .pulse { animation: pulse-animation 1.5s infinite; }
+        @keyframes pulse-animation { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; }
+            .search-container { width: 100%; margin: 0; }
+        }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="auth-card">
-            <h2 style="color:var(--helostar-pink)">HELOSTAR GLOBAL</h2>
+            <h2 style="color:var(--helostar-pink); margin-bottom: 5px;">HELOSTAR</h2>
+            <p style="color:var(--text-gray); font-size: 0.85rem; margin-bottom: 25px;">Global Video Community</p>
             <button class="auth-btn" onclick="signInWithGoogle()">
                 <i class="fab fa-google"></i> Sign in with Google
             </button>
@@ -69,6 +92,12 @@
 
     <header>
         <a href="#" class="logo">HELOSTAR</a>
+        
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search titles or creators..." onkeyup="filterVideos()">
+        </div>
+
         <div class="user-section">
             <div id="userDisplay" style="font-size: 0.85rem; color: var(--text-gray);"></div>
             <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()">Logout</button>
@@ -80,8 +109,12 @@
     </div>
 
     <div id="uploadStatus">
-        <input type="text" id="videoDescInput" class="auth-input" placeholder="Video description...">
-        <div id="statusMessage" style="font-size: 0.8rem; margin-top: 5px;">Ready to upload</div>
+        <div style="font-weight: bold; margin-bottom: 10px; font-size: 0.9rem;">
+            <i class="fas fa-cloud-upload-alt"></i> Uploading Video
+        </div>
+        <input type="text" id="videoDescInput" class="auth-input" placeholder="Add a caption...">
+        <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
+        <div id="statusMessage" style="font-size: 0.75rem; color: var(--text-gray);">Ready...</div>
     </div>
     
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
@@ -90,6 +123,7 @@
     </button>
 
 <script>
+    // --- 1. CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
       authDomain: "helostar-134d9.firebaseapp.com",
@@ -98,7 +132,7 @@
       appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
     };
 
-    const ADMIN_EMAIL = "your-gmail@gmail.com"; 
+    const ADMIN_EMAIL = "dharmendra967032@gmail.com"; // Actual  email
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -106,10 +140,8 @@
     let currentUserEmail = null;
     let isOwner = false;
 
-    // Monitor Auth State
-    auth.onAuthStateChanged(user => {
-        if (user) startApp(user);
-    });
+    // --- 2. AUTH ---
+    auth.onAuthStateChanged(user => { if (user) startApp(user); });
 
     function startApp(user) {
         document.getElementById('authOverlay').style.display = 'none';
@@ -123,7 +155,7 @@
         } else {
             currentUserEmail = document.getElementById('guestUsername').value || "Guest";
             document.getElementById('userDisplay').innerText = `Guest: ${currentUserEmail}`;
-            document.getElementById('logoutBtn').innerText = "Exit Guest Mode";
+            document.getElementById('logoutBtn').innerText = "Exit Guest";
         }
         fetchVideos();
     }
@@ -134,33 +166,24 @@
     }
 
     function guestMode() { startApp(null); }
+    function logout() { auth.signOut().then(() => window.location.reload()); }
 
-    function logout() {
-        auth.signOut().then(() => {
-            window.location.reload();
-        });
-    }
-
-    // --- GITHUB "DATABASE" LOGIC ---
+    // --- 3. VIDEO DATA ---
     async function fetchVideos() {
         try {
-            // We fetch your database.json from GitHub
-            const res = await fetch('https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/database.json');
+            const res = await fetch(`https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/database.json?t=${Date.now()}`);
             const data = await res.json();
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
-            
-            // Sort by newest first
-            data.videos.reverse().forEach(video => renderVideo(video));
-        } catch (e) {
-            console.log("Database empty or missing.");
-        }
+            [...data.videos].reverse().forEach(v => renderVideo(v));
+        } catch (e) { console.log("DB Load Error"); }
     }
 
     function renderVideo(video) {
         const canManage = isOwner || (video.owner === currentUserEmail && currentUserEmail !== "Guest");
         const card = document.createElement('div');
         card.className = 'video-card';
+        card.id = `video-${video.id}`;
         card.innerHTML = `
             <div class="video-wrapper">
                 <video src="${video.url}" controls playsinline></video>
@@ -168,62 +191,79 @@
             <div class="video-info">
                 <span class="video-title">${video.description}</span>
                 <div class="video-meta">By: ${video.owner}</div>
-                ${canManage ? `
                 <div class="owner-controls">
-                    <button class="btn-action btn-delete" onclick="deleteVideo('${video.id}', '${video.sha}')">Delete</button>
-                </div>` : ''}
+                    <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-share-alt"></i></button>
+                    ${canManage ? `<button class="btn-action btn-delete" onclick="deleteVideo('${video.id}')">Delete</button>` : ''}
+                </div>
             </div>`;
         document.getElementById('videoContainer').appendChild(card);
     }
 
+    // --- 4. UPLOAD LOGIC ---
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         const description = document.getElementById('videoDescInput').value || "No description";
         if(!file) return;
 
+        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+        if (file.size > 20 * 1024 * 1024) return alert(`File too large (${sizeInMB}MB). Max 20MB.`);
+
         const statusBox = document.getElementById('uploadStatus');
+        const statusMsg = document.getElementById('statusMessage');
+        const pBar = document.getElementById('progressBar');
+        
         statusBox.style.display = 'block';
-        document.getElementById('statusMessage').innerText = "Uploading to GitHub...";
+        pBar.style.width = '10%';
+        statusMsg.innerHTML = `<span class="pulse">Reading ${sizeInMB}MB file...</span>`;
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
+            pBar.style.width = '30%';
+            statusMsg.innerHTML = `<span class="pulse">Uploading to GitHub...</span>`;
+            
             const base64 = reader.result.split(',')[1];
             const fileName = `videos/${Date.now()}_video.mp4`;
 
             try {
-                // Sending to your API which handles GitHub commits
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        fileName, 
-                        content: base64, 
-                        description, 
-                        owner: currentUserEmail,
-                        method: 'UPLOAD_VIDEO' 
-                    })
+                    body: JSON.stringify({ fileName, content: base64, description, owner: currentUserEmail, method: 'UPLOAD_VIDEO' })
                 });
 
                 if(response.ok) {
-                    alert("Uploaded successfully! It may take a minute for GitHub to refresh.");
-                    location.reload();
+                    pBar.style.width = '100%';
+                    statusMsg.style.color = "#00ff00";
+                    statusMsg.innerText = "Success! Refreshing...";
+                    setTimeout(() => location.reload(), 1500);
                 }
-            } catch (err) {
-                alert("Upload failed.");
-                statusBox.style.display = 'none';
-            }
+            } catch (err) { alert("Upload failed."); statusBox.style.display = 'none'; }
         };
     });
 
-    async function deleteVideo(videoId, sha) {
-        if(!confirm("Delete this video?")) return;
+    // --- 5. UTILITIES ---
+    async function deleteVideo(videoId) {
+        if(!confirm("Delete forever?")) return;
         await fetch('/api/upload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoId, sha, method: 'DELETE_VIDEO' })
+            body: JSON.stringify({ videoId, method: 'DELETE_VIDEO' })
         });
         location.reload();
+    }
+
+    function shareVideo(videoId) {
+        const shareUrl = `${window.location.origin}${window.location.pathname}#video-${videoId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => alert("Link copied to clipboard!"));
+    }
+
+    function filterVideos() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.video-card').forEach(card => {
+            const text = card.innerText.toLowerCase();
+            card.classList.toggle('hidden-card', !text.includes(query));
+        });
     }
 </script>
 </body>

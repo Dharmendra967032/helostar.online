@@ -27,51 +27,66 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; outline: none; }
         .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         
-        /* Header & Search */
-        header { background: rgba(18, 18, 18, 0.95); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); backdrop-filter: blur(10px); }
-        .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
+        /* Professional Mobile Header */
+        header { 
+            background: rgba(18, 18, 18, 0.95); 
+            padding: 10px 5%; 
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center; 
+            gap: 15px;
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            border-bottom: 1px solid var(--glass); 
+            backdrop-filter: blur(10px); 
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
         
-        .search-container { position: relative; flex: 0 1 400px; margin: 0 20px; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 0.9rem; }
-        #searchInput { width: 100%; padding: 10px 15px 10px 35px; background: #1a1a1a; border: 1px solid var(--glass); border-radius: 20px; color: white; outline: none; transition: 0.3s; }
+        .search-container { position: relative; width: 100%; max-width: 400px; justify-self: center; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 0.8rem; }
+        #searchInput { width: 100%; padding: 8px 15px 8px 35px; background: #1a1a1a; border: 1px solid var(--glass); border-radius: 20px; color: white; outline: none; transition: 0.3s; font-size: 0.9rem; }
         #searchInput:focus { border-color: var(--helostar-pink); }
 
-        .user-section { display: flex; align-items: center; gap: 15px; }
-        .logout-btn { background: none; border: 1px solid #444; color: var(--text-gray); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
-        .logout-btn:hover { border-color: var(--helostar-pink); color: white; }
+        .user-section { display: flex; align-items: center; gap: 10px; }
+        .logout-btn { background: none; border: 1px solid #444; color: var(--text-gray); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
 
         /* Video Grid */
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         
         .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; position: relative; }
         .video-card:hover { border-color: var(--helostar-pink); transform: translateY(-3px); }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         
-        .video-info { padding: 15px; }
-        .video-title { font-weight: 600; margin-bottom: 5px; display: block; color: var(--text-white); }
-        .video-meta { font-size: 0.8rem; color: var(--text-gray); }
+        .video-info { padding: 12px; }
+        .video-title { font-weight: 600; margin-bottom: 4px; display: block; font-size: 0.95rem; }
+        .video-meta { font-size: 0.75rem; color: var(--text-gray); }
         
         /* Controls */
-        .owner-controls { margin-top: 12px; display: flex; gap: 8px; border-top: 1px solid var(--glass); padding-top: 12px; }
-        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; flex: 1; transition: 0.2s; }
+        .owner-controls { margin-top: 10px; display: flex; gap: 8px; border-top: 1px solid var(--glass); padding-top: 10px; }
+        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; flex: 1; }
         .btn-delete { color: #ff4444; }
-        .btn-share { background: rgba(211, 21, 157, 0.1); border: 1px solid rgba(211, 21, 157, 0.3); color: var(--helostar-pink); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; flex: 0.4; }
+        .btn-share { background: rgba(211, 21, 157, 0.1); border: 1px solid rgba(211, 21, 157, 0.3); color: var(--helostar-pink); padding: 6px; border-radius: 6px; cursor: pointer; flex: 0.3; }
         .hidden-card { display: none !important; }
 
-        /* Upload UI */
-        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 20px rgba(211, 21, 157, 0.4); }
+        /* Professional Upload UI */
+        .fab-upload { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.3rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 15px rgba(211, 21, 157, 0.3); }
         
-        #uploadStatus { position: fixed; bottom: 100px; right: 30px; background: rgba(18, 18, 18, 0.95); border: 1px solid var(--helostar-pink); padding: 20px; border-radius: 16px; display: none; color: white; z-index: 1002; width: 280px; backdrop-filter: blur(15px); }
-        .progress-container { width: 100%; background: #222; border-radius: 10px; height: 6px; margin: 15px 0; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #d3159d, #ff66cc); transition: width 0.3s ease; }
-        .pulse { animation: pulse-animation 1.5s infinite; }
-        @keyframes pulse-animation { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        #uploadStatus { position: fixed; bottom: 90px; right: 20px; background: rgba(18, 18, 18, 0.98); border: 1px solid var(--helostar-pink); padding: 15px; border-radius: 12px; display: none; color: white; z-index: 1002; width: 260px; backdrop-filter: blur(10px); }
+        .progress-container { width: 100%; background: #222; border-radius: 10px; height: 5px; margin: 12px 0; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--helostar-pink); transition: width 0.3s; }
+        .pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        @media (max-width: 768px) {
-            header { flex-direction: column; gap: 15px; }
-            .search-container { width: 100%; margin: 0; }
+        /* Mobile Specific Viewports */
+        @media (max-width: 580px) {
+            header { grid-template-columns: 1fr auto; padding: 10px; }
+            .search-container { grid-column: span 2; order: 3; max-width: 100%; }
+            .logo { font-size: 1.3rem; }
+            .container { margin: 10px auto; }
+            .video-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -79,28 +94,23 @@
 
     <div id="authOverlay">
         <div class="auth-card">
-            <h2 style="color:var(--helostar-pink); margin-bottom: 5px;">HELOSTAR</h2>
-            <p style="color:var(--text-gray); font-size: 0.85rem; margin-bottom: 25px;">Global Video Community</p>
-            <button class="auth-btn" onclick="signInWithGoogle()">
-                <i class="fab fa-google"></i> Sign in with Google
-            </button>
-            <div style="margin: 15px 0; color: var(--text-gray); font-size: 0.8rem;">— OR —</div>
-            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Nickname">
-            <button class="auth-btn" style="background: #333;" onclick="guestMode()">Continue as Guest</button>
+            <h2 style="color:var(--helostar-pink)">HELOSTAR</h2>
+            <button class="auth-btn" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Google Login</button>
+            <div style="margin: 10px 0; color: var(--text-gray); font-size: 0.7rem;">OR</div>
+            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Name">
+            <button class="auth-btn" style="background: #333;" onclick="guestMode()">Guest Mode</button>
         </div>
     </div>
 
     <header>
         <a href="#" class="logo">HELOSTAR</a>
-        
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" placeholder="Search titles or creators..." onkeyup="filterVideos()">
+            <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterVideos()">
         </div>
-
         <div class="user-section">
-            <div id="userDisplay" style="font-size: 0.85rem; color: var(--text-gray);"></div>
-            <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()">Logout</button>
+            <div id="userDisplay" style="font-size: 0.7rem; color: var(--text-gray);"></div>
+            <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </header>
 
@@ -109,21 +119,16 @@
     </div>
 
     <div id="uploadStatus">
-        <div style="font-weight: bold; margin-bottom: 10px; font-size: 0.9rem;">
-            <i class="fas fa-cloud-upload-alt"></i> Uploading Video
-        </div>
-        <input type="text" id="videoDescInput" class="auth-input" placeholder="Add a caption...">
+        <div style="font-weight: bold; font-size: 0.85rem;"><i class="fas fa-upload"></i> Publishing...</div>
+        <input type="text" id="videoDescInput" class="auth-input" placeholder="Video caption...">
         <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
-        <div id="statusMessage" style="font-size: 0.75rem; color: var(--text-gray);">Ready...</div>
+        <div id="statusMessage" style="font-size: 0.7rem; color: var(--text-gray);">Ready</div>
     </div>
     
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()">
-        <i class="fa fa-plus"></i>
-    </button>
+    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
 
 <script>
-    // --- 1. CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
       authDomain: "helostar-134d9.firebaseapp.com",
@@ -132,30 +137,26 @@
       appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
     };
 
-    const ADMIN_EMAIL = "dharmendra967032@gmail.com"; // Actual  email
+    const ADMIN_EMAIL = "dharmendra967032@gmail.com"; // Set your email here
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-
     let currentUserEmail = null;
     let isOwner = false;
 
-    // --- 2. AUTH ---
     auth.onAuthStateChanged(user => { if (user) startApp(user); });
 
     function startApp(user) {
         document.getElementById('authOverlay').style.display = 'none';
         document.getElementById('logoutBtn').style.display = 'block';
-        
         if (user) {
             currentUserEmail = user.email;
             isOwner = (user.email === ADMIN_EMAIL);
-            document.getElementById('userDisplay').innerHTML = isOwner ? `<b style="color:var(--helostar-pink)">OWNER</b>` : user.email;
+            document.getElementById('userDisplay').innerHTML = isOwner ? `<b style="color:var(--helostar-pink)">OWNER</b>` : user.email.split('@')[0];
             document.getElementById('uploadBtn').style.display = 'flex';
         } else {
             currentUserEmail = document.getElementById('guestUsername').value || "Guest";
-            document.getElementById('userDisplay').innerText = `Guest: ${currentUserEmail}`;
-            document.getElementById('logoutBtn').innerText = "Exit Guest";
+            document.getElementById('userDisplay').innerText = currentUserEmail;
         }
         fetchVideos();
     }
@@ -168,7 +169,6 @@
     function guestMode() { startApp(null); }
     function logout() { auth.signOut().then(() => window.location.reload()); }
 
-    // --- 3. VIDEO DATA ---
     async function fetchVideos() {
         try {
             const res = await fetch(`https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/database.json?t=${Date.now()}`);
@@ -176,7 +176,7 @@
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
             [...data.videos].reverse().forEach(v => renderVideo(v));
-        } catch (e) { console.log("DB Load Error"); }
+        } catch (e) { console.log("Database fetch failed."); }
     }
 
     function renderVideo(video) {
@@ -185,66 +185,66 @@
         card.className = 'video-card';
         card.id = `video-${video.id}`;
         card.innerHTML = `
-            <div class="video-wrapper">
-                <video src="${video.url}" controls playsinline></video>
-            </div>
+            <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
             <div class="video-info">
                 <span class="video-title">${video.description}</span>
-                <div class="video-meta">By: ${video.owner}</div>
+                <div class="video-meta">By ${video.owner}</div>
                 <div class="owner-controls">
-                    <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-share-alt"></i></button>
+                    <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
                     ${canManage ? `<button class="btn-action btn-delete" onclick="deleteVideo('${video.id}')">Delete</button>` : ''}
                 </div>
             </div>`;
-        document.getElementById('videoContainer').appendChild(card);
+        container.appendChild(card);
     }
 
-    // --- 4. UPLOAD LOGIC ---
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        const description = document.getElementById('videoDescInput').value || "No description";
         if(!file) return;
-
-        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-        if (file.size > 20 * 1024 * 1024) return alert(`File too large (${sizeInMB}MB). Max 20MB.`);
+        if (file.size > 20 * 1024 * 1024) return alert("Max size 20MB");
 
         const statusBox = document.getElementById('uploadStatus');
         const statusMsg = document.getElementById('statusMessage');
         const pBar = document.getElementById('progressBar');
         
         statusBox.style.display = 'block';
-        pBar.style.width = '10%';
-        statusMsg.innerHTML = `<span class="pulse">Reading ${sizeInMB}MB file...</span>`;
+        pBar.style.width = '20%';
+        statusMsg.innerHTML = `<span class="pulse">Processing...</span>`;
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
-            pBar.style.width = '30%';
-            statusMsg.innerHTML = `<span class="pulse">Uploading to GitHub...</span>`;
-            
+            pBar.style.width = '50%';
+            statusMsg.innerText = "Uploading to GitHub...";
             const base64 = reader.result.split(',')[1];
-            const fileName = `videos/${Date.now()}_video.mp4`;
 
             try {
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fileName, content: base64, description, owner: currentUserEmail, method: 'UPLOAD_VIDEO' })
+                    body: JSON.stringify({ 
+                        fileName: `videos/${Date.now()}_v.mp4`, 
+                        content: base64, 
+                        description: document.getElementById('videoDescInput').value || "Video", 
+                        owner: currentUserEmail, 
+                        method: 'UPLOAD_VIDEO' 
+                    })
                 });
 
                 if(response.ok) {
                     pBar.style.width = '100%';
-                    statusMsg.style.color = "#00ff00";
                     statusMsg.innerText = "Success! Refreshing...";
                     setTimeout(() => location.reload(), 1500);
+                } else {
+                    const errorMsg = await response.text();
+                    alert("Upload Error: " + errorMsg);
+                    statusBox.style.display = 'none';
                 }
-            } catch (err) { alert("Upload failed."); statusBox.style.display = 'none'; }
+            } catch (err) { alert("Network Error"); statusBox.style.display = 'none'; }
         };
     });
 
-    // --- 5. UTILITIES ---
     async function deleteVideo(videoId) {
-        if(!confirm("Delete forever?")) return;
+        if(!confirm("Delete?")) return;
         await fetch('/api/upload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -254,15 +254,14 @@
     }
 
     function shareVideo(videoId) {
-        const shareUrl = `${window.location.origin}${window.location.pathname}#video-${videoId}`;
-        navigator.clipboard.writeText(shareUrl).then(() => alert("Link copied to clipboard!"));
+        const url = `${window.location.origin}${window.location.pathname}#video-${videoId}`;
+        navigator.clipboard.writeText(url).then(() => alert("Link copied!"));
     }
 
     function filterVideos() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         document.querySelectorAll('.video-card').forEach(card => {
-            const text = card.innerText.toLowerCase();
-            card.classList.toggle('hidden-card', !text.includes(query));
+            card.classList.toggle('hidden-card', !card.innerText.toLowerCase().includes(query));
         });
     }
 </script>

@@ -1,6 +1,6 @@
 {
+  "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/Helostar.html" }
+    { "source": "/api/upload", "destination": "/api/upload.js" }
   ]
 }

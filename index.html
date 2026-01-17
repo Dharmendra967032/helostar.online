@@ -170,10 +170,26 @@
     }
 
     function logout() { auth.signOut().then(() => window.location.reload()); }
+//check token
+    async function checkToken() {
+    const res = await fetch(`https://api.github.com/user`, {
+        headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+    });
+    const data = await res.json();
+    if (res.ok) {
+        console.log("Token is VALID. Logged in as: " + data.login);
+        alert("Success! Token belongs to: " + data.login);
+    } else {
+        console.error("Token is INVALID:", data.message);
+        alert("GitHub says: " + data.message);
+    }
+}
+// Call this once at the start of your script to test
+// checkToken();
 
     // --- GITHUB DATA LOGIC ---
-    async function fetchVideos() {
-        try {
+   async function fetchVideos() {
+       try {
             const res = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/database.json?t=${Date.now()}`);
             const data = await res.json();
             const container = document.getElementById('videoContainer');
@@ -307,5 +323,6 @@
 </body>
     </html>
     
+
 
 

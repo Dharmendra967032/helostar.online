@@ -171,7 +171,7 @@
 
     async function fetchVideos() {
         try {
-            const res = await fetch(`https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/database.json?t=${Date.now()}`);
+            const res = await fetch(`https://raw.githubusercontent.com/dharmendra967032/helostar.online/database.json?t=${Date.now()}`);
             const data = await res.json();
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';

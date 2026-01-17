@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/upload.js": {
-      "runtime": "vercel-node@latest"
-    }
-  },
+  "builds": [
+    { "src": "api/upload.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
   "rewrites": [
     { "source": "/api/upload", "destination": "/api/upload.js" }
   ]

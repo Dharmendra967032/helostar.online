@@ -1,738 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4598159113879484"
-     crossorigin="anonymous"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helostar.online | Global Video Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-<meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>helostar.online</title>
-<!--font awesome-->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<!--cutom css file-->
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #121212;
+            --helostar-pink: #d3159d;
+            --text-white: #ffffff;
+            --text-gray: #999999;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
 
-<link rel="stylesheet" href="css/style.css">
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; overflow-x: hidden; }
         
-<!-- small dropdown CSS so the "products" navbar item becomes a dropdown -->
-<style>
-/* Dropdown in navbar */
-.dropdown { position: relative; display: inline-block; }
-.dropbtn { color: inherit; text-decoration: none; padding: 0.5rem; display: inline-block; }
-.dropdown .dropdown-content {
-    display: none;
-    position: absolute;
-    background: #fff;
-    min-width: 160px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    z-index: 1000;
-    border-radius: 4px;
-    overflow: hidden;
-}
-.dropdown .dropdown-content a {
-    color: #333;
-    padding: 10px 14px;
-    text-decoration: none;
-    display: block;
-    white-space: nowrap;
-}
-.dropdown .dropdown-content a:hover { background: #f1f1f1; }
-.dropdown:hover .dropdown-content,
-.dropdown:focus-within .dropdown-content { display: block; }
-/* keep dropdown inline with other navbar links */
-.navbar .dropdown { margin: 0 6px; }
-</style>
+        /* Auth Overlay */
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; outline: none; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         
+        /* Professional Mobile Header */
+        header { 
+            background: rgba(18, 18, 18, 0.95); 
+            padding: 10px 5%; 
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center; 
+            gap: 15px;
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            border-bottom: 1px solid var(--glass); 
+            backdrop-filter: blur(10px); 
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
+        
+        .search-container { position: relative; width: 100%; max-width: 400px; justify-self: center; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 0.8rem; }
+        #searchInput { width: 100%; padding: 8px 15px 8px 35px; background: #1a1a1a; border: 1px solid var(--glass); border-radius: 20px; color: white; outline: none; transition: 0.3s; font-size: 0.9rem; }
+        #searchInput:focus { border-color: var(--helostar-pink); }
 
-    </head>
+        .user-section { display: flex; align-items: center; gap: 10px; }
+        .logout-btn { background: none; border: 1px solid #444; color: var(--text-gray); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
+
+        /* Video Grid */
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        
+        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; position: relative; }
+        .video-card:hover { border-color: var(--helostar-pink); transform: translateY(-3px); }
+        .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        
+        .video-info { padding: 12px; }
+        .video-title { font-weight: 600; margin-bottom: 4px; display: block; font-size: 0.95rem; }
+        .video-meta { font-size: 0.75rem; color: var(--text-gray); }
+        
+        /* Controls */
+        .owner-controls { margin-top: 10px; display: flex; gap: 8px; border-top: 1px solid var(--glass); padding-top: 10px; }
+        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; flex: 1; }
+        .btn-delete { color: #ff4444; }
+        .btn-share { background: rgba(211, 21, 157, 0.1); border: 1px solid rgba(211, 21, 157, 0.3); color: var(--helostar-pink); padding: 6px; border-radius: 6px; cursor: pointer; flex: 0.3; }
+        .hidden-card { display: none !important; }
+
+        /* Professional Upload UI */
+        .fab-upload { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.3rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 15px rgba(211, 21, 157, 0.3); }
+        
+        #uploadStatus { position: fixed; bottom: 90px; right: 20px; background: rgba(18, 18, 18, 0.98); border: 1px solid var(--helostar-pink); padding: 15px; border-radius: 12px; display: none; color: white; z-index: 1002; width: 260px; backdrop-filter: blur(10px); }
+        .progress-container { width: 100%; background: #222; border-radius: 10px; height: 5px; margin: 12px 0; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--helostar-pink); transition: width 0.3s; }
+        .pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Mobile Specific Viewports */
+        @media (max-width: 580px) {
+            header { grid-template-columns: 1fr auto; padding: 10px; }
+            .search-container { grid-column: span 2; order: 3; max-width: 100%; }
+            .logo { font-size: 1.3rem; }
+            .container { margin: 10px auto; }
+            .video-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
 <body>
-<!--Header-->
-<header>
 
-    <input type="checkbox" name="" id="toggler">
-    <label for="toggler" class="fa fa-bars"></label>
-
-    <a href="https://helostar.online" class="logo">Helostar<span>.</span>online</a>
-
-<nav class="navbar">
-
-    <!-- products dropdown -->
-<div class="dropdown">
-    <a href="#products" class="dropbtn">New Services<i class="fa fa-caret-down"></i></a>
-    <div class="dropdown-content" aria-label="Products submenu">
-        <a href="Helostar.html">Helostar Beta</a>
-        <a href="index2.html">Audios</a>
-        <a href="Python.html">Python</a>
-        <a href="Windows.html">Server Administration</a>
-        
+    <div id="authOverlay">
+        <div class="auth-card">
+            <h2 style="color:var(--helostar-pink)">HELOSTAR</h2>
+            <button class="auth-btn" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Google Login</button>
+            <div style="margin: 10px 0; color: var(--text-gray); font-size: 0.7rem;">OR</div>
+            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Name">
+            <button class="auth-btn" style="background: #333;" onclick="guestMode()">Guest Mode</button>
+        </div>
     </div>
-</div>
-<a href="#home">home</a>
-<a href="#about">about</a>
-<a href="#review">review</a>
-<a href="#contact">contact</a>
-</nav>
 
-<div class="icons">
-<a href="https://helostar.online" class="fa fa-heart"></a>
-<a href="http://localhost/test/check.php" class="fa fa-shopping-cart"></a>
-<a href="http://localhost/test/index1.html" class="fa fa-user"></a>
-</div>
+    <header>
+        <a href="#" class="logo">HELOSTAR</a>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterVideos()">
+        </div>
+        <div class="user-section">
+            <div id="userDisplay" style="font-size: 0.7rem; color: var(--text-gray);"></div>
+            <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </header>
 
-</header>
+    <div class="container">
+        <div id="videoContainer" class="video-grid"></div>
+    </div>
 
-<a></a>
-    <br></br>
-<h2></h2>
-
-<!--products section-->
-<section class="products">
-    <div id="video-container" class="box-container">
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="Dhamaka.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                   <a href="https://youtu.be/qbjmBByoWcE?si=FckQpZI-M90tmXse" class="fa fa-heart"></a>
-                    <a href="Dhamaka.html" class="cart-btn">Watch Lyrics</a>
-                    <a href="https://youtu.be/qbjmBByoWcE?si=FckQpZI-M90tmXse" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>DHAMAKA – (Official Audio) | Heavy Desi Bass | Helostar.online | DJ Dharmendra EDM Vibe | 4K Video</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="goa_groove.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                   <a href="https://youtu.be/ezt3lVkbfew?si=5qQ-O1_8lUUHtTnN" class="fa fa-heart"></a>
-                    <a href="goa_groove.html" class="cart-btn">Watch Lyrics</a>
-                    <a href="https://youtu.be/ezt3lVkbfew?si=5qQ-O1_8lUUHtTnN" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>GOA GROOVE | Electro-House Drop | Beach Party Song | Dharmendra Shukla - Tiwari Brothers | FULL HD SONG</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="mahadev_song.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                   <a href="https://youtu.be/npyoSIASlgY?si=HBb7uqRfq5EMs8-m" class="fa fa-heart"></a>
-                    <a href="mahadev_song.html" class="cart-btn">Watch Lyrics</a>
-                    <a href="https://youtu.be/npyoSIASlgY?si=HBb7uqRfq5EMs8-m" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Power of Trishul: Munda Pandit Ka | High Bass Shiv Bhakti Song | Helostar.online | Official 4K Video</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="goa_trance_night.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                   <a href="https://youtu.be/ErsUdo15Wq4?si=KxsJh5BwML9l1PHn" class="fa fa-heart"></a>
-                    <a href="goa_trance_night.html" class="cart-btn">Watch Lyrics</a>
-                    <a href="https://youtu.be/ErsUdo15Wq4?si=KxsJh5BwML9l1PHn" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Goa Trance Night Party Song Party Hogi Jab Tak Nikal Na Jay Prabaht Hindi EDM | Shor Machao! | Dharmendra</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="speedometer_vibes.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                   <a href="https://youtu.be/p9hItxZ5e2Y?si=7Sl81an26jR7qpAM" class="fa fa-heart"></a>
-                    <a href="speedometer_vibes.html" class="cart-btn">Watch Lyrics</a>
-                    <a href="https://youtu.be/p9hItxZ5e2Y?si=7Sl81an26jR7qpAM" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Lakk Thumkda Jawe (Speed-o-Meter) - Dharmendra, The Desi King | Helostar.online | Audio Song</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="pawan.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                   <a href="https://youtu.be/Mg3Pnv820u0?si=b1Rj1raT1bONNSv3" class="fa fa-heart"></a>
-                    <a href="Pawan.html" class="cart-btn">Watch Lyrics</a>
-                    <a href="https://youtu.be/Mg3Pnv820u0?si=b1Rj1raT1bONNSv3" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>पवन जब द्वार पे आए, मन ॐ नमः शिवाय गाए | Dharmendra Shukla | Helostar.online | Offical Morning Shiv Bhakti Song</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="neondks.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/GbJ9L2uW_ns?si=oH3jU_C1z-BvHHzR" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/GbJ9L2uW_ns?si=oH3jU_C1z-BvHHzR" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Neon Heartbeat Fast | Dharmendra Shukla | Helostar.online | Latest Video Song | Energetic Party Song 2025</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="Shukladk.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/Lqr3QtPWhXg?si=7DQZuqdJZ57u5cBT" class="fa fa-heart"></a>
-                    <a href="shuklaadk.html" class="cart-btn">Watch Lyrics</a>
-                    <a href="https://youtu.be/Lqr3QtPWhXg?si=7DQZuqdJZ57u5cBT" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Shuklaa DK Offical Song | Dharmendra Shukla | Helostar.online | Latest Energetic Party Song 2025 | Audio Song</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="JaiSreeKrishnaByDharmendra.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/2nvnyrTbXOM?si=B6SsDCf_PJVqQFZx" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/2nvnyrTbXOM?si=B6SsDCf_PJVqQFZx" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>जय श्री कृष्ण, जय श्री कृष्ण Aisa Jeevan Na Ho, Ho Na Aisi Ghadi | Krishna Bhakti Song | Dharmendra</h2>
-            </div>
-        </div>
-        
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="SyamRadheySyam.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/HpJpfAL1U30?si=iHR-g4XEzGHEZEn9" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/HpJpfAL1U30?si=iHR-g4XEzGHEZEn9" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Syam Radhey Radhey Syam Radhey New Released bhakti Audio Song | Helostar.Online | Dharmendra Shukla</h2>
-            </div>
-        </div>
-        
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="GhuisernathKiMahima.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="#" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>जय हो! घुइसरनाथ बाबा की, जय शिव शंकर अविनाशी | Helostar.online | Dharmendra Shukla </h2>
-            </div>
-        </div>
-        
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="NaamTera.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="#" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Naam Tera He Dadkan Me Offcial Bhakti Geet | Jai Mata Di | Helostar.online | Dharmendra Shukla</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="JaiSreeRam.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/5TYwyfQDtAM?si=gQTK6mgtzctPOmHw" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/5TYwyfQDtAM?si=gQTK6mgtzctPOmHw" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>JAI SREE RAM OFFICIAL BHAKTI SONG🚩🌺🙏 | Helostar.online | DHARMENDRA Shukla</h2>
-            </div>
-        </div>
-        
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="SadDeviGeet.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/_0c5pc9z3ow?si=g44T6KO2zE7ig2pz" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/_0c5pc9z3ow?si=g44T6KO2zE7ig2pz" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>Bhojpuri Vidai Geet । Durga Pooja Sad Bhakti । Helostar.online</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="satrangokichunari.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/JYRXfG4glQc?si=OTUWsaH97AKkT8vk" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/JYRXfG4glQc?si=OTUWsaH97AKkT8vk" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>सात रंगो की चुनरी लहराए | Navratri Bhakti Geet 2025 | Devi Geet | Helostar.online</h2>
-            </div>
-        </div>
-        
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="Darsanko.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/GnOxiaG1lUE?si=uj7FETBzL8j0A-6g" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/GnOxiaG1lUE?si=uj7FETBzL8j0A-6g" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>माँ दुर्गा की जय हो - भजन | Darsan Ko Meri Ankhiya | Dharmendra Shukla</h2>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="IAMHYPER.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtube.com/shorts/dGPa-dN1254?si=lwtCFw9DKZwrXPUR" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtube.com/shorts/dGPa-dN1254?si=lwtCFw9DKZwrXPUR" class="fa fa-share"></a>
-                </div>
-            </div>
-            <div class="content">
-                <h2>I AM HYPER OFFICIAL MUSIC VIDEO | Dharmendra Shukla | Helostae.online</h2>
-            </div>
-        </div>
+    <div id="uploadStatus">
+        <div style="font-weight: bold; font-size: 0.85rem;"><i class="fas fa-upload"></i> Publishing...</div>
+        <input type="text" id="videoDescInput" class="auth-input" placeholder="Video caption...">
+        <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
+        <div id="statusMessage" style="font-size: 0.7rem; color: var(--text-gray);">Ready</div>
+    </div>
     
-        <div class="box">
-            <div class="image">
-                <video width="355" controls>
-                    <source src="SajalBaPandal.mp4" type="video/mp4">
-                </video>
-                <div class="icons">
-                    <a href="https://youtu.be/JpQMaRzv6f4?si=w__SD3V0aKBrB02C" class="fa fa-heart"></a>
-                    <a href="https://youtube.com/@helostar.online?si=p7lOwOVv_KjxWhlz" class="cart-btn">Subscribe</a>
-                    <a href="https://youtu.be/JpQMaRzv6f4?si=w__SD3V0aKBrB02C" class="fa fa-share"></a>
+    <input type="file" id="fileUpload" style="display:none" accept="video/*">
+    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
+
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
+      authDomain: "helostar-134d9.firebaseapp.com",
+      projectId: "helostar-134d9",
+      messagingSenderId: "698470895907",
+      appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
+    };
+
+    const ADMIN_EMAIL = "dharmendra967032@gmail.com"; // Set your email here
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    let currentUserEmail = null;
+    let isOwner = false;
+
+    auth.onAuthStateChanged(user => { if (user) startApp(user); });
+
+    function startApp(user) {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'block';
+        if (user) {
+            currentUserEmail = user.email;
+            isOwner = (user.email === ADMIN_EMAIL);
+            document.getElementById('userDisplay').innerHTML = isOwner ? `<b style="color:var(--helostar-pink)">OWNER</b>` : user.email.split('@')[0];
+            document.getElementById('uploadBtn').style.display = 'flex';
+        } else {
+            currentUserEmail = document.getElementById('guestUsername').value || "Guest";
+            document.getElementById('userDisplay').innerText = currentUserEmail;
+        }
+        fetchVideos();
+    }
+
+    async function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+    }
+
+    function guestMode() { startApp(null); }
+    function logout() { auth.signOut().then(() => window.location.reload()); }
+
+    async function fetchVideos() {
+        try {
+            const res = await fetch(`https://raw.githubusercontent.com/Dharmendra967032/helostar.online/main/database.json?t=${Date.now()}`);
+            const data = await res.json();
+            const container = document.getElementById('videoContainer');
+            container.innerHTML = '';
+            [...data.videos].reverse().forEach(v => renderVideo(v));
+        } catch (e) { console.log("Database fetch failed."); }
+    }
+
+    function renderVideo(video) {
+        const canManage = isOwner || (video.owner === currentUserEmail && currentUserEmail !== "Guest");
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.id = `video-${video.id}`;
+        card.innerHTML = `
+            <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
+            <div class="video-info">
+                <span class="video-title">${video.description}</span>
+                <div class="video-meta">By ${video.owner}</div>
+                <div class="owner-controls">
+                    <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
+                    ${canManage ? `<button class="btn-action btn-delete" onclick="deleteVideo('${video.id}')">Delete</button>` : ''}
                 </div>
-            </div>
-            <div class="content">
-                <h2>सजल बा पंडाल | Durga Maa Ka Bhavya Pandal | Dharmendra Shukla</h2>
-            </div>
-        </div>
+            </div>`;
+        container.appendChild(card);
+    }
 
-    </div>
+    document.getElementById('fileUpload').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        if (file.size > 20 * 1024 * 1024) return alert("Max size 20MB");
 
-    <div style="margin: 20px 0; text-align: center;">
-        <input type="file" id="videoUpload" accept="video/*" style="display: none;">
-        <button type="button" onclick="document.getElementById('videoUpload').click()" class="cart-btn" 
-                style="cursor:pointer; background:#27ae60; color:#fff; border:none; padding:15px 30px; border-radius:5px; font-weight:bold;">
-            + Add New
-        </button>
-    </div>
+        const statusBox = document.getElementById('uploadStatus');
+        const statusMsg = document.getElementById('statusMessage');
+        const pBar = document.getElementById('progressBar');
+        
+        statusBox.style.display = 'block';
+        pBar.style.width = '20%';
+        statusMsg.innerHTML = `<span class="pulse">Processing...</span>`;
 
-    <script>
-        const videoUpload = document.getElementById('videoUpload');
-        const container = document.getElementById('video-container');
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            pBar.style.width = '50%';
+            statusMsg.innerText = "Uploading to GitHub...";
+            const base64 = reader.result.split(',')[1];
 
-        // UPLOAD LOGIC
-        videoUpload.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const fileURL = URL.createObjectURL(file);
-                const newBox = document.createElement('div');
-                newBox.className = 'box';
+            try {
 
-                newBox.innerHTML = `
-                    <div class="image">
-                        <video width="355" controls>
-                            <source src="${fileURL}" type="video/mp4">
-                        </video>
-                        <div class="icons">
-                            <a href="#" class="fa fa-heart"></a>
-                            <a href="#" class="cart-btn">Watch Lyrics</a>
-                            <a href="#" class="fa fa-share"></a>
-                        </div>
-                    </div>
-                    <div class="content">
-                        <h2>${file.name}</h2>
-                    </div>
-                `;
-                container.appendChild(newBox);
-                this.value = ''; 
-            }
+                const response = await fetch('/api/upload', { 
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        fileName: `videos/${Date.now()}_v.mp4`, 
+                        content: base64, 
+                        description: document.getElementById('videoDescInput').value || "Video", 
+                        owner: currentUserEmail, 
+                        method: 'UPLOAD_VIDEO' 
+                    })
+   
+});
+
+                if(response.ok) {
+                    pBar.style.width = '100%';
+                    statusMsg.innerText = "Success! Refreshing...";
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    const errorMsg = await response.text();
+                    alert("Upload Error: " + errorMsg);
+                    statusBox.style.display = 'none';
+                }
+            } catch (err) { alert("Network Error"); statusBox.style.display = 'none'; }
+        };
+    });
+
+    async function deleteVideo(videoId) {
+        if(!confirm("Delete?")) return;
+        await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId, method: 'DELETE_VIDEO' })
         });
+        location.reload();
+    }
 
-        // PLAYBACK LOGIC (Pause others)
-        document.addEventListener('play', function(e) {
-            if (e.target.tagName.toLowerCase() === 'video') {
-                const allVideos = document.querySelectorAll('video');
-                allVideos.forEach(video => {
-                    if (video !== e.target) {
-                        video.pause();
-                    }
-                });
-            }
-        }, true);
-    </script>
-</section>
-<!--products section-->
+    function shareVideo(videoId) {
+        const url = `${window.location.origin}${window.location.pathname}#video-${videoId}`;
+        navigator.clipboard.writeText(url).then(() => alert("Link copied!"));
+    }
 
-<!--about-->
-<section class="about" id="about">
-    <h1 class="heading"> <span> about  us </span></h1>
-    <div class="row">
-        <div class="video-container">
-            <video src="Dhamaka.mp4" loop autoplay muted></video>
-            
-    
-        </div>
-
-    <div class="content">
-        <h3>why choose us?</h3>
-        <p>We Provide best Qulity service 
-            1.video editing like triming, cutting, VFX dediting,Green screen vidoe editing,
-            Audio mixing, and many more services are avaible that make you and you bussiness online in Cyber world.
-            2.Website designe, Logo design.
-            3.Computer hardware and Sofware related services are availble Like Windows OS installtion computer configuration and trubleshooting
-            cloud computing.
-        </p>
-
-        <p>
-            Facility to choose from a wide range of Services 
-            Facility to choose Bussiness class Online Services
-            100% satishfaction
-            Services are available at affordable prices
-            Attractive discounts on different Services and Products
-            Facility of comparing the products price with the market value
-            Free Home Delivery facility available for hardware realted services
-            100% Secure and Safe Services
-            sevices available for individuals as well as bussiness praspctive.
-        </p>
-        <a href="#" class="btn">learn more</a>
-    </div>
-</div>
-
-</section>
-
-<!--about-->
-
-<!--header ends-->
-<!--home-->
-
-<section class="home" id="home">
-    
-    <div class="content">
-
-        <h2>Lets Go Online With Helostar.online</h2>
-
-        <h2>Become *</h2>
-
-        <p>A place where stars Lives</p><p>Get You and Your Busssiness Online with Helostar.online</p>
-        <a href="#products" class="btn">Explore Now</a>
-    </div>
-
-</section>
-
-<!--home end-->
-
-
-<!--Icons-->
-<section class="icons-container">
-    <div class="icons">
-        <img src="http://localhost/test/free.jpg" alt="">
-        <div class="info">
-            <h3>free delivery</h3>
-            <span>on all orders</span>
-           
-        </div>
-    </div>
-
-    <div class="icons">
-        <img src="http://localhost/test/ret.jpg" alt="">
-        <div class="info">
-            <h3>10 days returns</h3>
-            <span>moneyback garntee</span>
-           
-        </div>
-    </div>
-
-    <div class="icons">
-        <img src="http://localhost/test/offer.jpg" alt="">
-        <div class="info">
-            <h3>offer and gift</h3>
-            <span>on all orders</span>
-           
-        </div>
-    </div>
-    <div class="icons">
-        <img src="http://localhost/test/sec.jpg" alt="">
-        <div class="info">
-            <h3>secure payment</h3>
-            <span>protected by paypal</span>
-        </div>
-    </div>
-</section>
-
-<!--Icon container-->
-
-<!--review Section start-->
-<section class="review" id="review">
-    <h1 class="heading"> <span>Customers  reviews</span></h1>
-    <div class="box box-container">
-        <div class="box">
-        <div class="stars">
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-           
-        </div>
-        <h1>Great Place</h1>
-        <br>
-       
-        <p>This is really nice and great Place in India, Price is very cheapest for all services.
-
-        </p>
-        <div class="user">
-           
-            <img src="http://localhost/test/prem.jpg" alt="">
-
-            <div class="user-info">
-                <h3>Prem Tiwari</h3>
-                <span>happy customer</span>
-               
-            </div>
-        </div>
-        <span class="fa fa-quote-right"></span>
-    </div>
-
-
-
-    <div class="box">
-        <div class="stars">
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-           
-        </div>
-        <h1>Good Computer Service provider</h1>
-        <br>
-       
-        <p>It is best place to provide all syber security and computer related queris</p>
-        <div class="user">
-           
-            <img src="http://localhost/test/prit.jpg" alt="">
-            <div class="user-info">
-                <h3>Preeti Nath</h3>
-                <span>happy customer</span>
-               
-            </div>
-        </div>
-        <span class="fa fa-quote-right"></span>
-    </div>
-
-
-
-
-    <div class="box">
-        <div class="stars">
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-           
-        </div>
-        <h1>Amazing Place</h1>
-        <br>
-       
-        <p>It is a nice Place and good for all of us. It is able to provide all types of Services to us. We must go there. </p>
-        <div class="user">
-           
-            <img src="http://localhost/test/dh.jpg" alt="">
-            <div class="user-info">
-                <h3>Dharmendra Shukla</h3>
-                <span>Happy Customer</span>
-               
-            </div>
-        </div>
-        <span class="fa fa-quote-right"></span>
-    </div>
-
-
-
-
-    <div class="box">
-        <div class="stars">
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-           
-        </div>
-        <h1>All Technical Services available</h1>
-        <br>
-       
-        <p>A Best place to get solution for all technical queris.</p>
-        <div class="user">
-           
-            <img src="http://localhost/test/lis.jpg" alt="">
-
-            <div class="user-info">
-                <h3>Lisa Reinhart</h3>
-                <span>happy customer</span>
-               
-            </div>
-        </div>
-        <span class="fa fa-quote-right"></span>
-    </div>
-   
-    </div>
-</section>
-
-
-
-
-
-<!--review Section end-->
-
-<!--contact section-->
-<section class="contact" id="contact">
-    <h1 class="heading"> <span> contact us </span>  </h1>
-    <div class="row">
-<form action="contact.php" method="post">
-    <input type="text" placeholder="name"  name="name"class="box">
-    <input type="email" placeholder="email" name="email" class="box">
-    <input type="number" placeholder="number"  name="number" class="box">
-    <textarea name="message" class="box" placeholder="message" id="" cols="30" rows="10"></textarea>
-    <input type="submit" value="send message" class="btn">
-
-</form>
-
-<div class="image">
-    <img src="http://localhost/test/2.jpg" alt="">
-</div>
-
-    </div>
-   
- 
-</section>
-        
-<!--Contact Ends-->
-
-<!--Footer Section -->
-<section class="footer">
-    <div class="box-container">
-        <div class="box">
-            <h3>Quick links</h3>
-            <a href="#">home</a>
-            <a href="#">about</a>
-            <a href="#">producst</a>
-            <a href="#">review</a>
-            <a href="#">contact</a>
-           
-        </div>
-   
-
-        <div class="box">
-            <h3>Extra Links</h3>
-            <a href="#">my Account</a>
-            <a href="#">my Order</a>
-            <a href="#">my faivorite</a> 
-        </div>
-
-                  <div class="box">
-                    <h3>Locations</h3>
-                    <a href="#">India</a>
-                    <a href="#">USA</a>
-                    <a href="#">UK</a>
-                    <a href="#">Russia</a>
-                   </div>
-
-           <div class="box">
-            <h3>Contact Info</h3>
-           <a href="https://www.facebook.com/helostar.online" class="fa fa-facebook">  Facebook</a>
-           <a href="https://www.youtube.com/@helostar.online" class="fa fa-youtube"> Youtube</a>
-           <a href="https://www.instagram.com/helostar.online" class="fa fa-instagram" >  Instagram</a>
-           <a href="https://x.com/helostaronline" class="fa fa-twitter">  X </a>
-           <a href="#">helpdesk</a>
-           <img src="http://localhost/test/pay2.jpg" alt="">
-            </div>
-     </div>
-   
-     <div class="credit">&copy2025-26 credit To Dharmendra Kumar Shuklaa |<span> Helostar.online </span>all Rights Reserved </div>
-
-</section>
-
-
-<!--Footer Section -->
-
+    function filterVideos() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.video-card').forEach(card => {
+            card.classList.toggle('hidden-card', !card.innerText.toLowerCase().includes(query));
+        });
+    }
+</script>
 </body>
-
-
 </html>
-
-
-
-

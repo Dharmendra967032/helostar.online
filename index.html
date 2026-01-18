@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar | Premium Square Feed</title>
+    <title>Helostar | Premium 355px Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,13 +13,13 @@
     <style>
         :root {
             --bg-color: #050505;
-            --card-bg: #121212;
+            --card-bg: #111111;
             --helostar-pink: #d3159d;
             --text-white: #ffffff;
-            --text-gray: #999999;
+            --text-gray: #a0a0a0;
             --glass: rgba(255, 255, 255, 0.05);
-            /* Square Ratio Settings */
-            --square-size: 320px; 
+            /* Strict Sizing */
+            --fixed-width: 355px; 
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; overflow-x: hidden; }
@@ -30,70 +30,69 @@
         header { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
         .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); cursor: pointer; letter-spacing: -1px; }
         
-        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px 150px 20px; }
+        .container { max-width: 1600px; margin: 40px auto; padding: 0 20px 150px 20px; }
         
-        /* Grid Layout */
+        /* Grid Layout with fixed column width */
         .video-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(var(--square-size), 1fr)); 
-            gap: 20px; 
-            justify-items: center; 
+            grid-template-columns: repeat(auto-fill, var(--fixed-width)); 
+            gap: 25px; 
+            justify-content: center; 
         }
         
-        /* Square Video Card */
+        /* Fixed Video Card */
         .video-card { 
             background: var(--card-bg); 
-            border-radius: 12px; 
+            border-radius: 16px; 
             overflow: hidden; 
             border: 1px solid var(--glass); 
-            width: 100%;
-            max-width: var(--square-size);
-            transition: 0.3s ease; 
+            width: var(--fixed-width);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             cursor: pointer; 
         }
         
-        .video-card:hover { transform: scale(1.02); border-color: var(--helostar-pink); }
+        .video-card:hover { transform: scale(1.03); border-color: var(--helostar-pink); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
 
-        /* Force 1:1 (9:9) Aspect Ratio */
+        /* Force 1:1 Aspect Ratio (9:9) */
         .video-wrapper { 
             position: relative; 
             width: 100%; 
-            aspect-ratio: 1 / 1; 
+            height: var(--fixed-width); /* Height equals width for perfect square */
             background: #000; 
         }
 
         video { 
             width: 100%; 
             height: 100%; 
-            object-fit: cover; /* Crops portrait/landscape to fit the square */
+            object-fit: cover; 
         }
 
-        .video-info { padding: 12px; }
-        .video-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .video-meta { font-size: 0.75rem; color: var(--text-gray); display: flex; justify-content: space-between; }
+        .video-info { padding: 16px; background: linear-gradient(to top, #111, #181818); }
+        .video-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-meta { font-size: 0.8rem; color: var(--text-gray); display: flex; justify-content: space-between; align-items: center; }
 
         /* Theater Mode */
-        #theaterMode { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 4000; justify-content: center; align-items: center; flex-direction: column; }
-        #theaterVideo { width: 90%; max-width: 800px; aspect-ratio: 1/1; max-height: 70vh; border-radius: 8px; box-shadow: 0 0 50px rgba(0,0,0,1); }
-        .close-theater { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: white; cursor: pointer; }
+        #theaterMode { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.97); z-index: 4000; justify-content: center; align-items: center; }
+        #theaterVideo { width: 90%; max-width: 800px; aspect-ratio: 1/1; max-height: 85vh; border-radius: 12px; border: 1px solid var(--glass); }
+        .close-theater { position: absolute; top: 25px; right: 35px; font-size: 2.5rem; color: white; cursor: pointer; }
 
-        /* UI Elements */
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--glass); background: #1a1a1a; color: white; outline: none; }
         .auth-btn { width: 100%; padding: 14px; background: var(--helostar-pink); border: none; color: white; border-radius: 10px; cursor: pointer; font-weight: 800; }
         
-        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 20px rgba(211, 21, 157, 0.4); font-size: 1.5rem; }
-        #uploadProgress { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: var(--helostar-pink); padding: 8px 20px; border-radius: 30px; display: none; z-index: 2001; }
+        .fab-upload { position: fixed; bottom: 40px; right: 40px; width: 65px; height: 65px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 10px 25px rgba(211, 21, 157, 0.4); font-size: 1.6rem; }
+        #uploadProgress { position: fixed; top: 85px; left: 50%; transform: translateX(-50%); background: var(--helostar-pink); padding: 8px 25px; border-radius: 30px; display: none; z-index: 2001; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="auth-card">
-            <h1 style="color:var(--helostar-pink); letter-spacing: -2px;">HELOSTAR</h1>
-            <button class="auth-btn" onclick="signInWithGoogle()">Login with Google</button>
-            <div style="margin: 15px 0; color: var(--text-gray);">OR</div>
-            <input type="text" id="guestUsername" class="auth-input" placeholder="Nickname">
-            <button class="auth-btn" style="background: #222;" onclick="guestMode()">Guest Access</button>
+            <h1 style="color:var(--helostar-pink); letter-spacing: -2px; font-size: 2.2rem;">HELOSTAR</h1>
+            <p style="color:var(--text-gray); margin-bottom: 25px;">Premium Social Media Feed</p>
+            <button class="auth-btn" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Login with Google</button>
+            <div style="margin: 15px 0; color: var(--text-gray); font-size: 0.8rem;">OR</div>
+            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Nickname">
+            <button class="auth-btn" style="background: #252525;" onclick="guestMode()">Guest Access</button>
         </div>
     </div>
 
@@ -102,11 +101,11 @@
         <video id="theaterVideo" controls autoplay></video>
     </div>
 
-    <div id="uploadProgress">Uploading...</div>
+    <div id="uploadProgress">Uploading Content...</div>
 
     <header>
         <div class="logo" onclick="location.reload()">HELOSTAR</div>
-        <input type="text" id="searchInput" class="auth-input" style="margin:0; width: 300px; border-radius: 20px;" placeholder="Search..." onkeyup="filterVideos()">
+        <input type="text" id="searchInput" class="auth-input" style="margin:0; width: 350px; border-radius: 25px;" placeholder="Search videos..." onkeyup="filterVideos()">
         <button id="logoutBtn" class="auth-btn" style="display:none; width:auto; padding: 8px 20px;" onclick="logout()">Logout</button>
     </header>
 
@@ -162,10 +161,10 @@
                 <video src="${video.url}" muted playsinline loop></video>
             </div>
             <div class="video-info">
-                <span class="video-title">${video.description || 'Helostar Clip'}</span>
+                <span class="video-title">${video.description || 'Helostar Premium'}</span>
                 <div class="video-meta">
                     <span>@${video.owner ? video.owner.split('@')[0] : 'user'}</span>
-                    <span><i class="fas fa-eye"></i> ${video.views || 0}</span>
+                    <span><i class="fas fa-play"></i> ${video.views || 0}</span>
                 </div>
             </div>`;
         document.getElementById('videoContainer').appendChild(card);
@@ -197,7 +196,7 @@
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const desc = prompt("Enter Caption:");
+        const desc = prompt("Enter a video caption:");
         document.getElementById('uploadProgress').style.display = 'block';
 
         try {
@@ -205,9 +204,9 @@
             const { data, error: uploadError } = await _supabase.storage.from('video-uploads').upload(fileName, file);
             if (uploadError) throw uploadError;
             const { data: { publicUrl } } = _supabase.storage.from('video-uploads').getPublicUrl(fileName);
-            await _supabase.from('videos').insert([{ url: publicUrl, description: desc || "Square Feed", owner: currentUserEmail, views: 0, likes: 0 }]);
+            await _supabase.from('videos').insert([{ url: publicUrl, description: desc || "Square Post", owner: currentUserEmail, views: 0, likes: 0 }]);
             location.reload();
-        } catch (err) { alert("Error: " + err.message); } 
+        } catch (err) { alert("Upload Failed: " + err.message); } 
         finally { document.getElementById('uploadProgress').style.display = 'none'; }
     });
 

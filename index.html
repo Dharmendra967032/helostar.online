@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar | Premium Video Feed</title>
+    <title>Helostar | Premium Square Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -18,81 +18,96 @@
             --text-white: #ffffff;
             --text-gray: #999999;
             --glass: rgba(255, 255, 255, 0.05);
+            /* Square Ratio Settings */
+            --square-size: 320px; 
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; overflow-x: hidden; }
         
-        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
-        .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
+        #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        .auth-card { background: var(--card-bg); padding: 40px; border-radius: 24px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
         
-        header { background: rgba(18, 18, 18, 0.95); padding: 10px 5%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; cursor: pointer; }
+        header { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--helostar-pink); cursor: pointer; letter-spacing: -1px; }
         
-        /* Added extra bottom padding so the upload button doesn't hide content */
-        .container { max-width: 600px; margin: 20px auto; padding: 0 10px 150px 10px; }
-        .video-grid { display: flex; flex-direction: column; gap: 40px; }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px 150px 20px; }
         
-        .video-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; border: 1px solid var(--glass); position: relative; }
-        .video-wrapper { position: relative; width: 100%; aspect-ratio: 9/16; background: #000; max-height: 80vh; }
-        video { width: 100%; height: 100%; object-fit: contain; }
-        
-        .video-info { padding: 20px; }
-        .video-meta { font-size: 0.85rem; color: var(--text-gray); margin-bottom: 15px; display: flex; justify-content: space-between; }
-
-        .video-actions { display: flex; gap: 25px; border-top: 1px solid var(--glass); padding-top: 15px; }
-        .action-item { cursor: pointer; color: var(--text-gray); display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
-        .action-item:hover { color: var(--helostar-pink); }
-        
-        .comment-box { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-top: 15px; display: none; }
-        .comment-list { max-height: 150px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 10px; }
-        
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; outline: none; box-sizing: border-box; }
-        .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
-        /* Improved Upload Button View */
-        .fab-upload { 
-            position: fixed; 
-            bottom: 30px; 
-            right: 30px; 
-            width: 60px; 
-            height: 60px; 
-            border-radius: 50%; 
-            background: var(--helostar-pink); 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 1001; 
-            font-size: 1.5rem;
-            opacity: 0.8;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: 0.3s;
+        /* Grid Layout */
+        .video-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(var(--square-size), 1fr)); 
+            gap: 20px; 
+            justify-items: center; 
         }
-        .fab-upload:hover { opacity: 1; transform: scale(1.1); }
         
-        #uploadProgress { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--helostar-pink); padding: 5px 20px; border-radius: 20px; font-size: 0.8rem; display: none; z-index: 2001; }
+        /* Square Video Card */
+        .video-card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 1px solid var(--glass); 
+            width: 100%;
+            max-width: var(--square-size);
+            transition: 0.3s ease; 
+            cursor: pointer; 
+        }
+        
+        .video-card:hover { transform: scale(1.02); border-color: var(--helostar-pink); }
+
+        /* Force 1:1 (9:9) Aspect Ratio */
+        .video-wrapper { 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1 / 1; 
+            background: #000; 
+        }
+
+        video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* Crops portrait/landscape to fit the square */
+        }
+
+        .video-info { padding: 12px; }
+        .video-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-meta { font-size: 0.75rem; color: var(--text-gray); display: flex; justify-content: space-between; }
+
+        /* Theater Mode */
+        #theaterMode { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 4000; justify-content: center; align-items: center; flex-direction: column; }
+        #theaterVideo { width: 90%; max-width: 800px; aspect-ratio: 1/1; max-height: 70vh; border-radius: 8px; box-shadow: 0 0 50px rgba(0,0,0,1); }
+        .close-theater { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: white; cursor: pointer; }
+
+        /* UI Elements */
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--glass); background: #1a1a1a; color: white; outline: none; }
+        .auth-btn { width: 100%; padding: 14px; background: var(--helostar-pink); border: none; color: white; border-radius: 10px; cursor: pointer; font-weight: 800; }
+        
+        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 20px rgba(211, 21, 157, 0.4); font-size: 1.5rem; }
+        #uploadProgress { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: var(--helostar-pink); padding: 8px 20px; border-radius: 30px; display: none; z-index: 2001; }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="auth-card">
-            <h1 style="color:var(--helostar-pink)">HELOSTAR</h1>
+            <h1 style="color:var(--helostar-pink); letter-spacing: -2px;">HELOSTAR</h1>
             <button class="auth-btn" onclick="signInWithGoogle()">Login with Google</button>
             <div style="margin: 15px 0; color: var(--text-gray);">OR</div>
-            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Username">
-            <button class="auth-btn" style="background: #333;" onclick="guestMode()">Guest Access</button>
+            <input type="text" id="guestUsername" class="auth-input" placeholder="Nickname">
+            <button class="auth-btn" style="background: #222;" onclick="guestMode()">Guest Access</button>
         </div>
     </div>
 
-    <div id="uploadProgress">Uploading... Please wait.</div>
+    <div id="theaterMode">
+        <span class="close-theater" onclick="closeTheater()">&times;</span>
+        <video id="theaterVideo" controls autoplay></video>
+    </div>
+
+    <div id="uploadProgress">Uploading...</div>
 
     <header>
         <div class="logo" onclick="location.reload()">HELOSTAR</div>
-        <input type="text" id="searchInput" class="auth-input" style="margin:0; border-radius: 20px;" placeholder="Search..." onkeyup="filterVideos()">
-        <button id="logoutBtn" class="auth-btn" style="display:none; width:auto; padding: 5px 10px;" onclick="logout()">Logout</button>
+        <input type="text" id="searchInput" class="auth-input" style="margin:0; width: 300px; border-radius: 20px;" placeholder="Search..." onkeyup="filterVideos()">
+        <button id="logoutBtn" class="auth-btn" style="display:none; width:auto; padding: 8px 20px;" onclick="logout()">Logout</button>
     </header>
 
     <div class="container">
@@ -103,7 +118,6 @@
     <button id="uploadBtn" class="fab-upload" onclick="triggerUpload()"><i class="fa fa-plus"></i></button>
 
 <script>
-    // Project Keys (Keep these as they were)
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
@@ -142,56 +156,40 @@
     function renderVideo(video) {
         const card = document.createElement('div');
         card.className = 'video-card';
+        card.onclick = () => openTheater(video.url);
         card.innerHTML = `
-            <div class="video-wrapper">
-                <video src="${video.url}" playsinline controls onplay="handlePlay(this, ${video.id})" onended="playNextVideo(this)"></video>
+            <div class="video-wrapper" onmouseenter="hoverPlay(this)" onmouseleave="hoverPause(this)">
+                <video src="${video.url}" muted playsinline loop></video>
             </div>
             <div class="video-info">
-                <span style="font-weight:bold;">${video.description || 'Helostar Video'}</span>
+                <span class="video-title">${video.description || 'Helostar Clip'}</span>
                 <div class="video-meta">
-                    <span>@${video.owner.split('@')[0]}</span>
-                    <span><i class="fas fa-eye"></i> <span id="views-${video.id}">${video.views || 0}</span></span>
-                </div>
-                <div class="video-actions">
-                    <div class="action-item" onclick="handleLike(${video.id})">
-                        <i class="fas fa-heart"></i> <span id="likes-${video.id}">${video.likes || 0}</span>
-                    </div>
-                    <div class="action-item" onclick="toggleComments(${video.id})">
-                        <i class="fas fa-comment"></i> Comment
-                    </div>
-                </div>
-                <div id="comment-box-${video.id}" class="comment-box">
-                    <div class="comment-list" id="list-${video.id}"></div>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="input-${video.id}" class="auth-input" style="margin:0;" placeholder="Add comment...">
-                        <button class="auth-btn" style="width:70px; margin:0;" onclick="submitComment(${video.id})">Post</button>
-                    </div>
+                    <span>@${video.owner ? video.owner.split('@')[0] : 'user'}</span>
+                    <span><i class="fas fa-eye"></i> ${video.views || 0}</span>
                 </div>
             </div>`;
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    // Playback and Views logic
-    function handlePlay(vid, id) {
-        document.querySelectorAll('video').forEach(v => { if (v !== vid) v.pause(); });
-        incrementViews(id);
+    function openTheater(url) {
+        const theater = document.getElementById('theaterMode');
+        const tvid = document.getElementById('theaterVideo');
+        tvid.src = url;
+        theater.style.display = 'flex';
     }
 
-    async function incrementViews(id) {
-        const { data } = await _supabase.from('videos').select('views').eq('id', id).single();
-        const newViews = (data.views || 0) + 1;
-        await _supabase.from('videos').update({ views: newViews }).eq('id', id);
-        const viewSpan = document.getElementById(`views-${id}`);
-        if(viewSpan) viewSpan.innerText = newViews;
+    function closeTheater() {
+        const theater = document.getElementById('theaterMode');
+        const tvid = document.getElementById('theaterVideo');
+        tvid.pause();
+        tvid.src = "";
+        theater.style.display = 'none';
     }
 
-    function playNextVideo(vid) {
-        const cards = Array.from(document.querySelectorAll('.video-card'));
-        const nextIdx = cards.indexOf(vid.closest('.video-card')) + 1;
-        if (nextIdx < cards.length) {
-            cards[nextIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => cards[nextIdx].querySelector('video').play(), 800);
-        }
+    function hoverPlay(wrapper) { wrapper.querySelector('video').play(); }
+    function hoverPause(wrapper) { 
+        const v = wrapper.querySelector('video');
+        v.pause(); v.currentTime = 0;
     }
 
     function triggerUpload() { document.getElementById('fileUpload').click(); }
@@ -199,66 +197,24 @@
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
-        const desc = prompt("Enter a video caption:");
+        const desc = prompt("Enter Caption:");
         document.getElementById('uploadProgress').style.display = 'block';
 
         try {
             const fileName = `${Date.now()}_${file.name}`;
-            const { data, error: uploadError } = await _supabase.storage
-                .from('video-uploads')
-                .upload(fileName, file);
-
+            const { data, error: uploadError } = await _supabase.storage.from('video-uploads').upload(fileName, file);
             if (uploadError) throw uploadError;
-
             const { data: { publicUrl } } = _supabase.storage.from('video-uploads').getPublicUrl(fileName);
-
-            await _supabase.from('videos').insert([{ 
-                url: publicUrl, 
-                description: desc || "Helostar Video", 
-                owner: currentUserEmail,
-                views: 0,
-                likes: 0
-            }]);
-
+            await _supabase.from('videos').insert([{ url: publicUrl, description: desc || "Square Feed", owner: currentUserEmail, views: 0, likes: 0 }]);
             location.reload();
-        } catch (err) {
-            alert("Upload failed: " + err.message);
-        } finally {
-            document.getElementById('uploadProgress').style.display = 'none';
-        }
+        } catch (err) { alert("Error: " + err.message); } 
+        finally { document.getElementById('uploadProgress').style.display = 'none'; }
     });
-
-    async function handleLike(id) {
-        const { data } = await _supabase.from('videos').select('likes').eq('id', id).single();
-        const newLikes = (data.likes || 0) + 1;
-        await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
-        document.getElementById(`likes-${id}`).innerText = newLikes;
-    }
-
-    function toggleComments(id) {
-        const box = document.getElementById(`comment-box-${id}`);
-        box.style.display = box.style.display === 'block' ? 'none' : 'block';
-        if (box.style.display === 'block') loadComments(id);
-    }
-
-    async function submitComment(id) {
-        const input = document.getElementById(`input-${id}`);
-        if (!input.value.trim()) return;
-        await _supabase.from('comments').insert([{ video_id: id, user_name: currentUserEmail.split('@')[0], comment_text: input.value }]);
-        input.value = '';
-        loadComments(id);
-    }
-
-    async function loadComments(id) {
-        const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
-        document.getElementById(`list-${id}`).innerHTML = data.map(c => `<div style="margin-bottom:5px;"><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('') || 'No comments.';
-    }
 
     function filterVideos() {
         const q = document.getElementById('searchInput').value.toLowerCase();
         document.querySelectorAll('.video-card').forEach(c => {
-            c.classList.toggle('hidden-card', !c.innerText.toLowerCase().includes(q));
+            c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none';
         });
     }
 

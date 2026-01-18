@@ -209,7 +209,7 @@
                 
                 const uploadRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${videoFileName}`, {
                     method: 'PUT',
-                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: "Upload Video", content: base64Content })
                 });
 
@@ -220,7 +220,7 @@
                 pBar.style.width = '80%';
                 
                 const dbUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.json`;
-                const dbRes = await fetch(dbUrl, { headers: { 'Authorization': `token ${GITHUB_TOKEN}` }});
+                const dbRes = await fetch(dbUrl, { headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }});
                 const dbData = await dbRes.json();
                 const dbContent = JSON.parse(atob(dbData.content));
 
@@ -233,7 +233,7 @@
 
                 await fetch(dbUrl, {
                     method: 'PUT',
-                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: "Update Database",
                         content: btoa(JSON.stringify(dbContent, null, 2)),
@@ -255,7 +255,7 @@
         try {
             // 1. Get current database
             const dbUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.json`;
-            const dbRes = await fetch(dbUrl, { headers: { 'Authorization': `token ${GITHUB_TOKEN}` }});
+            const dbRes = await fetch(dbUrl, { headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }});
             const dbData = await dbRes.json();
             let dbContent = JSON.parse(atob(dbData.content));
 
@@ -265,7 +265,7 @@
             // 3. Save JSON
             await fetch(dbUrl, {
                 method: 'PUT',
-                headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: "Delete Video Entry",
                     content: btoa(JSON.stringify(dbContent, null, 2)),

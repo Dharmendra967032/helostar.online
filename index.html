@@ -3,67 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar Pro | Premium Feed</title>
+    <title>Helostar | Premium Video</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <div class="app-container">
+    <div class="app-shell">
         <aside class="sidebar">
             <div class="logo">HELO<span>STAR</span></div>
             
-            <nav class="menu">
-                <div class="menu-section">
-                    <p class="section-title">Discovery</p>
-                    <a href="#" class="menu-item active" onclick="switchMode('long')"><i class="fas fa-desktop"></i> Cinema (Long)</a>
-                    <a href="#" class="menu-item" onclick="switchMode('short')"><i class="fas fa-mobile-alt"></i> Shorts (Vertical)</a>
+            <nav class="nav-menu">
+                <div class="nav-group">
+                    <p class="nav-label">Feed Type</p>
+                    <button class="nav-btn active" onclick="switchMode('long', this)">
+                        <i class="fas fa-desktop"></i> Cinema (Long)
+                    </button>
+                    <button class="nav-btn" onclick="switchMode('short', this)">
+                        <i class="fas fa-mobile-alt"></i> Shorts (Vertical)
+                    </button>
                 </div>
 
-                <div class="menu-section">
-                    <p class="section-title">Library</p>
+                <div class="nav-group">
+                    <p class="nav-label">Library</p>
                     <div class="dropdown">
-                        <button class="dropbtn">Categories <i class="fas fa-chevron-down"></i></button>
-                        <div class="dropdown-content">
-                            <a href="#">Trending</a>
-                            <a href="#">Music</a>
-                            <a href="#">Gaming</a>
+                        <button class="nav-btn dropdown-toggle" onclick="toggleDropdown()">
+                            <i class="fas fa-th-large"></i> Categories <i class="fas fa-chevron-down chevron"></i>
+                        </button>
+                        <div id="categoryDropdown" class="dropdown-content">
+                            <a href="#"><i class="fas fa-fire"></i> Trending</a>
+                            <a href="#"><i class="fas fa-music"></i> Music</a>
+                            <a href="#"><i class="fas fa-gamepad"></i> Gaming</a>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <div class="sidebar-footer">
-                <button class="upload-trigger" onclick="triggerUpload()">
-                    <i class="fas fa-cloud-upload-alt"></i> Upload
-                </button>
-            </div>
+            <button class="upload-btn" onclick="triggerUpload()">
+                <i class="fas fa-plus-circle"></i> Upload Video
+            </button>
         </aside>
 
         <main class="main-content">
-            <header class="top-bar">
-                <div class="search-wrapper">
+            <header class="top-header">
+                <div class="search-bar">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search premium videos...">
+                    <input type="text" id="searchInput" placeholder="Search for content..." onkeyup="filterVideos()">
                 </div>
-                <div class="profile-zone">
-                    <span id="userTag">Guest</span>
-                    <div class="avatar"></div>
+                <div class="user-profile">
+                    <span id="userName">Guest User</span>
+                    <div class="avatar">H</div>
                 </div>
             </header>
 
-            <div id="videoContainer" class="video-display-area mode-long">
+            <div id="videoContainer" class="video-grid mode-long">
                 </div>
         </main>
     </div>
 
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <div id="uploadOverlay" class="upload-overlay">
-        <div class="loader"></div>
-        <p>Processing High Quality Video...</p>
+    <div id="loadingOverlay" class="overlay">
+        <div class="spinner"></div>
+        <p>Uploading to Helostar...</p>
     </div>
 
     <script src="script.js"></script>

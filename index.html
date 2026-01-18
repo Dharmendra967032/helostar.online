@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar.online | Global Video Feed</title>
+    <title>Helostar | Premium Video Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
@@ -21,61 +19,57 @@
             --glass: rgba(255, 255, 255, 0.05);
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; overflow: hidden; }
         
+        /* Auth Overlay */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; outline: none; }
         .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
-        header { background: rgba(18, 18, 18, 0.95); padding: 10px 5%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); backdrop-filter: blur(10px); }
+
+        header { background: rgba(18, 18, 18, 0.95); padding: 10px 5%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); backdrop-filter: blur(10px); height: 60px; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
-        
-        .search-container { position: relative; width: 100%; max-width: 400px; justify-self: center; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 0.8rem; }
-        #searchInput { width: 100%; padding: 8px 15px 8px 35px; background: #1a1a1a; border: 1px solid var(--glass); border-radius: 20px; color: white; outline: none; transition: 0.3s; font-size: 0.9rem; }
 
-        .user-section { display: flex; align-items: center; gap: 10px; }
-        .logout-btn { background: none; border: 1px solid #444; color: var(--text-gray); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
-
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        
-        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; position: relative; }
-        .video-card:hover { border-color: var(--helostar-pink); transform: translateY(-3px); }
-        .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        
-        .video-info { padding: 12px; }
-        .video-title { font-weight: 600; margin-bottom: 4px; display: block; font-size: 0.95rem; }
-        .video-meta { font-size: 0.75rem; color: var(--text-gray); }
-        
-        .owner-controls { margin-top: 10px; display: flex; gap: 8px; border-top: 1px solid var(--glass); padding-top: 10px; }
-        .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; flex: 1; }
-        .btn-delete { color: #ff4444; }
-        .btn-share { background: rgba(211, 21, 157, 0.1); border: 1px solid rgba(211, 21, 157, 0.3); color: var(--helostar-pink); padding: 6px; border-radius: 6px; cursor: pointer; flex: 0.3; }
-        .hidden-card { display: none !important; }
-
-        .fab-upload { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.3rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 15px rgba(211, 21, 157, 0.3); }
-        
-        #uploadStatus { position: fixed; bottom: 90px; right: 20px; background: rgba(18, 18, 18, 0.98); border: 1px solid var(--helostar-pink); padding: 15px; border-radius: 12px; display: none; color: white; z-index: 1002; width: 260px; backdrop-filter: blur(10px); }
-        .progress-container { width: 100%; background: #222; border-radius: 10px; height: 5px; margin: 12px 0; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: var(--helostar-pink); transition: width 0.3s; }
-        .pulse { animation: pulse 1.5s infinite; }
-        .video-actions { display: flex; align-items: center; gap: 15px; margin: 10px 0; border-top: 1px solid var(--glass); padding-top: 10px; }
-.action-item { cursor: pointer; font-size: 0.9rem; color: var(--text-gray); transition: 0.2s; }
-.action-item:hover { color: var(--helostar-pink); }
-.comment-box { background: #1a1a1a; padding: 10px; border-radius: 8px; margin-top: 10px; }
-.comment-input { background: transparent; border: none; border-bottom: 1px solid #333; color: white; width: 100%; font-size: 0.8rem; outline: none; margin-bottom: 5px; }
-.comment-list { max-height: 100px; overflow-y: auto; font-size: 0.75rem; color: var(--text-gray); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        @media (max-width: 580px) {
-            header { grid-template-columns: 1fr auto; padding: 10px; }
-            .search-container { grid-column: span 2; order: 3; max-width: 100%; }
-            .logo { font-size: 1.3rem; }
-            .video-grid { grid-template-columns: 1fr; }
+        /* Video Feed Scroll Snapping */
+        .container { 
+            height: calc(100vh - 60px); 
+            overflow-y: scroll; 
+            scroll-snap-type: y mandatory; 
+            scroll-behavior: smooth;
+            padding: 0 10px;
         }
+        .video-grid { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
+        .video-card { 
+            background: var(--card-bg); 
+            border-radius: 16px; 
+            overflow: hidden; 
+            border: 1px solid var(--glass); 
+            width: 100%; 
+            max-width: 500px; 
+            scroll-snap-align: center;
+            transition: 0.3s;
+        }
+        
+        .video-wrapper { position: relative; width: 100%; aspect-ratio: 9/16; background: #000; max-height: 70vh; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+
+        .video-info { padding: 15px; }
+        .video-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 0.8rem; color: var(--text-gray); }
+        
+        .follow-btn { background: transparent; border: 1px solid var(--helostar-pink); color: var(--helostar-pink); padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; }
+        .follow-btn.active { background: var(--helostar-pink); color: white; }
+
+        .video-actions { display: flex; gap: 20px; margin: 15px 0; border-top: 1px solid var(--glass); padding-top: 10px; }
+        .action-item { cursor: pointer; font-size: 1rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; }
+        .action-item:hover { color: var(--helostar-pink); }
+
+        .comment-box { background: #1a1a1a; padding: 10px; border-radius: 10px; margin-top: 10px; display: none; }
+        .comment-list { max-height: 120px; overflow-y: auto; font-size: 0.8rem; margin-bottom: 10px; }
+        
+        .fab-upload { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; }
+        
+        .hidden-card { display: none !important; }
     </style>
 </head>
 <body>
@@ -91,482 +85,203 @@
     </div>
 
     <header>
-        <a href="#" class="logo">HELOSTAR</a>
+        <a href="index.html" class="logo">HELOSTAR</a>
         <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterVideos()">
+            <input type="text" id="searchInput" class="auth-input" placeholder="Search creators..." onkeyup="filterVideos()" style="margin:0; padding:8px 15px;">
         </div>
         <div class="user-section">
-            <div id="userDisplay" style="font-size: 0.7rem; color: var(--text-gray);"></div>
-            <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+            <button id="logoutBtn" class="auth-btn" style="display:none; padding:5px 10px; margin:0; font-size:12px;" onclick="logout()">Logout</button>
         </div>
-        <div style="padding: 10px 5%; display: flex; gap: 10px;">
-    <button class="logout-btn" onclick="fetchVideos('created_at')">Newest</button>
-    <button class="logout-btn" style="color: var(--helostar-pink); border-color: var(--helostar-pink);" onclick="fetchVideos('likes')">🔥 Trending</button>
-</div>
     </header>
 
-    <div class="container">
+    <div class="container" id="scrollContainer">
         <div id="videoContainer" class="video-grid"></div>
     </div>
 
-    <div id="uploadStatus">
-        <div style="font-weight: bold; font-size: 0.85rem;"><i class="fas fa-upload"></i> Publishing...</div>
-        <input type="text" id="videoDescInput" class="auth-input" placeholder="Video caption...">
-        <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
-        <div id="statusMessage" style="font-size: 0.7rem; color: var(--text-gray);">Ready</div>
-    </div>
-    
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
     <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
 
 <script>
-    // --- CONFIGURATION ---
-    // PASTE YOUR SUPABASE PROJECT DETAILS HERE
+    // --- CONFIG ---
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
-    const firebaseConfig = {
+    firebase.initializeApp({
       apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
       authDomain: "helostar-134d9.firebaseapp.com",
-      projectId: "helostar-134d9",
-      messagingSenderId: "698470895907",
-      appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
-    };
+      projectId: "helostar-134d9"
+    });
 
-    // --- INITIALIZATION ---
-    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     let currentUserEmail = null;
 
     auth.onAuthStateChanged(user => { 
-        if (user) {
-            startApp(user);
-        } else if (localStorage.getItem('guestUser')) {
-            startApp({ email: localStorage.getItem('guestUser'), isGuest: true });
-        }
+        if (user) startApp(user);
+        else if (localStorage.getItem('guestUser')) startApp({ email: localStorage.getItem('guestUser') });
     });
 
     function startApp(user) {
         document.getElementById('authOverlay').style.display = 'none';
         document.getElementById('logoutBtn').style.display = 'block';
-        currentUserEmail = user.email;
-        document.getElementById('userDisplay').innerText = user.email.split('@')[0];
         document.getElementById('uploadBtn').style.display = 'flex';
+        currentUserEmail = user.email;
         fetchVideos();
     }
 
-    async function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        await auth.signInWithPopup(provider);
-    }
-
-    function guestMode() { 
-        const name = document.getElementById('guestUsername').value || "Guest_" + Math.floor(Math.random()*1000);
-        localStorage.setItem('guestUser', name);
-        startApp({ email: name, isGuest: true }); 
-    }
-
-    function logout() { 
-        localStorage.removeItem('guestUser');
-        auth.signOut().then(() => window.location.reload()); 
-    }
-
-    // --- SUPABASE LOGIC ---
-
+    // --- VIDEO LOGIC ---
     async function fetchVideos() {
-        try {
-            const { data, error } = await _supabase
-                .from('videos')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            
+        const { data, error } = await _supabase.from('videos').select('*').order('created_at', { ascending: false });
+        if (!error) {
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
             data.forEach(v => renderVideo(v));
-        } catch (e) { console.error("Fetch failed:", e.message); }
+        }
     }
 
-    
     function renderVideo(video) {
-        const canManage = (video.owner === currentUserEmail);
         const card = document.createElement('div');
         card.className = 'video-card';
-        card.id = `video-${video.id}`;
+        card.id = `card-${video.id}`;
         card.innerHTML = `
-            <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
+            <div class="video-wrapper">
+                <video src="${video.url}" playsinline onplay="handlePlay(this, ${video.id})" onended="handleEnded(this)"></video>
+            </div>
             <div class="video-info">
-                <span class="video-title">${video.description || 'No Description'}</span>
-                <div class="video-meta">By ${video.owner}</div>
-                <div class="owner-controls">
-                    <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
-                    ${canManage ? `<button class="btn-action btn-delete" onclick="deleteVideo('${video.id}', '${video.url}')">Delete</button>` : ''}
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <b class="video-title">${video.description || 'Helostar Video'}</b>
+                    <button class="follow-btn" onclick="toggleFollow('${video.owner}', this)">Follow</button>
                 </div>
-            </div>`;
+                <div class="video-meta">
+                    <span>@${video.owner.split('@')[0]}</span>
+                    <span><i class="fas fa-eye"></i> <span id="views-${video.id}">${video.views || 0}</span></span>
+                </div>
+                
+                <div class="video-actions">
+                    <span class="action-item" onclick="handleLike(${video.id})">
+                        <i class="fas fa-heart"></i> <span id="likes-${video.id}">${video.likes || 0}</span>
+                    </span>
+                    <span class="action-item" onclick="toggleCommentBox(${video.id})">
+                        <i class="fas fa-comment"></i> Comment
+                    </span>
+                </div>
+
+                <div id="comment-box-${video.id}" class="comment-box">
+                    <div class="comment-list" id="list-${video.id}">Loading...</div>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="input-${video.id}" class="auth-input" placeholder="Say something..." style="margin:0; font-size:12px;">
+                        <button class="auth-btn" style="width:60px; padding:5px; margin:0;" onclick="postComment(${video.id})">Post</button>
+                    </div>
+                </div>
+            </div>
+        `;
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    document.getElementById('fileUpload').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        if (file.size > 50 * 1024 * 1024) return alert("Max size 50MB");
-
-        const statusBox = document.getElementById('uploadStatus');
-        const statusMsg = document.getElementById('statusMessage');
-        const pBar = document.getElementById('progressBar');
-        
-        statusBox.style.display = 'block';
-        pBar.style.width = '10%';
-        statusMsg.innerHTML = `<span class="pulse">Uploading to Cloud...</span>`;
-
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            // 1. Upload to Supabase Storage
-            const { data: uploadData, error: uploadError } = await _supabase.storage
-                .from('video-uploads')
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-            pBar.style.width = '60%';
-
-            // 2. Get Public URL
-            const { data: { publicUrl } } = _supabase.storage
-                .from('video-uploads')
-                .getPublicUrl(filePath);
-
-            // 3. Save to Table
-            statusMsg.innerText = "Finalizing...";
-            const { error: dbError } = await _supabase
-                .from('videos')
-                .insert([{ 
-                    url: publicUrl, 
-                    description: document.getElementById('videoDescInput').value || "Amazing Video", 
-                    owner: currentUserEmail 
-                }]);
-
-            if (dbError) throw dbError;
-
-            pBar.style.width = '100%';
-            statusMsg.innerText = "Success! Refreshing...";
-            setTimeout(() => location.reload(), 1000);
-
-        } catch (err) { 
-            alert("Error: " + err.message); 
-            statusBox.style.display = 'none'; 
-        }
-    });
-
-    async function deleteVideo(videoId, videoUrl) {
-        if(!confirm("Delete this video?")) return;
-        try {
-            // Delete record from DB
-            const { error } = await _supabase.from('videos').delete().eq('id', videoId);
-            if (error) throw error;
-            alert("Deleted!");
-            location.reload();
-        } catch (err) { alert(err.message); }
+    // --- SWIPE & AUTOPLAY ---
+    function handlePlay(el, id) {
+        // Pause all other videos
+        document.querySelectorAll('video').forEach(v => { if(v !== el) v.pause(); });
+        // Increment view count
+        incrementViews(id);
     }
 
-    function shareVideo(videoId) {
-        const url = window.location.href.split('#')[0] + `#video-${videoId}`;
-        navigator.clipboard.writeText(url).then(() => alert("Link copied!"));
+    function handleEnded(el) {
+        const cards = Array.from(document.querySelectorAll('.video-card:not(.hidden-card)'));
+        const currentIdx = cards.indexOf(el.closest('.video-card'));
+        if (currentIdx < cards.length - 1) {
+            const nextCard = cards[currentIdx + 1];
+            nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => nextCard.querySelector('video').play(), 600);
+        }
+    }
+
+    // --- ACTIONS ---
+    async function incrementViews(id) {
+        const { data } = await _supabase.from('videos').select('views').eq('id', id).single();
+        const newViews = (data.views || 0) + 1;
+        await _supabase.from('videos').update({ views: newViews }).eq('id', id);
+        document.getElementById(`views-${id}`).innerText = newViews;
+    }
+
+    async function handleLike(id) {
+        const { data } = await _supabase.from('videos').select('likes').eq('id', id).single();
+        const newLikes = (data.likes || 0) + 1;
+        await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+        document.getElementById(`likes-${id}`).innerText = newLikes;
+    }
+
+    function toggleCommentBox(id) {
+        const box = document.getElementById(`comment-box-${id}`);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        if(box.style.display === 'block') loadComments(id);
+    }
+
+    async function postComment(id) {
+        const input = document.getElementById(`input-${id}`);
+        if(!input.value) return;
+        await _supabase.from('comments').insert([{ video_id: id, user_name: currentUserEmail.split('@')[0], comment_text: input.value }]);
+        input.value = '';
+        loadComments(id);
+    }
+
+    async function loadComments(id) {
+        const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
+        const list = document.getElementById(`list-${id}`);
+        list.innerHTML = data.length ? data.map(c => `<div><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('') : 'No comments yet.';
+    }
+
+    async function toggleFollow(email, btn) {
+        btn.classList.toggle('active');
+        btn.innerText = btn.classList.contains('active') ? 'Following' : 'Follow';
+        // Logic for Supabase 'follows' table can be added here
     }
 
     function filterVideos() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.video-card').forEach(card => {
-            card.classList.toggle('hidden-card', !card.innerText.toLowerCase().includes(query));
-        });
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.video-card').forEach(c => c.classList.toggle('hidden-card', !c.innerText.toLowerCase().includes(q)));
     }
-function renderVideo(video) {
-    // Determine if the user is a guest (based on how we set up Guest Mode earlier)
-    const isGuest = localStorage.getItem('guestUser') !== null;
-    const canManage = (video.owner === currentUserEmail);
-    
-    const card = document.createElement('div');
-    card.className = 'video-card';
-    card.id = `video-${video.id}`;
-    card.innerHTML = `
-        <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
-        <div class="video-info">
-            <div id="desc-container-${video.id}">
-                <span class="video-title">${video.description || 'No Description'}</span>
-            </div>
-            <div class="video-meta">By ${video.owner}</div>
-            
-            <div class="video-actions">
-                <span class="action-item" onclick="${!isGuest ? `handleLike(${video.id})` : "alert('Guests cannot like. Please login!')"}">
-                    <i class="fas fa-heart"></i> <span id="like-count-${video.id}">0</span>
-                </span>
-                <span class="action-item" onclick="${!isGuest ? `toggleComments(${video.id})` : "alert('Guests cannot comment. Please login!')"}">
-                    <i class="fas fa-comment"></i> Comment
-                </span>
-            </div>
 
-            <div id="comments-${video.id}" style="display:none" class="comment-box">
-                <div class="comment-list" id="list-${video.id}">Loading...</div>
-                <div style="display:flex; gap:5px; margin-top:8px;">
-                    <input type="text" id="input-${video.id}" class="comment-input" placeholder="Add a comment...">
-                    <button class="auth-btn" style="width:70px; padding:5px; margin:0; font-size:12px;" 
-                            onclick="addComment(${video.id})">Post</button>
-                </div>
-            </div>
-
-            <div class="owner-controls">
-                <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
-                ${canManage ? `<button class="btn-action" onclick="enableEdit(${video.id}, '${video.description}')">Edit</button>` : ''}
-            </div>
-        </div>`;
-    document.getElementById('videoContainer').appendChild(card);
-    updateLikeDisplay(video.id);
-}
-    // --- UPDATED RENDER FUNCTION ---
-function renderVideo(video) {
-    const canManage = (video.owner === currentUserEmail);
-    const card = document.createElement('div');
-    card.className = 'video-card';
-    card.id = `video-${video.id}`;
-    card.innerHTML = `
-        <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
-        <div class="video-info">
-            <span class="video-title">${video.description || 'No Description'}</span>
-            <div class="video-meta">By ${video.owner}</div>
-            
-            <div class="video-actions">
-                <span class="action-item" onclick="likeVideo(${video.id}, ${video.likes || 0})">
-                    <i class="fas fa-heart"></i> <span id="like-count-${video.id}">${video.likes || 0}</span>
-                </span>
-                <span class="action-item" onclick="toggleComments(${video.id})">
-                    <i class="fas fa-comment"></i> Comment
-                </span>
-            </div>
-
-            <div id="comments-${video.id}" style="display:none" class="comment-box">
-                <div class="comment-list" id="list-${video.id}">Loading...</div>
-                <input type="text" class="comment-input" placeholder="Add a comment..." 
-                       onkeypress="if(event.key === 'Enter') addComment(${video.id}, this.value, this)">
-            </div>
-
-            <div class="owner-controls">
-                <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
-                ${canManage ? `<button class="btn-action btn-delete" onclick="deleteVideo('${video.id}')">Delete</button>` : ''}
-            </div>
-        </div>`;
-    document.getElementById('videoContainer').appendChild(card);
-}
-
-function renderVideo(video) {
-    const canManage = (video.owner === currentUserEmail);
-    const card = document.createElement('div');
-    card.className = 'video-card';
-    card.id = `video-${video.id}`;
-    card.innerHTML = `
-        <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
-        <div class="video-info">
-            <div id="desc-container-${video.id}">
-                <span class="video-title" id="text-${video.id}">${video.description || 'No Description'}</span>
-            </div>
-            
-            <div class="video-meta">By ${video.owner}</div>
-            
-            <div class="video-actions">
-                <span class="action-item" onclick="likeVideo(${video.id}, ${video.likes || 0})">
-                    <i class="fas fa-heart"></i> <span id="like-count-${video.id}">${video.likes || 0}</span>
-                </span>
-                <span class="action-item" onclick="toggleComments(${video.id})">
-                    <i class="fas fa-comment"></i> Comment
-                </span>
-            </div>
-
-            <div id="comments-${video.id}" style="display:none" class="comment-box">
-                <div class="comment-list" id="list-${video.id}"></div>
-                <input type="text" class="comment-input" placeholder="Add a comment..." 
-                       onkeypress="if(event.key === 'Enter') addComment(${video.id}, this.value, this)">
-            </div>
-
-            <div class="owner-controls">
-                <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
-                ${canManage ? `
-                    <button class="btn-action" onclick="enableEdit(${video.id}, '${video.description}')">Edit</button>
-                    <button class="btn-action btn-delete" onclick="deleteVideo('${video.id}')">Delete</button>
-                ` : ''}
-            </div>
-        </div>`;
-    document.getElementById('videoContainer').appendChild(card);
-}
-
-// --- EDIT DESCRIPTION LOGIC ---
-function enableEdit(id, oldText) {
-    const container = document.getElementById(`desc-container-${id}`);
-    container.innerHTML = `
-        <input type="text" id="edit-input-${id}" class="auth-input" value="${oldText}" style="margin:0; padding:5px;">
-        <button class="auth-btn" style="padding:5px; font-size:10px;" onclick="saveEdit(${id})">Save</button>
-        <button class="auth-btn" style="padding:5px; font-size:10px; background:#444;" onclick="fetchVideos()">Cancel</button>
-    `;
-}
-
-async function saveEdit(id) {
-    const newDesc = document.getElementById(`edit-input-${id}`).value;
-    const { error } = await _supabase
-        .from('videos')
-        .update({ description: newDesc })
-        .eq('id', id);
-
-    if (error) {
-        alert("Update failed: " + error.message);
-    } else {
-        fetchVideos(); // Refresh UI
+    function guestMode() {
+        const name = (document.getElementById('guestUsername').value || 'Guest') + Math.floor(Math.random()*100);
+        localStorage.setItem('guestUser', name + "@guest.com");
+        location.reload();
     }
-}
 
-// --- ONE-TIME LIKE LOGIC ---
-async function handleLike(videoId) {
-    const { error } = await _supabase
-        .from('video_likes')
-        .insert([{ video_id: videoId, user_email: currentUserEmail }]);
+    function logout() {
+        localStorage.removeItem('guestUser');
+        auth.signOut().then(() => location.reload());
+    }
 
-    if (error) {
-        if (error.code === '23505') { // Postgres error code for unique violation
-            alert("You have already liked this video!");
-        } else {
-            console.error("Like error:", error.message);
+    async function toggleFollow(creatorEmail, btn) {
+    if (creatorEmail === currentUserEmail) return alert("You can't follow yourself!");
+
+    if (!btn.classList.contains('active')) {
+        // Follow Logic
+        const { error } = await _supabase
+            .from('follows')
+            .insert([{ 
+                follower_email: currentUserEmail, 
+                following_email: creatorEmail 
+            }]);
+
+        if (!error) {
+            btn.classList.add('active');
+            btn.innerText = 'Following';
         }
     } else {
-        updateLikeDisplay(videoId);
+        // Unfollow Logic
+        const { error } = await _supabase
+            .from('follows')
+            .delete()
+            .eq('follower_email', currentUserEmail)
+            .eq('following_email', creatorEmail);
+
+        if (!error) {
+            btn.classList.remove('active');
+            btn.innerText = 'Follow';
+        }
     }
-}
-
-async function updateLikeDisplay(videoId) {
-    const { count, error } = await _supabase
-        .from('video_likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('video_id', videoId);
-    
-    if (!error) {
-        const countSpan = document.getElementById(`like-count-${videoId}`);
-        if (countSpan) countSpan.innerText = count;
-    }
-}
-
-// --- COMMENT LOGIC WITH POST BUTTON ---
-async function addComment(videoId) {
-    const input = document.getElementById(`input-${videoId}`);
-    const text = input.value.trim();
-    if (!text) return;
-
-    const { error } = await _supabase.from('comments').insert([{ 
-        video_id: videoId, 
-        user_name: currentUserEmail.split('@')[0], 
-        comment_text: text 
-    }]);
-
-    if (!error) {
-        input.value = '';
-        loadComments(videoId); // Refresh the list
-    } else {
-        alert("Could not post comment.");
-    }
-}
-
-async function loadComments(videoId) {
-    const { data, error } = await _supabase
-        .from('comments')
-        .select('*')
-        .eq('video_id', videoId)
-        .order('created_at', { ascending: true });
-
-    if (!error) {
-        const list = document.getElementById(`list-${videoId}`);
-        list.innerHTML = data.length ? data.map(c => `
-            <div style="margin-bottom:4px;">
-                <b style="color:var(--helostar-pink)">${c.user_name}:</b> ${c.comment_text}
-            </div>
-        `).join('') : '<div style="font-size:10px;">No comments yet.</div>';
-    }
-}
-
-async function addComment(videoId, text, input) {
-    if (!text) return;
-    const { error } = await _supabase.from('comments').insert([{ 
-        video_id: videoId, 
-        user_name: currentUserEmail.split('@')[0], 
-        comment_text: text 
-    }]);
-    if (!error) {
-        input.value = '';
-        toggleComments(videoId); // Refresh list
-    }
-}
-
-// --- UPDATED PROGRESS BAR LOGIC ---
-document.getElementById('fileUpload').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-
-    const statusBox = document.getElementById('uploadStatus');
-    const pBar = document.getElementById('progressBar');
-    const statusMsg = document.getElementById('statusMessage');
-    
-    statusBox.style.display = 'block';
-
-    try {
-        const fileName = `${Date.now()}_${file.name}`;
-        
-        // Supabase storage upload with manual progress simulation
-        // Note: Supabase standard JS client doesn't support progress events natively in all environments,
-        // so we use milestones to show progress.
-        
-        pBar.style.width = '20%';
-        statusMsg.innerText = "Uploading...";
-
-        const { data, error } = await _supabase.storage
-            .from('video-uploads')
-            .upload(fileName, file);
-
-        if (error) throw error;
-        
-        pBar.style.width = '70%';
-        statusMsg.innerText = "Indexing Database...";
-
-        const { data: { publicUrl } } = _supabase.storage.from('video-uploads').getPublicUrl(fileName);
-
-        await _supabase.from('videos').insert([{ 
-            url: publicUrl, 
-            description: document.getElementById('videoDescInput').value || "Video", 
-            owner: currentUserEmail 
-        }]);
-
-        pBar.style.width = '100%';
-        statusMsg.innerText = "Done! Refreshing...";
-        setTimeout(() => location.reload(), 800);
-
-    } catch (err) {
-        alert(err.message);
-        statusBox.style.display = 'none';
-    }
-});
-
-// Updated Fetch function with Trending Sort
-async function fetchVideos(sortBy = 'created_at') {
-    try {
-        const { data, error } = await _supabase
-            .from('videos')
-            .select('*')
-            .order(sortBy, { ascending: false });
-
-        if (error) throw error;
-        
-        const container = document.getElementById('videoContainer');
-        container.innerHTML = '';
-        data.forEach(v => renderVideo(v));
-    } catch (e) { console.error(e.message); }
 }
 </script>
 </body>

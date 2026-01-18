@@ -3,56 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar | Premium Cinema</title>
+    <title>Helostar Pro | Premium Feed</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 
-    <div id="authOverlay">
-        <div class="auth-card">
-            <h1 class="logo-text">HELO<span>STAR</span></h1>
-            <p>Experience video in high fidelity.</p>
-            <button class="btn-primary" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Continue with Google</button>
-            <div class="divider"><span>OR</span></div>
-            <input type="text" id="guestUsername" class="glass-input" placeholder="Enter Nickname">
-            <button class="btn-outline" onclick="guestMode()">Guest Access</button>
-        </div>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">HELO<span>STAR</span></div>
+            
+            <nav class="menu">
+                <div class="menu-section">
+                    <p class="section-title">Discovery</p>
+                    <a href="#" class="menu-item active" onclick="switchMode('long')"><i class="fas fa-desktop"></i> Cinema (Long)</a>
+                    <a href="#" class="menu-item" onclick="switchMode('short')"><i class="fas fa-mobile-alt"></i> Shorts (Vertical)</a>
+                </div>
+
+                <div class="menu-section">
+                    <p class="section-title">Library</p>
+                    <div class="dropdown">
+                        <button class="dropbtn">Categories <i class="fas fa-chevron-down"></i></button>
+                        <div class="dropdown-content">
+                            <a href="#">Trending</a>
+                            <a href="#">Music</a>
+                            <a href="#">Gaming</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="upload-trigger" onclick="triggerUpload()">
+                    <i class="fas fa-cloud-upload-alt"></i> Upload
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search premium videos...">
+                </div>
+                <div class="profile-zone">
+                    <span id="userTag">Guest</span>
+                    <div class="avatar"></div>
+                </div>
+            </header>
+
+            <div id="videoContainer" class="video-display-area mode-long">
+                </div>
+        </main>
     </div>
-
-    <header class="main-header">
-        <div class="logo">HELO<span>STAR</span></div>
-        <nav class="nav-tabs">
-            <div class="tab-item active" onclick="switchMode('long', this)">
-                <i class="fas fa-mobile-alt"></i> <span>Portrait Feed</span>
-            </div>
-            <div class="tab-item" onclick="switchMode('short', this)">
-                <i class="fas fa-film"></i> <span>Landscape Grid</span>
-            </div>
-        </nav>
-        <div class="user-controls">
-            <i class="fas fa-search search-icon"></i>
-            <button class="logout-link" onclick="logout()">Logout</button>
-        </div>
-    </header>
-
-    <div id="uploadProgress" class="progress-bar-container">
-        <div class="progress-fill"></div>
-        <span id="progressText">Uploading 0%</span>
-    </div>
-
-    <main class="content-area">
-        <div id="videoContainer" class="feed-layout mode-long">
-            </div>
-    </main>
 
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <button class="fab-plus" onclick="triggerUpload()"><i class="fas fa-plus"></i></button>
+    <div id="uploadOverlay" class="upload-overlay">
+        <div class="loader"></div>
+        <p>Processing High Quality Video...</p>
+    </div>
 
     <script src="script.js"></script>
 </body>

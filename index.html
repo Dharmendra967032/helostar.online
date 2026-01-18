@@ -62,6 +62,12 @@
         .progress-container { width: 100%; background: #222; border-radius: 10px; height: 5px; margin: 12px 0; overflow: hidden; }
         .progress-bar { width: 0%; height: 100%; background: var(--helostar-pink); transition: width 0.3s; }
         .pulse { animation: pulse 1.5s infinite; }
+        .video-actions { display: flex; align-items: center; gap: 15px; margin: 10px 0; border-top: 1px solid var(--glass); padding-top: 10px; }
+.action-item { cursor: pointer; font-size: 0.9rem; color: var(--text-gray); transition: 0.2s; }
+.action-item:hover { color: var(--helostar-pink); }
+.comment-box { background: #1a1a1a; padding: 10px; border-radius: 8px; margin-top: 10px; }
+.comment-input { background: transparent; border: none; border-bottom: 1px solid #333; color: white; width: 100%; font-size: 0.8rem; outline: none; margin-bottom: 5px; }
+.comment-list { max-height: 100px; overflow-y: auto; font-size: 0.75rem; color: var(--text-gray); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         @media (max-width: 580px) {
@@ -94,6 +100,10 @@
             <div id="userDisplay" style="font-size: 0.7rem; color: var(--text-gray);"></div>
             <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
         </div>
+        <div style="padding: 10px 5%; display: flex; gap: 10px;">
+    <button class="logout-btn" onclick="fetchVideos('created_at')">Newest</button>
+    <button class="logout-btn" style="color: var(--helostar-pink); border-color: var(--helostar-pink);" onclick="fetchVideos('likes')">🔥 Trending</button>
+</div>
     </header>
 
     <div class="container">
@@ -274,6 +284,200 @@
             card.classList.toggle('hidden-card', !card.innerText.toLowerCase().includes(query));
         });
     }
+
+    // --- UPDATED RENDER FUNCTION ---
+function renderVideo(video) {
+    const canManage = (video.owner === currentUserEmail);
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.id = `video-${video.id}`;
+    card.innerHTML = `
+        <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
+        <div class="video-info">
+            <span class="video-title">${video.description || 'No Description'}</span>
+            <div class="video-meta">By ${video.owner}</div>
+            
+            <div class="video-actions">
+                <span class="action-item" onclick="likeVideo(${video.id}, ${video.likes || 0})">
+                    <i class="fas fa-heart"></i> <span id="like-count-${video.id}">${video.likes || 0}</span>
+                </span>
+                <span class="action-item" onclick="toggleComments(${video.id})">
+                    <i class="fas fa-comment"></i> Comment
+                </span>
+            </div>
+
+            <div id="comments-${video.id}" style="display:none" class="comment-box">
+                <div class="comment-list" id="list-${video.id}">Loading...</div>
+                <input type="text" class="comment-input" placeholder="Add a comment..." 
+                       onkeypress="if(event.key === 'Enter') addComment(${video.id}, this.value, this)">
+            </div>
+
+            <div class="owner-controls">
+                <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
+                ${canManage ? `<button class="btn-action btn-delete" onclick="deleteVideo('${video.id}')">Delete</button>` : ''}
+            </div>
+        </div>`;
+    document.getElementById('videoContainer').appendChild(card);
+}
+
+function renderVideo(video) {
+    const canManage = (video.owner === currentUserEmail);
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.id = `video-${video.id}`;
+    card.innerHTML = `
+        <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
+        <div class="video-info">
+            <div id="desc-container-${video.id}">
+                <span class="video-title" id="text-${video.id}">${video.description || 'No Description'}</span>
+            </div>
+            
+            <div class="video-meta">By ${video.owner}</div>
+            
+            <div class="video-actions">
+                <span class="action-item" onclick="likeVideo(${video.id}, ${video.likes || 0})">
+                    <i class="fas fa-heart"></i> <span id="like-count-${video.id}">${video.likes || 0}</span>
+                </span>
+                <span class="action-item" onclick="toggleComments(${video.id})">
+                    <i class="fas fa-comment"></i> Comment
+                </span>
+            </div>
+
+            <div id="comments-${video.id}" style="display:none" class="comment-box">
+                <div class="comment-list" id="list-${video.id}"></div>
+                <input type="text" class="comment-input" placeholder="Add a comment..." 
+                       onkeypress="if(event.key === 'Enter') addComment(${video.id}, this.value, this)">
+            </div>
+
+            <div class="owner-controls">
+                <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
+                ${canManage ? `
+                    <button class="btn-action" onclick="enableEdit(${video.id}, '${video.description}')">Edit</button>
+                    <button class="btn-action btn-delete" onclick="deleteVideo('${video.id}')">Delete</button>
+                ` : ''}
+            </div>
+        </div>`;
+    document.getElementById('videoContainer').appendChild(card);
+}
+
+// --- EDIT DESCRIPTION LOGIC ---
+function enableEdit(id, oldText) {
+    const container = document.getElementById(`desc-container-${id}`);
+    container.innerHTML = `
+        <input type="text" id="edit-input-${id}" class="auth-input" value="${oldText}" style="margin:0; padding:5px;">
+        <button class="auth-btn" style="padding:5px; font-size:10px;" onclick="saveEdit(${id})">Save</button>
+        <button class="auth-btn" style="padding:5px; font-size:10px; background:#444;" onclick="fetchVideos()">Cancel</button>
+    `;
+}
+
+async function saveEdit(id) {
+    const newDesc = document.getElementById(`edit-input-${id}`).value;
+    const { error } = await _supabase
+        .from('videos')
+        .update({ description: newDesc })
+        .eq('id', id);
+
+    if (error) {
+        alert("Update failed: " + error.message);
+    } else {
+        fetchVideos(); // Refresh UI
+    }
+}
+
+// --- LIKE FUNCTION ---
+async function likeVideo(id, currentLikes) {
+    const newLikes = currentLikes + 1;
+    const { error } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+    if (!error) document.getElementById(`like-count-${id}`).innerText = newLikes;
+}
+
+// --- COMMENT FUNCTIONS ---
+async function toggleComments(id) {
+    const box = document.getElementById(`comments-${id}`);
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    if (box.style.display === 'block') {
+        const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
+        const list = document.getElementById(`list-${id}`);
+        list.innerHTML = data.length ? data.map(c => `<div><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('') : 'No comments yet.';
+    }
+}
+
+async function addComment(videoId, text, input) {
+    if (!text) return;
+    const { error } = await _supabase.from('comments').insert([{ 
+        video_id: videoId, 
+        user_name: currentUserEmail.split('@')[0], 
+        comment_text: text 
+    }]);
+    if (!error) {
+        input.value = '';
+        toggleComments(videoId); // Refresh list
+    }
+}
+
+// --- UPDATED PROGRESS BAR LOGIC ---
+document.getElementById('fileUpload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const statusBox = document.getElementById('uploadStatus');
+    const pBar = document.getElementById('progressBar');
+    const statusMsg = document.getElementById('statusMessage');
+    
+    statusBox.style.display = 'block';
+
+    try {
+        const fileName = `${Date.now()}_${file.name}`;
+        
+        // Supabase storage upload with manual progress simulation
+        // Note: Supabase standard JS client doesn't support progress events natively in all environments,
+        // so we use milestones to show progress.
+        
+        pBar.style.width = '20%';
+        statusMsg.innerText = "Connecting to Cloud...";
+
+        const { data, error } = await _supabase.storage
+            .from('video-uploads')
+            .upload(fileName, file);
+
+        if (error) throw error;
+        
+        pBar.style.width = '70%';
+        statusMsg.innerText = "Indexing Database...";
+
+        const { data: { publicUrl } } = _supabase.storage.from('video-uploads').getPublicUrl(fileName);
+
+        await _supabase.from('videos').insert([{ 
+            url: publicUrl, 
+            description: document.getElementById('videoDescInput').value || "Video", 
+            owner: currentUserEmail 
+        }]);
+
+        pBar.style.width = '100%';
+        statusMsg.innerText = "Done! Refreshing...";
+        setTimeout(() => location.reload(), 800);
+
+    } catch (err) {
+        alert(err.message);
+        statusBox.style.display = 'none';
+    }
+});
+
+// Updated Fetch function with Trending Sort
+async function fetchVideos(sortBy = 'created_at') {
+    try {
+        const { data, error } = await _supabase
+            .from('videos')
+            .select('*')
+            .order(sortBy, { ascending: false });
+
+        if (error) throw error;
+        
+        const container = document.getElementById('videoContainer');
+        container.innerHTML = '';
+        data.forEach(v => renderVideo(v));
+    } catch (e) { console.error(e.message); }
+}
 </script>
 </body>
 </html>

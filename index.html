@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar | Premium Video Feed</title>
+    <title>Helostar | Premium Cinema</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,39 +16,43 @@
 
     <div id="authOverlay">
         <div class="auth-card">
-            <h1 class="brand-text">HELOSTAR</h1>
-            <button class="auth-btn google-btn" onclick="signInWithGoogle()">
-                <i class="fab fa-google"></i> Login with Google
-            </button>
-            <div class="divider">OR</div>
-            <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Username">
-            <button class="auth-btn guest-btn" onclick="guestMode()">Guest Access</button>
+            <h1 class="logo-text">HELO<span>STAR</span></h1>
+            <p>Experience video in high fidelity.</p>
+            <button class="btn-primary" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Continue with Google</button>
+            <div class="divider"><span>OR</span></div>
+            <input type="text" id="guestUsername" class="glass-input" placeholder="Enter Nickname">
+            <button class="btn-outline" onclick="guestMode()">Guest Access</button>
         </div>
     </div>
 
-    <div id="uploadProgress">Uploading... Please wait.</div>
-
-    <header>
-        <div class="logo" onclick="location.reload()">HELOSTAR</div>
-        <div class="mode-tabs">
-            <button class="tab-btn active" onclick="switchMode('short')">Shorts</button>
-            <button class="tab-btn" onclick="switchMode('long')">Long Form</button>
-        </div>
-        <div class="header-actions">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search..." onkeyup="filterVideos()">
-            <button id="logoutBtn" class="logout-btn" onclick="logout()">Logout</button>
+    <header class="main-header">
+        <div class="logo">HELO<span>STAR</span></div>
+        <nav class="nav-tabs">
+            <div class="tab-item active" onclick="switchMode('long', this)">
+                <i class="fas fa-mobile-alt"></i> <span>Portrait Feed</span>
+            </div>
+            <div class="tab-item" onclick="switchMode('short', this)">
+                <i class="fas fa-film"></i> <span>Landscape Grid</span>
+            </div>
+        </nav>
+        <div class="user-controls">
+            <i class="fas fa-search search-icon"></i>
+            <button class="logout-link" onclick="logout()">Logout</button>
         </div>
     </header>
 
-    <main class="container">
-        <div id="videoContainer" class="video-grid mode-short">
+    <div id="uploadProgress" class="progress-bar-container">
+        <div class="progress-fill"></div>
+        <span id="progressText">Uploading 0%</span>
+    </div>
+
+    <main class="content-area">
+        <div id="videoContainer" class="feed-layout mode-long">
             </div>
     </main>
 
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <button id="uploadBtn" class="fab-upload" onclick="triggerUpload()">
-        <i class="fa fa-plus"></i>
-    </button>
+    <button class="fab-plus" onclick="triggerUpload()"><i class="fas fa-plus"></i></button>
 
     <script src="script.js"></script>
 </body>

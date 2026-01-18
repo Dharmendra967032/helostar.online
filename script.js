@@ -1,135 +1,83 @@
-// Configuration
 const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
-firebase.initializeApp({
-    apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
-    authDomain: "helostar-134d9.firebaseapp.com",
-    projectId: "helostar-134d9"
-});
-
-const auth = firebase.auth();
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let currentUserEmail = null;
-let currentViewMode = 'short'; // Default mode
+let currentMode = 'long'; // Default to Portrait Feed
 
-// Auth State
-auth.onAuthStateChanged(user => { 
-    if (user) startApp(user.email);
-    else if (localStorage.getItem('guestUser')) startApp(localStorage.getItem('guestUser'));
-});
-
-function startApp(email) {
-    document.getElementById('authOverlay').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'block';
-    document.getElementById('uploadBtn').style.display = 'flex';
-    currentUserEmail = email;
-    fetchVideos();
-}
-
-// Mode Switching Logic
-function switchMode(mode) {
-    currentViewMode = mode;
+async function switchMode(mode, element) {
+    currentMode = mode;
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    element.classList.add('active');
     
-    // Update UI Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-
-    // Update Container Class
     const container = document.getElementById('videoContainer');
-    container.className = `video-grid mode-${mode}`;
+    container.className = `feed-layout mode-${mode}`;
     
     fetchVideos();
 }
 
 async function fetchVideos() {
-    const { data, error } = await _supabase.from('videos').select('*').order('created_at', { ascending: false });
-    if (!error) {
-        const container = document.getElementById('videoContainer');
-        container.innerHTML = '';
-        
-        // Filter logic: In a real app, you would have an 'aspect_ratio' column in Supabase.
-        // Here we simulate it or let users see all in the chosen format.
-        data.forEach(v => renderVideo(v));
-    }
-}
+    const { data, error } = await _supabase
+        .from('videos')
+        .select('*')
+        .eq('mode', currentMode)
+        .order('created_at', { ascending: false });
 
-function renderVideo(video) {
-    const card = document.createElement('div');
-    card.className = 'video-card';
-    card.innerHTML = `
-        <div class="video-wrapper">
-            <video src="${video.url}" playsinline controls onplay="handlePlay(this, ${video.id})"></video>
+    const container = document.getElementById('videoContainer');
+    container.innerHTML = data?.map(v => `
+        <div class="video-card">
+            <div class="video-wrapper">
+                <video src="${v.url}" controls playsinline></video>
+            </div>
+            <div style="padding: 15px;">
+                <h4 style="margin:0">${v.description}</h4>
+                <p style="color:#666; font-size: 0.8rem;">@${v.owner.split('@')[0]}</p>
+            </div>
         </div>
-        <div class="video-info">
-            <div class="video-meta">
-                <span style="font-weight:bold;">${video.description || 'Helostar Content'}</span>
-                <span>@${video.owner.split('@')[0]}</span>
-            </div>
-            <div class="video-actions">
-                <div class="action-item" onclick="handleLike(${video.id})">
-                    <i class="fas fa-heart"></i> <span id="likes-${video.id}">${video.likes || 0}</span>
-                </div>
-                <div class="action-item">
-                    <i class="fas fa-eye"></i> <span>${video.views || 0}</span>
-                </div>
-            </div>
-        </div>`;
-    document.getElementById('videoContainer').appendChild(card);
+    `).join('') || '<p>No videos found</p>';
 }
 
-// Upload Logic
-async function triggerUpload() {
-    const fileInput = document.getElementById('fileUpload');
-    fileInput.click();
-}
+function triggerUpload() { document.getElementById('fileUpload').click(); }
 
 document.getElementById('fileUpload').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Detect aspect ratio logic can be added here
-    const caption = prompt("Enter video caption:");
-    document.getElementById('uploadProgress').style.display = 'block';
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.src = URL.createObjectURL(file);
 
-    try {
-        const fileName = `${Date.now()}_${file.name}`;
-        const { data, error: uploadError } = await _supabase.storage
-            .from('video-uploads')
-            .upload(fileName, file);
+    video.onloadedmetadata = async () => {
+        // LOGIC: Portrait = long, Landscape = short
+        const isPortrait = video.videoHeight > video.videoWidth;
+        const assignedMode = isPortrait ? 'long' : 'short';
+        
+        const caption = prompt(`Detected ${isPortrait ? 'Portrait' : 'Landscape'}. Caption:`);
+        if (caption === null) return;
 
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = _supabase.storage.from('video-uploads').getPublicUrl(fileName);
-
-        await _supabase.from('videos').insert([{ 
-            url: publicUrl, 
-            description: caption, 
-            owner: currentUserEmail,
-            mode: currentViewMode // Saves whether it was uploaded as short or long
-        }]);
-
-        location.reload();
-    } catch (err) {
-        alert("Error: " + err.message);
-    } finally {
-        document.getElementById('uploadProgress').style.display = 'none';
-    }
+        uploadFile(file, assignedMode, caption);
+    };
 });
 
-// Auth Handlers
-function guestMode() {
-    const name = document.getElementById('guestUsername').value || "Guest";
-    localStorage.setItem('guestUser', name + "@guest.com");
+async function uploadFile(file, mode, desc) {
+    const progressBar = document.querySelector('.progress-fill');
+    document.getElementById('uploadProgress').style.display = 'block';
+
+    const fileName = `${Date.now()}_${file.name}`;
+    const { data, error } = await _supabase.storage.from('video-uploads').upload(fileName, file);
+
+    if (error) return alert("Upload Error");
+
+    const { data: { publicUrl } } = _supabase.storage.from('video-uploads').getPublicUrl(fileName);
+
+    await _supabase.from('videos').insert([{
+        url: publicUrl,
+        description: desc,
+        owner: localStorage.getItem('guestUser') || 'anonymous',
+        mode: mode
+    }]);
+
     location.reload();
 }
 
-async function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithPopup(provider);
-}
-
-function logout() {
-    localStorage.clear();
-    auth.signOut().then(() => location.reload());
-}
+// Initialize
+fetchVideos();

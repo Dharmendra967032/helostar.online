@@ -1,0 +1,126 @@
+:root {
+    --bg-color: #050505;
+    --card-bg: #121212;
+    --helostar-pink: #d3159d;
+    --text-white: #ffffff;
+    --text-gray: #999999;
+    --glass: rgba(255, 255, 255, 0.05);
+}
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg-color); 
+    color: var(--text-white); 
+    margin: 0; 
+}
+
+/* Header & Tabs */
+header {
+    background: rgba(18, 18, 18, 0.95);
+    padding: 15px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--glass);
+    backdrop-filter: blur(10px);
+}
+
+.mode-tabs {
+    display: flex;
+    gap: 10px;
+    background: #1a1a1a;
+    padding: 5px;
+    border-radius: 30px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-gray);
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.tab-btn.active {
+    background: var(--helostar-pink);
+    color: white;
+}
+
+/* Video Containers */
+.video-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding: 20px 0 100px;
+}
+
+/* Logic for Portrait (Shorts) */
+.mode-short .video-card {
+    width: 100%;
+    max-width: 400px;
+}
+.mode-short .video-wrapper {
+    aspect-ratio: 9/16;
+}
+
+/* Logic for Landscape (Long) */
+.mode-long .video-card {
+    width: 100%;
+    max-width: 800px;
+}
+.mode-long .video-wrapper {
+    aspect-ratio: 16/9;
+}
+
+.video-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid var(--glass);
+}
+
+.video-wrapper video {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    object-fit: contain;
+}
+
+/* Rest of the UI (Inputs/Buttons) */
+.auth-input, .search-input {
+    background: #1a1a1a;
+    border: 1px solid var(--glass);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    outline: none;
+}
+
+.fab-upload {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--helostar-pink);
+    color: white;
+    border: none;
+    box-shadow: 0 10px 20px rgba(211, 21, 157, 0.3);
+    cursor: pointer;
+    font-size: 1.5rem;
+    z-index: 999;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    header { flex-direction: column; gap: 15px; }
+    .mode-short .video-card { max-width: 95vw; }
+}

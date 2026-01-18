@@ -191,6 +191,7 @@
         } catch (e) { console.error("Fetch failed:", e.message); }
     }
 
+    
     function renderVideo(video) {
         const canManage = (video.owner === currentUserEmail);
         const card = document.createElement('div');
@@ -284,7 +285,48 @@
             card.classList.toggle('hidden-card', !card.innerText.toLowerCase().includes(query));
         });
     }
+function renderVideo(video) {
+    // Determine if the user is a guest (based on how we set up Guest Mode earlier)
+    const isGuest = localStorage.getItem('guestUser') !== null;
+    const canManage = (video.owner === currentUserEmail);
+    
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.id = `video-${video.id}`;
+    card.innerHTML = `
+        <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
+        <div class="video-info">
+            <div id="desc-container-${video.id}">
+                <span class="video-title">${video.description || 'No Description'}</span>
+            </div>
+            <div class="video-meta">By ${video.owner}</div>
+            
+            <div class="video-actions">
+                <span class="action-item" onclick="${!isGuest ? `handleLike(${video.id})` : "alert('Guests cannot like. Please login!')"}">
+                    <i class="fas fa-heart"></i> <span id="like-count-${video.id}">0</span>
+                </span>
+                <span class="action-item" onclick="${!isGuest ? `toggleComments(${video.id})` : "alert('Guests cannot comment. Please login!')"}">
+                    <i class="fas fa-comment"></i> Comment
+                </span>
+            </div>
 
+            <div id="comments-${video.id}" style="display:none" class="comment-box">
+                <div class="comment-list" id="list-${video.id}">Loading...</div>
+                <div style="display:flex; gap:5px; margin-top:8px;">
+                    <input type="text" id="input-${video.id}" class="comment-input" placeholder="Add a comment...">
+                    <button class="auth-btn" style="width:70px; padding:5px; margin:0; font-size:12px;" 
+                            onclick="addComment(${video.id})">Post</button>
+                </div>
+            </div>
+
+            <div class="owner-controls">
+                <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
+                ${canManage ? `<button class="btn-action" onclick="enableEdit(${video.id}, '${video.description}')">Edit</button>` : ''}
+            </div>
+        </div>`;
+    document.getElementById('videoContainer').appendChild(card);
+    updateLikeDisplay(video.id);
+}
     // --- UPDATED RENDER FUNCTION ---
 function renderVideo(video) {
     const canManage = (video.owner === currentUserEmail);
@@ -384,21 +426,69 @@ async function saveEdit(id) {
     }
 }
 
-// --- LIKE FUNCTION ---
-async function likeVideo(id, currentLikes) {
-    const newLikes = currentLikes + 1;
-    const { error } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
-    if (!error) document.getElementById(`like-count-${id}`).innerText = newLikes;
+// --- ONE-TIME LIKE LOGIC ---
+async function handleLike(videoId) {
+    const { error } = await _supabase
+        .from('video_likes')
+        .insert([{ video_id: videoId, user_email: currentUserEmail }]);
+
+    if (error) {
+        if (error.code === '23505') { // Postgres error code for unique violation
+            alert("You have already liked this video!");
+        } else {
+            console.error("Like error:", error.message);
+        }
+    } else {
+        updateLikeDisplay(videoId);
+    }
 }
 
-// --- COMMENT FUNCTIONS ---
-async function toggleComments(id) {
-    const box = document.getElementById(`comments-${id}`);
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
-    if (box.style.display === 'block') {
-        const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
-        const list = document.getElementById(`list-${id}`);
-        list.innerHTML = data.length ? data.map(c => `<div><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('') : 'No comments yet.';
+async function updateLikeDisplay(videoId) {
+    const { count, error } = await _supabase
+        .from('video_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('video_id', videoId);
+    
+    if (!error) {
+        const countSpan = document.getElementById(`like-count-${videoId}`);
+        if (countSpan) countSpan.innerText = count;
+    }
+}
+
+// --- COMMENT LOGIC WITH POST BUTTON ---
+async function addComment(videoId) {
+    const input = document.getElementById(`input-${videoId}`);
+    const text = input.value.trim();
+    if (!text) return;
+
+    const { error } = await _supabase.from('comments').insert([{ 
+        video_id: videoId, 
+        user_name: currentUserEmail.split('@')[0], 
+        comment_text: text 
+    }]);
+
+    if (!error) {
+        input.value = '';
+        loadComments(videoId); // Refresh the list
+    } else {
+        alert("Could not post comment.");
+    }
+}
+
+async function loadComments(videoId) {
+    const { data, error } = await _supabase
+        .from('comments')
+        .select('*')
+        .eq('video_id', videoId)
+        .order('created_at', { ascending: true });
+
+    if (!error) {
+        const list = document.getElementById(`list-${videoId}`);
+        list.innerHTML = data.length ? data.map(c => `
+            <div style="margin-bottom:4px;">
+                <b style="color:var(--helostar-pink)">${c.user_name}:</b> ${c.comment_text}
+            </div>
+        `).join('') : '<div style="font-size:10px;">No comments yet.</div>';
     }
 }
 
@@ -434,7 +524,7 @@ document.getElementById('fileUpload').addEventListener('change', async (e) => {
         // so we use milestones to show progress.
         
         pBar.style.width = '20%';
-        statusMsg.innerText = "Connecting to Cloud...";
+        statusMsg.innerText = "Uploading...";
 
         const { data, error } = await _supabase.storage
             .from('video-uploads')

@@ -56,6 +56,7 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; outline: none; box-sizing: border-box; }
         .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; font-size: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .fab-upload:disabled { background: #555; cursor: not-allowed; }
         
         .hidden-card { display: none !important; }
     </style>
@@ -81,12 +82,13 @@
     </header>
 
     <div class="container">
-        <div id="videoContainer" class="video-grid">
-            </div>
+        <div id="videoContainer" class="video-grid"></div>
     </div>
 
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
+    <button id="uploadBtn" class="fab-upload" onclick="document.getElementById('fileUpload').click()">
+        <i class="fa fa-plus"></i>
+    </button>
 
 <script>
     // --- SETUP ---
@@ -115,6 +117,61 @@
         currentUserEmail = email;
         fetchVideos();
     }
+
+    // --- UPLOAD LOGIC ---
+    document.getElementById('fileUpload').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Visual Feedback
+        const uploadBtn = document.getElementById('uploadBtn');
+        const originalIcon = uploadBtn.innerHTML;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        uploadBtn.disabled = true;
+
+        try {
+            const fileName = `${Date.now()}_${file.name}`;
+            const filePath = `uploads/${fileName}`;
+
+            // 1. Upload file to Supabase Storage
+            const { data: uploadData, error: uploadError } = await _supabase.storage
+                .from('videos')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: urlData } = _supabase.storage
+                .from('videos')
+                .getPublicUrl(filePath);
+
+            const videoUrl = urlData.publicUrl;
+
+            // 3. Prompt for description
+            const desc = prompt("Enter a description for your video:") || "New Video";
+
+            // 4. Insert into Database
+            const { error: dbError } = await _supabase.from('videos').insert([{
+                url: videoUrl,
+                description: desc,
+                owner: currentUserEmail,
+                likes: 0
+            }]);
+
+            if (dbError) throw dbError;
+
+            alert("Video Uploaded Successfully!");
+            fetchVideos(); // Refresh feed
+
+        } catch (err) {
+            console.error("Upload failed:", err);
+            alert("Upload failed: " + err.message);
+        } finally {
+            uploadBtn.innerHTML = originalIcon;
+            uploadBtn.disabled = false;
+            e.target.value = ''; // Reset input
+        }
+    });
 
     // --- VIDEO LOADING & RENDERING ---
     async function fetchVideos() {
@@ -157,10 +214,8 @@
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    // --- SMART PLAYBACK (One at a time + Autoplay) ---
     function managePlayback(activeVideo) {
-        const allVideos = document.querySelectorAll('video');
-        allVideos.forEach(vid => {
+        document.querySelectorAll('video').forEach(vid => {
             if (vid !== activeVideo) vid.pause();
         });
     }
@@ -173,20 +228,15 @@
         if (nextIdx < allCards.length) {
             const nextCard = allCards[nextIdx];
             nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Short delay to let the scroll finish before playing
             setTimeout(() => {
-                const nextVid = nextCard.querySelector('video');
-                nextVid.play();
+                nextCard.querySelector('video').play();
             }, 800);
         }
     }
 
-    // --- LIKES & COMMENTS ---
     async function handleLike(id) {
         const { data } = await _supabase.from('videos').select('likes').eq('id', id).single();
         const updatedLikes = (data.likes || 0) + 1;
-        
         const { error } = await _supabase.from('videos').update({ likes: updatedLikes }).eq('id', id);
         if (!error) document.getElementById(`likes-${id}`).innerText = updatedLikes;
     }
@@ -201,23 +251,17 @@
     async function submitComment(id) {
         const input = document.getElementById(`input-${id}`);
         if (!input.value.trim()) return;
-
         const { error } = await _supabase.from('comments').insert([{ 
             video_id: id, 
             user_name: currentUserEmail.split('@')[0], 
             comment_text: input.value 
         }]);
-
-        if (!error) {
-            input.value = '';
-            loadComments(id);
-        }
+        if (!error) { input.value = ''; loadComments(id); }
     }
 
     async function loadComments(id) {
         const list = document.getElementById(`list-${id}`);
         const { data, error } = await _supabase.from('comments').select('*').eq('video_id', id).order('created_at', { ascending: true });
-        
         if (!error) {
             list.innerHTML = data.length 
                 ? data.map(c => `<div class="comment-item"><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('')
@@ -225,12 +269,10 @@
         }
     }
 
-    // --- AUTH & FILTERS ---
     function filterVideos() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         document.querySelectorAll('.video-card').forEach(card => {
-            const content = card.innerText.toLowerCase();
-            card.classList.toggle('hidden-card', !content.includes(query));
+            card.classList.toggle('hidden-card', !card.innerText.toLowerCase().includes(query));
         });
     }
 

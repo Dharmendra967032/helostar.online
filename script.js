@@ -5,6 +5,21 @@ const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5";
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentMode = 'long'; // Landscape
 
+// Toggle Mobile Menu
+function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('active');
+}
+
+// Close menu when navigation item is clicked
+document.addEventListener('click', (e) => {
+    const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburgerBtn');
+    if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+        sidebar.classList.remove('active');
+    }
+});
+
 // Toggle Category Dropdown
 function toggleDropdown() {
     document.getElementById("categoryDropdown").classList.toggle("show");

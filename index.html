@@ -11,17 +11,21 @@
 <body>
 
     <div class="app-shell">
-        <aside class="sidebar">
+        <button class="hamburger-toggle" id="hamburgerBtn" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <aside class="sidebar" id="sidebar">
             <div class="logo">HELO<span>STAR</span></div>
             
             <nav class="nav-menu">
                 <div class="nav-group">
                     <p class="nav-label">Feed Type</p>
                     <button class="nav-btn active" onclick="switchMode('long', this)">
-                        <i class="fas fa-desktop"></i> Cinema (Long)
+                        <i class="fas fa-desktop"></i> Videos
                     </button>
                     <button class="nav-btn" onclick="switchMode('short', this)">
-                        <i class="fas fa-mobile-alt"></i> Shorts (Vertical)
+                        <i class="fas fa-mobile-alt"></i> Shorts
                     </button>
                 </div>
 

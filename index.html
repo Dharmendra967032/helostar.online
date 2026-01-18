@@ -21,25 +21,12 @@
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Auth Overlay */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .auth-card { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--helostar-pink); text-align: center; width: 90%; max-width: 400px; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; box-sizing: border-box; outline: none; }
         .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         
-        header { 
-            background: rgba(18, 18, 18, 0.95); 
-            padding: 10px 5%; 
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center; 
-            gap: 15px;
-            position: sticky; 
-            top: 0; 
-            z-index: 1000; 
-            border-bottom: 1px solid var(--glass); 
-            backdrop-filter: blur(10px); 
-        }
+        header { background: rgba(18, 18, 18, 0.95); padding: 10px 5%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); backdrop-filter: blur(10px); }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; }
         
         .search-container { position: relative; width: 100%; max-width: 400px; justify-self: center; }
@@ -52,7 +39,8 @@
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         
-        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; }
+        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); transition: 0.3s; position: relative; }
+        .video-card:hover { border-color: var(--helostar-pink); transform: translateY(-3px); }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         
@@ -64,16 +52,21 @@
         .btn-action { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; flex: 1; }
         .btn-delete { color: #ff4444; }
         .btn-share { background: rgba(211, 21, 157, 0.1); border: 1px solid rgba(211, 21, 157, 0.3); color: var(--helostar-pink); padding: 6px; border-radius: 6px; cursor: pointer; flex: 0.3; }
+        .hidden-card { display: none !important; }
 
         .fab-upload { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; font-size: 1.3rem; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 5px 15px rgba(211, 21, 157, 0.3); }
         
         #uploadStatus { position: fixed; bottom: 90px; right: 20px; background: rgba(18, 18, 18, 0.98); border: 1px solid var(--helostar-pink); padding: 15px; border-radius: 12px; display: none; color: white; z-index: 1002; width: 260px; backdrop-filter: blur(10px); }
         .progress-container { width: 100%; background: #222; border-radius: 10px; height: 5px; margin: 12px 0; overflow: hidden; }
         .progress-bar { width: 0%; height: 100%; background: var(--helostar-pink); transition: width 0.3s; }
+        .pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         @media (max-width: 580px) {
             header { grid-template-columns: 1fr auto; padding: 10px; }
             .search-container { grid-column: span 2; order: 3; max-width: 100%; }
+            .logo { font-size: 1.3rem; }
+            .video-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -82,10 +75,10 @@
     <div id="authOverlay">
         <div class="auth-card">
             <h2 style="color:var(--helostar-pink)">HELOSTAR</h2>
-            <button class="auth-btn" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Login with Gmail</button>
+            <button class="auth-btn" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Google Login</button>
             <div style="margin: 10px 0; color: var(--text-gray); font-size: 0.7rem;">OR</div>
             <input type="text" id="guestUsername" class="auth-input" placeholder="Guest Name">
-            <button class="auth-btn" style="background: #333;" onclick="guestMode()">View as Guest</button>
+            <button class="auth-btn" style="background: #333;" onclick="guestMode()">Guest Mode</button>
         </div>
     </div>
 
@@ -93,7 +86,7 @@
         <a href="#" class="logo">HELOSTAR</a>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" placeholder="Search videos..." onkeyup="filterVideos()">
+            <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterVideos()">
         </div>
         <div class="user-section">
             <div id="userDisplay" style="font-size: 0.7rem; color: var(--text-gray);"></div>
@@ -107,7 +100,7 @@
 
     <div id="uploadStatus">
         <div style="font-weight: bold; font-size: 0.85rem;"><i class="fas fa-upload"></i> Publishing...</div>
-        <input type="text" id="videoDescInput" class="auth-input" placeholder="Enter video caption...">
+        <input type="text" id="videoDescInput" class="auth-input" placeholder="Video caption...">
         <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
         <div id="statusMessage" style="font-size: 0.7rem; color: var(--text-gray);">Ready</div>
     </div>
@@ -117,49 +110,38 @@
 
 <script>
     // --- CONFIGURATION ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
-        authDomain: "helostar-134d9.firebaseapp.com",
-        projectId: "helostar-134d9",
-        messagingSenderId: "698470895907",
-        appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
-    };
-
-    // IMPORTANT: Replace this with your actual GitHub Token
-    const GITHUB_TOKEN = "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"; 
+    const GITHUB_TOKEN = "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"; // PASTE YOUR TOKEN HERE
     const REPO_OWNER = "Dharmendra967032";
     const REPO_NAME = "helostar.online";
     const ADMIN_EMAIL = "dharmendra967032@gmail.com";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
+      authDomain: "helostar-134d9.firebaseapp.com",
+      projectId: "helostar-134d9",
+      messagingSenderId: "698470895907",
+      appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
+    };
+
+    // --- APP LOGIC ---
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     let currentUserEmail = null;
     let isOwner = false;
-    let isGuest = true;
 
-    // --- AUTH LOGIC ---
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(user => { if (user) startApp(user); });
+
+    function startApp(user) {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'block';
         if (user) {
-            isGuest = false;
             currentUserEmail = user.email;
             isOwner = (user.email === ADMIN_EMAIL);
-            setupUI();
-        }
-    });
-
-    function guestMode() {
-        isGuest = true;
-        currentUserEmail = document.getElementById('guestUsername').value || "Guest User";
-        setupUI();
-    }
-
-    function setupUI() {
-        document.getElementById('authOverlay').style.display = 'none';
-        document.getElementById('userDisplay').innerHTML = isOwner ? `<b style="color:var(--helostar-pink)">OWNER</b>` : (isGuest ? `Guest` : currentUserEmail.split('@')[0]);
-        
-        if (!isGuest) {
-            document.getElementById('logoutBtn').style.display = 'block';
+            document.getElementById('userDisplay').innerHTML = isOwner ? `<b style="color:var(--helostar-pink)">OWNER</b>` : user.email.split('@')[0];
             document.getElementById('uploadBtn').style.display = 'flex';
+        } else {
+            currentUserEmail = document.getElementById('guestUsername').value || "Guest";
+            document.getElementById('userDisplay').innerText = currentUserEmail;
         }
         fetchVideos();
     }
@@ -169,160 +151,144 @@
         await auth.signInWithPopup(provider);
     }
 
+    function guestMode() { startApp(null); }
     function logout() { auth.signOut().then(() => window.location.reload()); }
-//check token
-    async function checkToken() {
-    const res = await fetch(`https://api.github.com/user`, {
-        headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
-    });
-    const data = await res.json();
-    if (res.ok) {
-        console.log("Token is VALID. Logged in as: " + data.login);
-        alert("Success! Token belongs to: " + data.login);
-    } else {
-        console.error("Token is INVALID:", data.message);
-        alert("GitHub says: " + data.message);
-    }
-}
-// Call this once at the start of your script to test
-// checkToken();
 
-    // --- GITHUB DATA LOGIC ---
-   async function fetchVideos() {
-       try {
+    async function fetchVideos() {
+        try {
             const res = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/database.json?t=${Date.now()}`);
             const data = await res.json();
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
-            [...data.videos].reverse().forEach(v => {
-                const canDelete = isOwner || (v.owner === currentUserEmail && !isGuest);
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                card.innerHTML = `
-                    <div class="video-wrapper"><video src="${v.url}" controls></video></div>
-                    <div class="video-info">
-                        <span class="video-title">${v.description}</span>
-                        <div class="video-meta">By ${v.owner}</div>
-                        <div class="owner-controls">
-                            <button class="btn-share" onclick="shareVideo('${v.id}')"><i class="fas fa-link"></i></button>
-                            ${canDelete ? `<button class="btn-action btn-delete" onclick="deleteVideo('${v.id}', '${v.path}')">Delete</button>` : ''}
-                        </div>
-                    </div>`;
-                container.appendChild(card);
-            });
-        } catch (e) { console.error("Load failed", e); }
+            [...data.videos].reverse().forEach(v => renderVideo(v));
+        } catch (e) { console.log("Database fetch failed."); }
     }
 
+    function renderVideo(video) {
+        const canManage = isOwner || (video.owner === currentUserEmail && currentUserEmail !== "Guest");
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.id = `video-${video.id}`;
+        card.innerHTML = `
+            <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
+            <div class="video-info">
+                <span class="video-title">${video.description}</span>
+                <div class="video-meta">By ${video.owner}</div>
+                <div class="owner-controls">
+                    <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
+                    ${canManage ? `<button class="btn-action btn-delete" onclick="deleteVideo('${video.id}', '${video.url}')">Delete</button>` : ''}
+                </div>
+            </div>`;
+        document.getElementById('videoContainer').appendChild(card);
+    }
+
+    // --- DIRECT GITHUB UPLOAD ---
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if(!file || isGuest) return;
+        if(!file || GITHUB_TOKEN === "YOUR_GITHUB_TOKEN_HERE") return alert("Please set your GitHub Token in the code.");
+        if (file.size > 20 * 1024 * 1024) return alert("Max size 20MB");
 
         const statusBox = document.getElementById('uploadStatus');
-        const pBar = document.getElementById('progressBar');
         const statusMsg = document.getElementById('statusMessage');
-        const caption = document.getElementById('videoDescInput').value || "New Video";
-
+        const pBar = document.getElementById('progressBar');
+        
         statusBox.style.display = 'block';
         pBar.style.width = '20%';
-        statusMsg.innerText = "Reading file...";
+        statusMsg.innerHTML = `<span class="pulse">Converting Video...</span>`;
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
-            const fileName = `videos/${Date.now()}_video.mp4`;
-
+            const base64Content = reader.result.split(',')[1];
+            const videoFileName = `videos/${Date.now()}_v.mp4`;
+            
             try {
-                // 1. Upload video file
-                statusMsg.innerText = "Pushing to GitHub...";
+                // 1. Upload Video File
+                statusMsg.innerText = "Sending to GitHub...";
                 pBar.style.width = '50%';
-                await githubRequest('PUT', fileName, {
-                    message: "Upload video via WebUI",
-                    content: base64
+                
+                const uploadRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${videoFileName}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: "Upload Video", content: base64Content })
                 });
 
-                // 2. Update database.json
-                statusMsg.innerText = "Updating database...";
-                const dbRes = await githubRequest('GET', 'database.json');
-                const db = JSON.parse(atob(dbRes.content));
+                if(!uploadRes.ok) throw new Error("Video upload failed. Check Token.");
+
+                // 2. Update Database JSON
+                statusMsg.innerText = "Updating Database...";
+                pBar.style.width = '80%';
                 
-                db.videos.push({
+                const dbUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.json`;
+                const dbRes = await fetch(dbUrl, { headers: { 'Authorization': `token ${GITHUB_TOKEN}` }});
+                const dbData = await dbRes.json();
+                const dbContent = JSON.parse(atob(dbData.content));
+
+                dbContent.videos.push({
                     id: Date.now().toString(),
-                    url: `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${fileName}`,
-                    path: fileName,
-                    description: caption,
+                    url: `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${videoFileName}`,
+                    description: document.getElementById('videoDescInput').value || "Video",
                     owner: currentUserEmail
                 });
 
-                await githubRequest('PUT', 'database.json', {
-                    message: "Update database entries",
-                    content: btoa(JSON.stringify(db, null, 2)),
-                    sha: dbRes.sha
+                await fetch(dbUrl, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "Update Database",
+                        content: btoa(JSON.stringify(dbContent, null, 2)),
+                        sha: dbData.sha
+                    })
                 });
 
                 pBar.style.width = '100%';
                 statusMsg.innerText = "Success! Refreshing...";
-                setTimeout(() => location.reload(), 1200);
+                setTimeout(() => location.reload(), 1500);
 
-            } catch (err) {
-                alert("Upload failed: " + err.message);
-                statusBox.style.display = 'none';
-            }
+            } catch (err) { alert(err.message); statusBox.style.display = 'none'; }
         };
     });
 
-    async function deleteVideo(id, path) {
-        if(!confirm("Delete this video?")) return;
+    async function deleteVideo(videoId, videoUrl) {
+        if(!confirm("Delete this video permanently?")) return;
+        
         try {
-            // 1. Get database
-            const dbRes = await githubRequest('GET', 'database.json');
-            let db = JSON.parse(atob(dbRes.content));
-            db.videos = db.videos.filter(v => v.id !== id);
+            // 1. Get current database
+            const dbUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.json`;
+            const dbRes = await fetch(dbUrl, { headers: { 'Authorization': `token ${GITHUB_TOKEN}` }});
+            const dbData = await dbRes.json();
+            let dbContent = JSON.parse(atob(dbData.content));
 
-            // 2. Update database
-            await githubRequest('PUT', 'database.json', {
-                message: "Delete video entry",
-                content: btoa(JSON.stringify(db, null, 2)),
-                sha: dbRes.sha
+            // 2. Remove from JSON
+            dbContent.videos = dbContent.videos.filter(v => v.id !== videoId);
+
+            // 3. Save JSON
+            await fetch(dbUrl, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: "Delete Video Entry",
+                    content: btoa(JSON.stringify(dbContent, null, 2)),
+                    sha: dbData.sha
+                })
             });
 
-            // 3. Optional: Delete actual file
-            const fileRes = await githubRequest('GET', path);
-            await githubRequest('DELETE', path, {
-                message: "Remove video file",
-                sha: fileRes.sha
-            });
-
+            alert("Deleted successfully.");
             location.reload();
-        } catch (e) { alert("Delete failed"); }
+        } catch (err) { alert("Delete failed: " + err.message); }
     }
 
-    async function githubRequest(method, path, body = null) {
-        const headers = { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' };
-        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
-        const config = { method, headers };
-        if(body) config.body = JSON.stringify(body);
-        
-        const res = await fetch(url, config);
-        if(!res.ok) throw new Error(await res.text());
-        return res.json();
+    function shareVideo(videoId) {
+        const url = `${window.location.origin}${window.location.pathname}#video-${videoId}`;
+        navigator.clipboard.writeText(url).then(() => alert("Link copied!"));
     }
 
     function filterVideos() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.video-card').forEach(c => {
-            c.style.display = c.innerText.toLowerCase().includes(q) ? '' : 'none';
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.video-card').forEach(card => {
+            card.classList.toggle('hidden-card', !card.innerText.toLowerCase().includes(query));
         });
-    }
-
-    function shareVideo(id) {
-        navigator.clipboard.writeText(window.location.href.split('#')[0] + "#video-" + id);
-        alert("Link copied to clipboard!");
     }
 </script>
 </body>
-    </html>
-    
-
-
-
+</html>

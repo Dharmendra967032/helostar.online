@@ -28,10 +28,11 @@
         header { background: rgba(18, 18, 18, 0.95); padding: 10px 5%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--helostar-pink); text-decoration: none; cursor: pointer; }
         
-        .container { max-width: 600px; margin: 20px auto; padding: 0 10px; padding-bottom: 100px; }
+        /* Added extra bottom padding so the upload button doesn't hide content */
+        .container { max-width: 600px; margin: 20px auto; padding: 0 10px 150px 10px; }
         .video-grid { display: flex; flex-direction: column; gap: 40px; }
         
-        .video-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; border: 1px solid var(--glass); }
+        .video-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; border: 1px solid var(--glass); position: relative; }
         .video-wrapper { position: relative; width: 100%; aspect-ratio: 9/16; background: #000; max-height: 80vh; }
         video { width: 100%; height: 100%; object-fit: contain; }
         
@@ -48,7 +49,28 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--glass); background: #1a1a1a; color: white; outline: none; box-sizing: border-box; }
         .auth-btn { width: 100%; padding: 12px; background: var(--helostar-pink); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
-        .fab-upload { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--helostar-pink); color: white; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1001; font-size: 1.5rem; }
+        /* Improved Upload Button View */
+        .fab-upload { 
+            position: fixed; 
+            bottom: 30px; 
+            right: 30px; 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            background: var(--helostar-pink); 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1001; 
+            font-size: 1.5rem;
+            opacity: 0.8;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: 0.3s;
+        }
+        .fab-upload:hover { opacity: 1; transform: scale(1.1); }
         
         #uploadProgress { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--helostar-pink); padding: 5px 20px; border-radius: 20px; font-size: 0.8rem; display: none; z-index: 2001; }
     </style>
@@ -81,6 +103,7 @@
     <button id="uploadBtn" class="fab-upload" onclick="triggerUpload()"><i class="fa fa-plus"></i></button>
 
 <script>
+    // Project Keys (Keep these as they were)
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
@@ -148,7 +171,7 @@
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    // --- PLAYBACK & VIEWS ---
+    // Playback and Views logic
     function handlePlay(vid, id) {
         document.querySelectorAll('video').forEach(v => { if (v !== vid) v.pause(); });
         incrementViews(id);
@@ -158,7 +181,8 @@
         const { data } = await _supabase.from('videos').select('views').eq('id', id).single();
         const newViews = (data.views || 0) + 1;
         await _supabase.from('videos').update({ views: newViews }).eq('id', id);
-        document.getElementById(`views-${id}`).innerText = newViews;
+        const viewSpan = document.getElementById(`views-${id}`);
+        if(viewSpan) viewSpan.innerText = newViews;
     }
 
     function playNextVideo(vid) {
@@ -170,7 +194,6 @@
         }
     }
 
-    // --- UPLOAD FUNCTION ---
     function triggerUpload() { document.getElementById('fileUpload').click(); }
 
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
@@ -206,7 +229,6 @@
         }
     });
 
-    // --- LIKES & COMMENTS ---
     async function handleLike(id) {
         const { data } = await _supabase.from('videos').select('likes').eq('id', id).single();
         const newLikes = (data.likes || 0) + 1;
@@ -230,7 +252,14 @@
 
     async function loadComments(id) {
         const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
-        document.getElementById(`list-${id}`).innerHTML = data.map(c => `<div><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('') || 'No comments.';
+        document.getElementById(`list-${id}`).innerHTML = data.map(c => `<div style="margin-bottom:5px;"><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('') || 'No comments.';
+    }
+
+    function filterVideos() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.video-card').forEach(c => {
+            c.classList.toggle('hidden-card', !c.innerText.toLowerCase().includes(q));
+        });
     }
 
     function guestMode() {

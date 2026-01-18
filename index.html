@@ -6,6 +6,8 @@
     <title>Helostar.online | Global Video Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
@@ -110,10 +112,9 @@
 
 <script>
     // --- CONFIGURATION ---
-    const GITHUB_TOKEN = "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"; // PASTE YOUR TOKEN HERE
-    const REPO_OWNER = "Dharmendra967032";
-    const REPO_NAME = "helostar.online";
-    const ADMIN_EMAIL = "dharmendra967032@gmail.com";
+    // PASTE YOUR SUPABASE PROJECT DETAILS HERE
+    const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
     const firebaseConfig = {
       apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
@@ -123,26 +124,27 @@
       appId: "1:698470895907:web:a8bae2a7bd3bbd135afc96"
     };
 
-    // --- APP LOGIC ---
+    // --- INITIALIZATION ---
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    let currentUserEmail = null;
-    let isOwner = false;
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    auth.onAuthStateChanged(user => { if (user) startApp(user); });
+    let currentUserEmail = null;
+
+    auth.onAuthStateChanged(user => { 
+        if (user) {
+            startApp(user);
+        } else if (localStorage.getItem('guestUser')) {
+            startApp({ email: localStorage.getItem('guestUser'), isGuest: true });
+        }
+    });
 
     function startApp(user) {
         document.getElementById('authOverlay').style.display = 'none';
         document.getElementById('logoutBtn').style.display = 'block';
-        if (user) {
-            currentUserEmail = user.email;
-            isOwner = (user.email === ADMIN_EMAIL);
-            document.getElementById('userDisplay').innerHTML = isOwner ? `<b style="color:var(--helostar-pink)">OWNER</b>` : user.email.split('@')[0];
-            document.getElementById('uploadBtn').style.display = 'flex';
-        } else {
-            currentUserEmail = document.getElementById('guestUsername').value || "Guest";
-            document.getElementById('userDisplay').innerText = currentUserEmail;
-        }
+        currentUserEmail = user.email;
+        document.getElementById('userDisplay').innerText = user.email.split('@')[0];
+        document.getElementById('uploadBtn').style.display = 'flex';
         fetchVideos();
     }
 
@@ -151,28 +153,43 @@
         await auth.signInWithPopup(provider);
     }
 
-    function guestMode() { startApp(null); }
-    function logout() { auth.signOut().then(() => window.location.reload()); }
+    function guestMode() { 
+        const name = document.getElementById('guestUsername').value || "Guest_" + Math.floor(Math.random()*1000);
+        localStorage.setItem('guestUser', name);
+        startApp({ email: name, isGuest: true }); 
+    }
+
+    function logout() { 
+        localStorage.removeItem('guestUser');
+        auth.signOut().then(() => window.location.reload()); 
+    }
+
+    // --- SUPABASE LOGIC ---
 
     async function fetchVideos() {
         try {
-            const res = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/database.json?t=${Date.now()}`);
-            const data = await res.json();
+            const { data, error } = await _supabase
+                .from('videos')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
-            [...data.videos].reverse().forEach(v => renderVideo(v));
-        } catch (e) { console.log("Database fetch failed."); }
+            data.forEach(v => renderVideo(v));
+        } catch (e) { console.error("Fetch failed:", e.message); }
     }
 
     function renderVideo(video) {
-        const canManage = isOwner || (video.owner === currentUserEmail && currentUserEmail !== "Guest");
+        const canManage = (video.owner === currentUserEmail);
         const card = document.createElement('div');
         card.className = 'video-card';
         card.id = `video-${video.id}`;
         card.innerHTML = `
             <div class="video-wrapper"><video src="${video.url}" controls playsinline></video></div>
             <div class="video-info">
-                <span class="video-title">${video.description}</span>
+                <span class="video-title">${video.description || 'No Description'}</span>
                 <div class="video-meta">By ${video.owner}</div>
                 <div class="owner-controls">
                     <button class="btn-share" onclick="shareVideo('${video.id}')"><i class="fas fa-link"></i></button>
@@ -182,104 +199,72 @@
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    // --- DIRECT GITHUB UPLOAD ---
     document.getElementById('fileUpload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if(!file || GITHUB_TOKEN === "YOUR_GITHUB_TOKEN_HERE") return alert("Please set your GitHub Token in the code.");
-        if (file.size > 20 * 1024 * 1024) return alert("Max size 20MB");
+        if(!file) return;
+        if (file.size > 50 * 1024 * 1024) return alert("Max size 50MB");
 
         const statusBox = document.getElementById('uploadStatus');
         const statusMsg = document.getElementById('statusMessage');
         const pBar = document.getElementById('progressBar');
         
         statusBox.style.display = 'block';
-        pBar.style.width = '20%';
-        statusMsg.innerHTML = `<span class="pulse">Converting Video...</span>`;
+        pBar.style.width = '10%';
+        statusMsg.innerHTML = `<span class="pulse">Uploading to Cloud...</span>`;
 
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const base64Content = reader.result.split(',')[1];
-            const videoFileName = `videos/${Date.now()}_v.mp4`;
-            
-            try {
-                // 1. Upload Video File
-                statusMsg.innerText = "Sending to GitHub...";
-                pBar.style.width = '50%';
-                
-                const uploadRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${videoFileName}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: "Upload Video", content: base64Content })
-                });
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
 
-                if(!uploadRes.ok) throw new Error("Video upload failed. Check Token.");
+            // 1. Upload to Supabase Storage
+            const { data: uploadData, error: uploadError } = await _supabase.storage
+                .from('video-uploads')
+                .upload(filePath, file);
 
-                // 2. Update Database JSON
-                statusMsg.innerText = "Updating Database...";
-                pBar.style.width = '80%';
-                
-                const dbUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.json`;
-                const dbRes = await fetch(dbUrl, { headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }});
-                const dbData = await dbRes.json();
-                const dbContent = JSON.parse(atob(dbData.content));
+            if (uploadError) throw uploadError;
+            pBar.style.width = '60%';
 
-                dbContent.videos.push({
-                    id: Date.now().toString(),
-                    url: `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${videoFileName}`,
-                    description: document.getElementById('videoDescInput').value || "Video",
-                    owner: currentUserEmail
-                });
+            // 2. Get Public URL
+            const { data: { publicUrl } } = _supabase.storage
+                .from('video-uploads')
+                .getPublicUrl(filePath);
 
-                await fetch(dbUrl, {
-                    method: 'PUT',
-                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: "Update Database",
-                        content: btoa(JSON.stringify(dbContent, null, 2)),
-                        sha: dbData.sha
-                    })
-                });
+            // 3. Save to Table
+            statusMsg.innerText = "Finalizing...";
+            const { error: dbError } = await _supabase
+                .from('videos')
+                .insert([{ 
+                    url: publicUrl, 
+                    description: document.getElementById('videoDescInput').value || "Amazing Video", 
+                    owner: currentUserEmail 
+                }]);
 
-                pBar.style.width = '100%';
-                statusMsg.innerText = "Success! Refreshing...";
-                setTimeout(() => location.reload(), 1500);
+            if (dbError) throw dbError;
 
-            } catch (err) { alert(err.message); statusBox.style.display = 'none'; }
-        };
+            pBar.style.width = '100%';
+            statusMsg.innerText = "Success! Refreshing...";
+            setTimeout(() => location.reload(), 1000);
+
+        } catch (err) { 
+            alert("Error: " + err.message); 
+            statusBox.style.display = 'none'; 
+        }
     });
 
     async function deleteVideo(videoId, videoUrl) {
-        if(!confirm("Delete this video permanently?")) return;
-        
+        if(!confirm("Delete this video?")) return;
         try {
-            // 1. Get current database
-            const dbUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.json`;
-            const dbRes = await fetch(dbUrl, { headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }});
-            const dbData = await dbRes.json();
-            let dbContent = JSON.parse(atob(dbData.content));
-
-            // 2. Remove from JSON
-            dbContent.videos = dbContent.videos.filter(v => v.id !== videoId);
-
-            // 3. Save JSON
-            await fetch(dbUrl, {
-                method: 'PUT',
-                headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: "Delete Video Entry",
-                    content: btoa(JSON.stringify(dbContent, null, 2)),
-                    sha: dbData.sha
-                })
-            });
-
-            alert("Deleted successfully.");
+            // Delete record from DB
+            const { error } = await _supabase.from('videos').delete().eq('id', videoId);
+            if (error) throw error;
+            alert("Deleted!");
             location.reload();
-        } catch (err) { alert("Delete failed: " + err.message); }
+        } catch (err) { alert(err.message); }
     }
 
     function shareVideo(videoId) {
-        const url = `${window.location.origin}${window.location.pathname}#video-${videoId}`;
+        const url = window.location.href.split('#')[0] + `#video-${videoId}`;
         navigator.clipboard.writeText(url).then(() => alert("Link copied!"));
     }
 

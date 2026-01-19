@@ -10,13 +10,19 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <style>
-        :root { --bg-color: #000; --helostar-pink: #d3159d; --glass-white: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.15); }
+        :root {
+            --bg-color: #000;
+            --helostar-pink: #d3159d;
+            --glass-white: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: #fff; margin: 0; }
         
         header { background: rgba(0,0,0,0.95); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
-        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); }
-        
-        /* Layout Tools */
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); text-decoration: none; }
+        .logout-btn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+
         .tools-row { padding: 10px 15px; display: flex; gap: 10px; background: #000; }
         .cat-select { flex: 1; background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 10px; color: white; padding: 10px; outline: none; }
         .search-box { flex: 2; background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px; color: white; outline: none; }
@@ -25,28 +31,32 @@
         .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #555; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom-color: var(--helostar-pink); }
 
-        /* Video Display Fix */
         .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 100px; }
-        .card { width: 100%; margin-bottom: 30px; border-bottom: 1px solid #111; position: relative; }
-        .v-wrap { width: 100%; background: #111; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .card { width: 100%; margin-bottom: 25px; border-bottom: 1px solid #111; position: relative; padding-bottom: 15px; }
+        .v-wrap { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         .v-full { height: 400px; }
-        .v-short { aspect-ratio: 9/16; max-height: 80vh; }
-        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        .v-short { aspect-ratio: 9/16; max-height: 85vh; }
+        
+        video { width: 100%; height: 100%; object-fit: contain; background: #000; cursor: pointer; }
 
-        /* Icons and Actions */
-        .action-row { display: flex; justify-content: space-around; padding: 15px; background: #000; }
-        .btn-act { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.8rem; color: #fff; border: none; background: none; }
-        .btn-act i { font-size: 1.4rem; }
+        /* Mute Toggle Icon Overlay */
+        .mute-overlay { position: absolute; bottom: 15px; right: 15px; background: rgba(0,0,0,0.5); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; }
+
+        .emoji-float { position: absolute; pointer-events: none; font-size: 30px; animation: floatUp 0.8s ease-out forwards; z-index: 100; left: 50%; }
+        @keyframes floatUp { 0% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, -100px); opacity: 0; } }
+
+        .action-row { display: flex; gap: 20px; padding: 12px 15px; }
+        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 1rem; color: #fff; border: none; background: none; }
         .btn-act.liked { color: var(--helostar-pink); }
 
-        /* Comments Panel */
-        .comm-panel { margin: 0 10px 15px; padding: 15px; display: none; border-radius: 12px; background: #111; border: 1px solid var(--glass-border); }
-        .cl-list { max-height: 200px; overflow-y: auto; margin-bottom: 10px; font-size: 0.9rem; }
-        .c-item { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; }
-        .c-input-grp { display: flex; gap: 10px; }
-        .c-input-grp input { flex: 1; background: #222; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; }
+        .comm-panel { margin: 0 15px; padding: 12px; display: none; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); }
+        .cl-list { max-height: 150px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 10px; }
+        .c-item { margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px; }
+        .c-input-grp { display: flex; gap: 8px; }
+        .c-input-grp input { flex: 1; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; padding: 8px; outline: none; }
 
-        .upload-trigger { position: fixed; bottom: 30px; right: 25px; font-size: 3.5rem; color: var(--helostar-pink); cursor: pointer; z-index: 1001; background: none; border: none; }
+        .upload-trigger { position: fixed; bottom: 30px; right: 25px; font-size: 3.5rem; color: var(--helostar-pink); cursor: pointer; z-index: 1001; background: none; border: none; line-height: 1; }
+        
         .hidden { display: none !important; }
         #authOverlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
@@ -54,14 +64,17 @@
 <body>
 
     <div id="authOverlay">
-        <h1 class="logo" style="font-size: 3.5rem;">HELOSTAR</h1>
-        <button onclick="signInWithGoogle()" style="padding: 15px 40px; border-radius: 30px; background: #fff; font-weight: bold; border: none; cursor: pointer;">Login</button>
-        <p onclick="guestMode()" style="margin-top: 20px; color: #888; cursor: pointer;">Guest Mode</p>
+        <h1 class="logo" style="font-size: 3.5rem; margin-bottom: 30px;">HELOSTAR</h1>
+        <button onclick="signInWithGoogle()" style="padding: 15px 40px; border-radius: 30px; border: none; background: #fff; font-weight: bold; cursor: pointer;">Login with Google</button>
+        <p onclick="guestMode()" style="margin-top: 20px; color: #666; cursor: pointer;">Continue as Guest</p>
     </div>
 
     <header>
         <div class="logo">HELOSTAR</div>
-        <button id="logoutBtn" class="hidden" style="background:none; border:none; color:white; font-size:1.2rem;" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span id="userNameDisplay" style="font-size:0.85rem; color:var(--helostar-pink)"></span>
+            <button id="logoutBtn" class="logout-btn hidden" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
     </header>
 
     <div class="tools-row">
@@ -90,14 +103,25 @@
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
-    firebase.initializeApp({ apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY", authDomain: "helostar-134d9.firebaseapp.com", projectId: "helostar-134d9" });
+    firebase.initializeApp({
+      apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
+      authDomain: "helostar-134d9.firebaseapp.com",
+      projectId: "helostar-134d9"
+    });
+
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
     let currentUserEmail = null, currentTab = 'short', currentCat = 'All', searchQuery = "";
+    let isGlobalMuted = true; // Default to muted like TikTok/Instagram
 
     firebase.auth().onAuthStateChanged(user => {
-        if (user) { currentUserEmail = user.email; startApp(); }
-        else if (localStorage.getItem('guest')) { startApp(); }
+        if (user) { 
+            currentUserEmail = user.email; 
+            document.getElementById('userNameDisplay').innerText = "@" + (user.displayName || user.email.split('@')[0]);
+            startApp();
+        } else if (localStorage.getItem('guest')) {
+            document.getElementById('userNameDisplay').innerText = "@Guest";
+            startApp();
+        }
     });
 
     function startApp() {
@@ -107,22 +131,23 @@
         renderFeed();
     }
 
-    function setTab(t) { currentTab = t; document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(t==='short'?'tShort':'tFull').classList.add('active'); renderFeed(); }
+    function setTab(t) { currentTab = t; renderFeed(); }
     function filterByCat(cat) { currentCat = cat; renderFeed(); }
     function handleSearch() { searchQuery = document.getElementById('searchInput').value.toLowerCase(); renderFeed(); }
 
     async function renderFeed() {
         const feed = document.getElementById('feed');
-        feed.innerHTML = '<p style="text-align:center; padding:50px;">Refreshing Feed...</p>';
-        
-        let { data: videos } = await _supabase.from('videos').select('*').order('created_at', {ascending: false});
-        if (currentCat !== 'All') videos = videos.filter(v => v.category === currentCat);
-        if (searchQuery) videos = videos.filter(v => v.description.toLowerCase().includes(searchQuery));
-
+        feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.5;">Loading Feed...</p>';
+        let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
+        if (currentCat !== 'All') q = q.eq('category', currentCat);
+        const { data: videos } = await q;
+        const filtered = videos.filter(v => v.description.toLowerCase().includes(searchQuery));
         feed.innerHTML = '';
-        videos.forEach(v => {
+        
+        filtered.forEach(v => {
             const vTemp = document.createElement('video');
-            vTemp.src = v.url + "#t=0.1";
+            vTemp.src = v.url + "#t=0.5";
+            vTemp.preload = "metadata";
             vTemp.onloadedmetadata = () => {
                 const isVertical = vTemp.videoHeight > vTemp.videoWidth;
                 if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
@@ -136,64 +161,85 @@
         const card = document.createElement('div'); card.className = 'card';
         card.innerHTML = `
             <div class="v-wrap ${isVertical?'v-short':'v-full'}">
-                <video src="${v.url}#t=0.1" preload="metadata" ${!isVertical?'controls':'loop muted'} onclick="this.play(); addView(${v.id})"></video>
+                <video src="${v.url}#t=0.5" preload="metadata" ${!isVertical?'controls':'loop'} 
+                       muted="${isGlobalMuted}" onclick="handleVideoClick(this, ${v.id})"></video>
+                <div class="mute-overlay" onclick="toggleMute(this)">
+                    <i class="fas ${isGlobalMuted ? 'fa-volume-mute' : 'fa-volume-up'}"></i>
+                </div>
             </div>
             <div class="action-row">
-                <div class="btn-act"><i class="fas fa-eye"></i><span>${v.views||0}</span></div>
-                <button id="btn-like-${v.id}" class="btn-act" onclick="doLike(${v.id}, this)"><i class="fas fa-heart"></i><span>${v.likes||0}</span></button>
-                <button class="btn-act" onclick="toggleComm(${v.id})"><i class="fas fa-comment"></i><span id="cc-${v.id}">0</span></button>
-                <button class="btn-act" onclick="shareVideo('${v.url}')"><i class="fas fa-paper-plane"></i><span>Share</span></button>
+                <div class="btn-act"><i class="fas fa-eye"></i> <span id="vc-${v.id}">${v.views||0}</span></div>
+                <button id="btn-like-${v.id}" class="btn-act" onclick="doLike(${v.id}, this)">
+                    <i class="fas fa-heart"></i> <span id="lc-${v.id}">${v.likes||0}</span>
+                </button>
+                <div class="btn-act" onclick="toggleComm(${v.id})"><i class="fas fa-comment"></i></div>
             </div>
-            <div style="padding:0 15px 10px; font-size:0.9rem;">
-                <b>@${v.owner?.split('@')[0]}</b> ${v.description}
+            <div style="padding:0 15px; font-size:0.9rem;">
+                <b style="color:var(--helostar-pink)">@${v.owner?.split('@')[0]}</b> ${v.description}
             </div>
             <div id="cb-${v.id}" class="comm-panel">
                 <div id="cl-${v.id}" class="cl-list"></div>
                 <div class="c-input-grp">
-                    <input type="text" id="ci-${v.id}" placeholder="Write a comment...">
-                    <button onclick="sendComm(${v.id})" style="background:var(--helostar-pink); border:none; color:white; padding:5px 15px; border-radius:8px;">Post</button>
+                    <input type="text" id="ci-${v.id}" placeholder="Say something...">
+                    <button onclick="sendComm(${vid})" style="background:var(--helostar-pink); border:none; color:#fff; padding:8px 15px; border-radius:8px;">Post</button>
                 </div>
             </div>`;
         document.getElementById('feed').appendChild(card);
-        updateCommentCount(v.id);
     }
 
-    async function toggleComm(vid) {
+    function handleVideoClick(video, vid) {
+        if (video.paused) {
+            video.play();
+            addView(vid);
+        } else {
+            video.pause();
+        }
+    }
+
+    function toggleMute(btn) {
+        isGlobalMuted = !isGlobalMuted;
+        const allVideos = document.querySelectorAll('video');
+        const iconClass = isGlobalMuted ? 'fa-volume-mute' : 'fa-volume-up';
+        
+        allVideos.forEach(v => v.muted = isGlobalMuted);
+        document.querySelectorAll('.mute-overlay i').forEach(icon => {
+            icon.className = `fas ${iconClass}`;
+        });
+    }
+
+    async function doLike(vid, btn) {
+        if (!currentUserEmail || btn.classList.contains('liked')) return;
+        const emoji = document.createElement('div');
+        emoji.className = 'emoji-float';
+        emoji.innerText = '😍';
+        btn.appendChild(emoji);
+        setTimeout(() => emoji.remove(), 800);
+
+        const { error } = await _supabase.from('likes').insert([{ video_id: vid, user_email: currentUserEmail }]);
+        if (!error) {
+            btn.classList.add('liked');
+            document.getElementById(`lc-${vid}`).innerText = parseInt(document.getElementById(`lc-${vid}`).innerText) + 1;
+            await _supabase.rpc('increment_likes', { row_id: vid });
+        }
+    }
+
+    async function addView(vid) {
+        await _supabase.rpc('increment_views', { row_id: vid });
+        let vSpan = document.getElementById(`vc-${vid}`);
+        if(vSpan) vSpan.innerText = parseInt(vSpan.innerText) + 1;
+    }
+
+    function toggleComm(vid) {
         const box = document.getElementById(`cb-${vid}`);
         box.style.display = box.style.display === 'block' ? 'none' : 'block';
         if (box.style.display === 'block') refreshComm(vid);
     }
 
-    async function updateCommentCount(vid) {
-        const { count } = await _supabase.from('comments').select('*', { count: 'exact', head: true }).eq('video_id', vid);
-        const el = document.getElementById(`cc-${vid}`);
-        if(el) el.innerText = count || 0;
-    }
-
     async function refreshComm(vid) {
         const { data } = await _supabase.from('comments').select('*').eq('video_id', vid).order('created_at', {ascending: false});
-        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div class="c-item"><b>@${c.user_name}</b>: ${c.comment_text}</div>`).join('') || 'No comments yet.';
-        updateCommentCount(vid);
+        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div class="c-item"><b>@${c.user_name}</b> ${c.comment_text}</div>`).join('') || 'No comments.';
     }
 
-    async function sendComm(vid) {
-        const val = document.getElementById(`ci-${vid}`).value;
-        if (!val.trim() || !currentUserEmail) return;
-        await _supabase.from('comments').insert([{ video_id: vid, user_name: currentUserEmail.split('@')[0], comment_text: val }]);
-        document.getElementById(`ci-${vid}`).value = '';
-        refreshComm(vid);
-    }
-
-    async function doLike(vid, btn) {
-        if (!currentUserEmail || btn.classList.contains('liked')) return;
-        btn.classList.add('liked');
-        await _supabase.rpc('increment_likes', { row_id: vid });
-        let span = btn.querySelector('span');
-        span.innerText = parseInt(span.innerText) + 1;
-    }
-
-    async function addView(vid) { await _supabase.rpc('increment_views', { row_id: vid }); }
-    function shareVideo(url) { navigator.clipboard.writeText(url); alert("Link Copied!"); }
     function logout() { firebase.auth().signOut().then(() => { localStorage.clear(); location.reload(); }); }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
     function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }

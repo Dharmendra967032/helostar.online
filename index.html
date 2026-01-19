@@ -81,8 +81,7 @@
     </header>
 
     <div class="container">
-        <div id="videoContainer" class="video-grid">
-            </div>
+        <div id="videoContainer" class="video-grid"></div>
     </div>
 
     <input type="file" id="fileUpload" style="display:none" accept="video/*">
@@ -116,6 +115,54 @@
         fetchVideos();
     }
 
+    // --- UPLOAD LOGIC ---
+    document.getElementById('fileUpload').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Visual feedback
+        const btn = document.getElementById('uploadBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+
+        try {
+            const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+            
+            // 1. Upload to Supabase Storage Bucket 'videos'
+            const { data, error: uploadError } = await _supabase.storage
+                .from('videos') 
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: urlData } = _supabase.storage
+                .from('videos')
+                .getPublicUrl(fileName);
+
+            const publicUrl = urlData.publicUrl;
+
+            // 3. Save to database
+            const { error: dbError } = await _supabase.from('videos').insert([{
+                url: publicUrl,
+                description: prompt("Enter video description:") || "Helostar Video",
+                owner: currentUserEmail,
+                likes: 0
+            }]);
+
+            if (dbError) throw dbError;
+
+            alert("Upload Success!");
+            fetchVideos(); // Refresh feed
+        } catch (err) {
+            console.error(err);
+            alert("Upload Error: " + err.message);
+        } finally {
+            btn.innerHTML = '<i class="fa fa-plus"></i>';
+            btn.disabled = false;
+        }
+    });
+
     // --- VIDEO LOADING & RENDERING ---
     async function fetchVideos() {
         const { data, error } = await _supabase.from('videos').select('*').order('created_at', { ascending: false });
@@ -135,7 +182,7 @@
             </div>
             <div class="video-info">
                 <span class="video-title">${video.description || 'Helostar Video'}</span>
-                <div class="video-meta">Uploaded by @${video.owner.split('@')[0]}</div>
+                <div class="video-meta">Uploaded by @${video.owner ? video.owner.split('@')[0] : 'anonymous'}</div>
                 
                 <div class="video-actions">
                     <div class="action-item" onclick="handleLike(${video.id})">
@@ -157,7 +204,7 @@
         document.getElementById('videoContainer').appendChild(card);
     }
 
-    // --- SMART PLAYBACK (One at a time + Autoplay) ---
+    // --- SMART PLAYBACK ---
     function managePlayback(activeVideo) {
         const allVideos = document.querySelectorAll('video');
         allVideos.forEach(vid => {
@@ -173,11 +220,9 @@
         if (nextIdx < allCards.length) {
             const nextCard = allCards[nextIdx];
             nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Short delay to let the scroll finish before playing
             setTimeout(() => {
                 const nextVid = nextCard.querySelector('video');
-                nextVid.play();
+                if(nextVid) nextVid.play();
             }, 800);
         }
     }
@@ -186,7 +231,6 @@
     async function handleLike(id) {
         const { data } = await _supabase.from('videos').select('likes').eq('id', id).single();
         const updatedLikes = (data.likes || 0) + 1;
-        
         const { error } = await _supabase.from('videos').update({ likes: updatedLikes }).eq('id', id);
         if (!error) document.getElementById(`likes-${id}`).innerText = updatedLikes;
     }
@@ -201,13 +245,11 @@
     async function submitComment(id) {
         const input = document.getElementById(`input-${id}`);
         if (!input.value.trim()) return;
-
         const { error } = await _supabase.from('comments').insert([{ 
             video_id: id, 
             user_name: currentUserEmail.split('@')[0], 
             comment_text: input.value 
         }]);
-
         if (!error) {
             input.value = '';
             loadComments(id);
@@ -217,7 +259,6 @@
     async function loadComments(id) {
         const list = document.getElementById(`list-${id}`);
         const { data, error } = await _supabase.from('comments').select('*').eq('video_id', id).order('created_at', { ascending: true });
-        
         if (!error) {
             list.innerHTML = data.length 
                 ? data.map(c => `<div class="comment-item"><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('')

@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helostar | Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Helostar | Full Experience</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -11,86 +11,84 @@
 
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --card-bg: #161616;
+            --bg-color: #000000;
+            --card-bg: #111111;
             --helostar-pink: #d3159d;
             --text-white: #ffffff;
-            --text-gray: #b0b0b0;
-            --glass: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.1);
         }
 
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; padding: 0; }
         
-        /* Auth Overlay */
-        #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 15px; border: 1px solid var(--helostar-pink); text-align: center; width: 320px; }
-
-        header { background: #000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
-        .logo { font-size: 1.4rem; font-weight: 900; color: var(--helostar-pink); letter-spacing: 1px; }
+        /* Full Screen Auth */
+        #authOverlay { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         
-        /* Navigation & Tabs */
-        .nav-controls { display: flex; justify-content: center; padding: 20px; gap: 10px; }
-        .tab-btn { background: var(--glass); border: 1px solid transparent; color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: 600; }
-        .tab-btn.active { background: var(--helostar-pink); border-color: var(--helostar-pink); }
+        header { background: rgba(0,0,0,0.9); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass); }
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); }
 
-        .container { max-width: 700px; margin: 0 auto; padding-bottom: 100px; }
+        /* Navigation Tabs */
+        .nav-tabs { display: flex; width: 100%; border-bottom: 1px solid var(--glass); }
+        .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #888; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.3s; }
+        .tab-btn.active { color: var(--helostar-pink); border-bottom-color: var(--helostar-pink); }
+
+        /* Global Container - Full Width on Mobile */
+        .container { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
+
+        /* Full Screen / Responsive Video Cards */
+        .card { width: 100%; background: var(--card-bg); margin-bottom: 15px; border-bottom: 1px solid var(--glass); }
         
-        /* Grid Layouts */
-        #shortsContainer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        #videoContainer { display: flex; flex-direction: column; gap: 25px; padding: 10px; }
-
-        /* Video Components */
-        .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--glass); }
-        .video-wrap-short { aspect-ratio: 9/16; background: #000; position: relative; }
-        .video-wrap-full { height: 355px; background: #000; display: flex; align-items: center; }
+        /* FIXED 355px for Full Videos */
+        .video-wrap-full { width: 100%; height: 355px; background: #000; display: flex; align-items: center; justify-content: center; }
+        
+        /* Adaptive Height for Shorts (Mobile Full-ish) */
+        .video-wrap-short { width: 100%; aspect-ratio: 9/16; background: #000; }
+        
         video { width: 100%; height: 100%; object-fit: contain; }
 
         .info-area { padding: 15px; }
-        .actions { display: flex; gap: 20px; margin-top: 10px; border-top: 1px solid var(--glass); padding-top: 10px; }
-        .btn-act { cursor: pointer; color: var(--text-gray); font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+        .actions { display: flex; gap: 25px; padding-top: 10px; }
+        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #ccc; }
         .btn-act.liked { color: var(--helostar-pink); }
-        
-        /* Comments UI */
-        .comment-section { background: #000; padding: 12px; border-radius: 8px; margin-top: 10px; display: none; }
-        .comment-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 10px; color: #ddd; }
-        .comment-item { padding: 4px 0; border-bottom: 1px solid #222; }
-        
-        .c-input { flex: 1; background: #222; border: none; padding: 8px; color: white; border-radius: 4px; }
-        .c-send { background: var(--helostar-pink); border: none; color: white; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
 
-        .fab { position: fixed; bottom: 30px; right: 30px; width: 55px; height: 55px; border-radius: 50%; background: var(--helostar-pink); border: none; color: white; font-size: 1.5rem; cursor: pointer; display: none; box-shadow: 0 4px 15px rgba(211,21,157,0.4); }
+        /* Comments List UI */
+        .comment-box { background: #0a0a0a; padding: 15px; border-radius: 10px; margin-top: 12px; display: none; }
+        .comment-list { max-height: 200px; overflow-y: auto; margin-bottom: 10px; font-size: 0.85rem; }
+        .comment-item { margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
+
+        /* Inputs */
+        .c-input { flex: 1; background: #222; border: 1px solid #444; padding: 10px; color: white; border-radius: 5px; }
+        .c-btn { background: var(--helostar-pink); border: none; padding: 10px 15px; color: white; border-radius: 5px; font-weight: bold; }
+        
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 999; }
+        
         .hidden { display: none !important; }
-        .guest-mode { opacity: 0.5; pointer-events: none; }
+        .guest-lock { opacity: 0.4; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
-        <div class="auth-card">
-            <h2 style="color:var(--helostar-pink)">HELOSTAR</h2>
-            <button class="tab-btn active" style="width:100%" onclick="signInWithGoogle()">Login with Google</button>
-            <p style="color:gray; font-size: 0.8rem; margin:15px 0;">OR</p>
-            <button class="tab-btn" style="width:100%" onclick="guestMode()">Enter as Guest</button>
-        </div>
+        <h1 style="color:var(--helostar-pink); font-size: 3rem;">HELOSTAR</h1>
+        <button class="c-btn" style="width: 250px; margin-bottom: 10px;" onclick="signInWithGoogle()">Google Login</button>
+        <button class="c-btn" style="width: 250px; background: #333;" onclick="guestMode()">Guest Access</button>
     </div>
 
     <header>
         <div class="logo">HELOSTAR</div>
-        <button id="logoutBtn" class="tab-btn" style="font-size: 0.7rem; display:none" onclick="logout()">Logout</button>
+        <button id="logoutBtn" class="c-btn" style="background:none; border:1px solid #444; display:none" onclick="logout()">Logout</button>
     </header>
 
-    <div class="nav-controls">
-        <button id="btnShorts" class="tab-btn active" onclick="switchTab('shorts')"><i class="fas fa-bolt"></i> Shorts</button>
-        <button id="btnFull" class="tab-btn" onclick="switchTab('full')"><i class="fas fa-play"></i> Full Videos</button>
+    <div class="nav-tabs">
+        <button id="tShort" class="tab-btn active" onclick="setTab('short')">SHORTS</button>
+        <button id="tFull" class="tab-btn" onclick="setTab('full')">VIDEOS</button>
     </div>
 
     <div class="container">
-        <div id="shortsContainer"></div>
-        <div id="videoContainer" class="hidden"></div>
+        <div id="feed"></div>
     </div>
 
-    <input type="file" id="fileUpload" style="display:none" accept="video/*">
-    <button id="uploadBtn" class="fab" onclick="document.getElementById('fileUpload').click()"><i class="fa fa-plus"></i></button>
+    <input type="file" id="fileIn" style="display:none" accept="video/*">
+    <button id="uploadBtn" class="fab" onclick="document.getElementById('fileIn').click()"><i class="fa fa-plus"></i></button>
 
 <script>
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
@@ -104,82 +102,81 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUserEmail = null;
+    let currentTab = 'short';
     let isGuest = false;
 
-    firebase.auth().onAuthStateChanged(user => { 
-        if (user) { currentUserEmail = user.email; startApp(false); }
-        else if (localStorage.getItem('guestUser')) { startApp(true); }
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) { currentUserEmail = user.email; isGuest = false; start(); }
+        else if (localStorage.getItem('guest')) { isGuest = true; start(); }
     });
 
-    function startApp(guestStatus) {
-        isGuest = guestStatus;
+    function start() {
         document.getElementById('authOverlay').classList.add('hidden');
         document.getElementById('logoutBtn').style.display = 'block';
-        if (!isGuest) document.getElementById('uploadBtn').style.display = 'block';
-        fetchVideos();
+        if(!isGuest) document.getElementById('uploadBtn').style.display = 'flex';
+        renderFeed();
     }
 
-    function switchTab(tab) {
-        document.getElementById('btnShorts').classList.toggle('active', tab === 'shorts');
-        document.getElementById('btnFull').classList.toggle('active', tab === 'full');
-        document.getElementById('shortsContainer').classList.toggle('hidden', tab !== 'shorts');
-        document.getElementById('videoContainer').classList.toggle('hidden', tab !== 'full');
+    function setTab(t) {
+        currentTab = t;
+        document.getElementById('tShort').classList.toggle('active', t === 'short');
+        document.getElementById('tFull').classList.toggle('active', t === 'full');
+        renderFeed();
     }
 
-    async function fetchVideos() {
-        const { data: videos } = await _supabase.from('videos').select('*').order('created_at', { ascending: false });
+    async function renderFeed() {
+        const feed = document.getElementById('feed');
+        feed.innerHTML = '<p style="text-align:center; padding:20px;">Loading Feed...</p>';
+
+        const { data: videos } = await _supabase.from('videos').select('*').order('created_at', {ascending: false});
         let myLikes = [];
         if (currentUserEmail) {
-            const { data: likes } = await _supabase.from('likes').select('video_id').eq('user_email', currentUserEmail);
-            myLikes = likes.map(l => l.video_id);
+            const { data: lks } = await _supabase.from('likes').select('video_id').eq('user_email', currentUserEmail);
+            myLikes = lks.map(l => l.video_id);
         }
 
-        const shortsDiv = document.getElementById('shortsContainer');
-        const fullDiv = document.getElementById('videoContainer');
-        shortsDiv.innerHTML = ''; fullDiv.innerHTML = '';
-
+        feed.innerHTML = '';
         videos.forEach(v => {
-            const hasLiked = myLikes.includes(v.id);
-            const vElem = document.createElement('video');
-            vElem.src = v.url;
-            vElem.onloadedmetadata = () => {
-                if (vElem.videoHeight > vElem.videoWidth) {
-                    renderItem(v, hasLiked, shortsDiv, 'short');
-                } else {
-                    renderItem(v, hasLiked, fullDiv, 'full');
+            const vTemp = document.createElement('video');
+            vTemp.src = v.url;
+            vTemp.onloadedmetadata = () => {
+                const isVertical = vTemp.videoHeight > vTemp.videoWidth;
+                if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
+                    createCard(v, myLikes.includes(v.id), isVertical);
                 }
             };
         });
     }
 
-    function renderItem(v, hasLiked, container, type) {
-        const wrapClass = type === 'short' ? 'video-wrap-short' : 'video-wrap-full';
+    function createCard(v, hasLiked, isVertical) {
         const card = document.createElement('div');
         card.className = 'card';
+        const wrapType = isVertical ? 'video-wrap-short' : 'video-wrap-full';
+        
         card.innerHTML = `
-            <div class="${wrapClass}"><video src="${v.url}" ${type === 'full' ? 'controls' : 'loop muted onclick="this.play()"' }></video></div>
+            <div class="${wrapType}"><video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted onclick="this.play()"' }></video></div>
             <div class="info-area">
-                <div style="font-weight:bold; font-size:0.9rem">${v.description}</div>
+                <div style="font-weight:bold; margin-bottom:10px;">${v.description}</div>
                 <div class="actions">
-                    <div class="btn-act ${isGuest ? 'guest-mode' : ''} ${hasLiked ? 'liked' : ''}" onclick="handleLike(${v.id}, this)">
-                        <i class="fas fa-heart"></i> <span id="l-${v.id}">${v.likes || 0}</span>
+                    <div class="btn-act ${isGuest ? 'guest-lock' : ''} ${hasLiked ? 'liked' : ''}" onclick="doLike(${v.id}, this)">
+                        <i class="fas fa-heart"></i> <span id="lc-${v.id}">${v.likes || 0}</span>
                     </div>
-                    <div class="btn-act ${isGuest ? 'guest-mode' : ''}" onclick="toggleComm(${v.id})">
+                    <div class="btn-act ${isGuest ? 'guest-lock' : ''}" onclick="viewComm(${v.id})">
                         <i class="fas fa-comment"></i> Comment
                     </div>
                 </div>
-                <div id="comm-${v.id}" class="comment-section">
-                    <div id="list-${v.id}" class="comment-list">Loading...</div>
-                    <div style="display:flex; gap:5px">
-                        <input type="text" id="in-${v.id}" class="c-input" placeholder="Post a comment">
-                        <button class="c-send" onclick="postComm(${v.id})">Post</button>
+                <div id="cb-${v.id}" class="comment-box">
+                    <div id="cl-${v.id}" class="comment-list"></div>
+                    <div style="display:flex; gap:8px">
+                        <input type="text" id="ci-${v.id}" class="c-input" placeholder="Type a comment...">
+                        <button class="c-btn" onclick="sendComm(${v.id})">Post</button>
                     </div>
                 </div>
             </div>`;
-        container.appendChild(card);
+        document.getElementById('feed').appendChild(card);
     }
 
-    async function handleLike(vid, btn) {
+    async function doLike(vid, btn) {
         if (isGuest || btn.classList.contains('liked')) return;
         const { error } = await _supabase.from('likes').insert([{ video_id: vid, user_email: currentUserEmail }]);
         if (error) return;
@@ -187,48 +184,43 @@
         const { data } = await _supabase.from('videos').select('likes').eq('id', vid).single();
         await _supabase.from('videos').update({ likes: (data.likes || 0) + 1 }).eq('id', vid);
         btn.classList.add('liked');
-        document.getElementById(`l-${vid}`).innerText = (data.likes || 0) + 1;
+        document.getElementById(`lc-${vid}`).innerText = (data.likes || 0) + 1;
     }
 
-    function toggleComm(vid) {
-        const box = document.getElementById(`comm-${vid}`);
-        const isOpening = box.style.display !== 'block';
-        box.style.display = isOpening ? 'block' : 'none';
-        if (isOpening) loadComm(vid);
+    function viewComm(vid) {
+        const box = document.getElementById(`cb-${vid}`);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        if (box.style.display === 'block') refreshComm(vid);
     }
 
-    async function loadComm(vid) {
+    async function refreshComm(vid) {
         const { data } = await _supabase.from('comments').select('*').eq('video_id', vid).order('created_at', {ascending: false});
-        const list = document.getElementById(`list-${vid}`);
-        list.innerHTML = data && data.length ? data.map(c => `<div class="comment-item"><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('') : 'No comments yet';
+        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div class="comment-item"><b>${c.user_name}:</b> ${c.comment_text}</div>`).join('');
     }
 
-    async function postComm(vid) {
-        const input = document.getElementById(`in-${vid}`);
-        if (!input.value.trim()) return;
-        const { error } = await _supabase.from('comments').insert([{
-            video_id: vid,
-            user_name: currentUserEmail.split('@')[0],
-            comment_text: input.value
-        }]);
-        if (!error) { input.value = ''; loadComm(vid); }
+    async function sendComm(vid) {
+        const val = document.getElementById(`ci-${vid}`).value;
+        if (!val.trim()) return;
+        await _supabase.from('comments').insert([{ video_id: vid, user_name: currentUserEmail.split('@')[0], comment_text: val }]);
+        document.getElementById(`ci-${vid}`).value = '';
+        refreshComm(vid);
     }
 
-    document.getElementById('fileUpload').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    document.getElementById('fileIn').addEventListener('change', async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
         const btn = document.getElementById('uploadBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        const fName = `${Date.now()}_${file.name}`;
-        await _supabase.storage.from('videos').upload(fName, file);
-        const { data } = _supabase.storage.from('videos').getPublicUrl(fName);
-        await _supabase.from('videos').insert([{ url: data.publicUrl, description: prompt("Description:"), owner: currentUserEmail, likes: 0 }]);
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+        const name = `${Date.now()}_${f.name}`;
+        await _supabase.storage.from('videos').upload(name, f);
+        const { data } = _supabase.storage.from('videos').getPublicUrl(name);
+        await _supabase.from('videos').insert([{ url: data.publicUrl, description: prompt("Caption:"), owner: currentUserEmail, likes: 0 }]);
         location.reload();
     });
 
-    function guestMode() { localStorage.setItem('guestUser', 'Guest'); location.reload(); }
+    function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
     function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
-    async function signInWithGoogle() { await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 </script>
 </body>
 </html>

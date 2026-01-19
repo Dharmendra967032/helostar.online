@@ -43,10 +43,9 @@
         .v-wrap { width: 100%; background: #000; position: relative; aspect-ratio: 9/16; overflow: hidden; transition: all 0.3s ease; }
         .v-full-mode { height: 400px; aspect-ratio: auto; }
         
-        /* Zoom feature for Shorts */
+        /* Zoom for Shorts */
         .v-wrap.zoomed video { object-fit: cover !important; }
-
-        video { width: 100%; height: 100%; object-fit: contain; }
+        video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; }
 
         .action-row { display: flex; gap: 10px; padding: 15px; }
         .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; color: white; transition: 0.3s; }
@@ -113,6 +112,17 @@
 
     let currentUserEmail = null, currentTab = 'short', currentCat = 'All', isGuest = false;
 
+    // --- PLAYBACK CONTROLLER ---
+    function handleGlobalPlay(currentVideo) {
+        const allVideos = document.querySelectorAll('video');
+        allVideos.forEach(v => {
+            if (v !== currentVideo) {
+                v.pause();
+                // v.currentTime = 0; // Uncomment if you want them to reset when switching
+            }
+        });
+    }
+
     function toggleSearch() {
         const c = document.getElementById('searchContainer');
         c.classList.toggle('expanded');
@@ -123,8 +133,12 @@
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const video = entry.target.querySelector('video');
-            if (entry.isIntersecting) video.play();
-            else { video.pause(); video.currentTime = 0; }
+            if (entry.isIntersecting) {
+                handleGlobalPlay(video);
+                video.play();
+            } else {
+                video.pause();
+            }
         });
     }, { threshold: 0.8 });
 
@@ -157,7 +171,6 @@
             vTemp.onloadedmetadata = async () => {
                 const isVertical = vTemp.videoHeight > vTemp.videoWidth;
                 if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
-                    // Check if current user already liked this video
                     let hasLiked = false;
                     if (currentUserEmail) {
                         const { data: likeCheck } = await _supabase.from('likes').select('*').eq('video_id', v.id).eq('user_email', currentUserEmail).single();
@@ -177,7 +190,9 @@
             <div class="v-wrap ${!isVertical ? 'v-full-mode' : ''}" ondblclick="handleDoubleTap(${v.id}, this, ${isVertical})">
                 <div class="heart-pop" id="heart-${v.id}"><i class="fas fa-heart"></i></div>
                 <video src="${v.url}" id="vid-${v.id}" loop muted playsinline preload="metadata" 
-                       onended="playNext(${v.id})" onplay="incView(${v.id})"></video>
+                       onplay="handleGlobalPlay(this); incView(${v.id})" 
+                       onclick="handleVideoClick(this)"
+                       onended="playNext(${v.id})"></video>
             </div>
             <div class="action-row">
                 <div class="btn-act ${hasLiked ? 'liked' : ''}" id="l-${v.id}" onclick="doLike(${v.id})"><i class="fas fa-heart"></i> <span>${v.likes || 0}</span></div>
@@ -197,20 +212,71 @@
         observer.observe(card);
     }
 
+    function handleVideoClick(v) {
+        if (v.paused) {
+            handleGlobalPlay(v);
+            v.play();
+        } else {
+            v.pause();
+        }
+    }
+
+    async function handleDoubleTap(vid, el, isVertical) {
+        if (!isVertical || currentTab === 'full') return;
+        const h = document.getElementById(`heart-${vid}`);
+        h.classList.add('animate-heart');
+        setTimeout(() => h.classList.remove('animate-heart'), 700);
+        el.classList.toggle('zoomed');
+        doLike(vid);
+    }
+
+    async function doLike(vid) {
+        if (isGuest || !currentUserEmail) return alert("Please login to like");
+        const likeBtn = document.getElementById(`l-${vid}`);
+        if (likeBtn.classList.contains('liked')) return;
+        const { data: alreadyLiked } = await _supabase.from('likes').select('*').eq('video_id', vid).eq('user_email', currentUserEmail).single();
+        if (alreadyLiked) { likeBtn.classList.add('liked'); return; }
+        await _supabase.from('likes').insert([{ video_id: vid, user_email: currentUserEmail }]);
+        const { data } = await _supabase.from('videos').select('likes').eq('id', vid).single();
+        await _supabase.from('videos').update({ likes: (data.likes || 0) + 1 }).eq('id', vid);
+        likeBtn.classList.add('liked');
+        likeBtn.querySelector('span').innerText = (data.likes || 0) + 1;
+    }
+
+    async function incView(vid) {
+        const { data } = await _supabase.from('videos').select('views').eq('id', vid).single();
+        await _supabase.from('videos').update({ views: (data.views || 0) + 1 }).eq('id', vid);
+        const viewEl = document.getElementById(`v-${vid}`);
+        if(viewEl) viewEl.innerText = (data.views || 0) + 1;
+    }
+
+    function playNext(currentId) {
+        const cards = Array.from(document.querySelectorAll('.card'));
+        const currentIndex = cards.findIndex(c => c.querySelector('video').id === `vid-${currentId}`);
+        if (currentIndex < cards.length - 1) {
+            const nextVideo = cards[currentIndex + 1].querySelector('video');
+            cards[currentIndex + 1].scrollIntoView({ behavior: 'smooth' });
+            // Small timeout to allow scroll to complete before playing
+            setTimeout(() => {
+                handleGlobalPlay(nextVideo);
+                nextVideo.play();
+            }, 500);
+        }
+    }
+
+    // Standard utility functions
     async function toggleComments(vid) {
         const panel = document.getElementById(`cp-${vid}`);
         const isOpening = panel.style.display !== 'block';
         panel.style.display = isOpening ? 'block' : 'none';
         if (isOpening) loadComments(vid);
     }
-
     async function loadComments(vid) {
         const list = document.getElementById(`cl-${vid}`);
         const { data } = await _supabase.from('comments').select('*').eq('video_id', vid).order('created_at', {ascending: false});
         list.innerHTML = data.length ? data.map(c => `<div><strong>@${c.user_name}:</strong> ${c.comment_text}</div>`).join('') : 'No comments yet.';
         document.getElementById(`cc-${vid}`).innerText = data.length;
     }
-
     async function postComment(vid) {
         if (isGuest) return alert("Please login to comment");
         const input = document.getElementById(`ci-${vid}`);
@@ -220,62 +286,6 @@
         input.value = '';
         loadComments(vid);
     }
-
-    async function handleDoubleTap(vid, el, isVertical) {
-        // Disable for Videos section (horizontal videos)
-        if (!isVertical || currentTab === 'full') return;
-
-        // Visual feedback
-        const h = document.getElementById(`heart-${vid}`);
-        h.classList.add('animate-heart');
-        setTimeout(() => h.classList.remove('animate-heart'), 700);
-        
-        // Toggle Zoom/Fit
-        el.classList.toggle('zoomed');
-        
-        // Trigger Like
-        doLike(vid);
-    }
-
-    async function doLike(vid) {
-        if (isGuest || !currentUserEmail) return alert("Please login to like");
-        
-        // Check if user already liked (local UI check first)
-        const likeBtn = document.getElementById(`l-${vid}`);
-        if (likeBtn.classList.contains('liked')) return;
-
-        // Database Check
-        const { data: alreadyLiked } = await _supabase.from('likes').select('*').eq('video_id', vid).eq('user_email', currentUserEmail).single();
-        if (alreadyLiked) {
-            likeBtn.classList.add('liked');
-            return;
-        }
-
-        // Add like to 'likes' table
-        await _supabase.from('likes').insert([{ video_id: vid, user_email: currentUserEmail }]);
-        
-        // Increment counter in 'videos' table
-        const { data } = await _supabase.from('videos').select('likes').eq('id', vid).single();
-        await _supabase.from('videos').update({ likes: (data.likes || 0) + 1 }).eq('id', vid);
-        
-        likeBtn.classList.add('liked');
-        likeBtn.querySelector('span').innerText = (data.likes || 0) + 1;
-    }
-
-    async function incView(vid) {
-        const { data } = await _supabase.from('videos').select('views').eq('id', vid).single();
-        await _supabase.from('videos').update({ views: (data.views || 0) + 1 }).eq('id', vid);
-        document.getElementById(`v-${vid}`).innerText = (data.views || 0) + 1;
-    }
-
-    function playNext(currentId) {
-        const cards = Array.from(document.querySelectorAll('.card'));
-        const currentIndex = cards.findIndex(c => c.querySelector('video').id === `vid-${currentId}`);
-        if (currentIndex < cards.length - 1) {
-            cards[currentIndex + 1].scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
     function setTab(t) { currentTab = t; renderFeed(); }
     function filterByCat(c) { currentCat = c; toggleMenu(); renderFeed(); }
     function share(url) { navigator.clipboard.writeText(url); alert("Link Copied!"); }

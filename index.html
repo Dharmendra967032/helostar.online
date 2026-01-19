@@ -22,30 +22,37 @@
         
         #uploadProgress { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: var(--helostar-pink); z-index: 4000; transition: 0.3s; box-shadow: 0 0 10px var(--helostar-pink); }
 
-        header { background: rgba(0,0,0,0.8); backdrop-filter: var(--blur); padding: 12px 20px; display: flex; flex-direction: column; gap: 10px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
-        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); }
+        header { background: rgba(0,0,0,0.8); backdrop-filter: var(--blur); padding: 12px 20px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
+        .header-content { display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; }
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); transition: opacity 0.3s; }
 
-        /* Search Bar */
-        .search-container { width: 100%; position: relative; }
-        .search-bar { width: 100%; background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 20px; padding: 8px 15px 8px 35px; color: white; box-sizing: border-box; outline: none; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; font-size: 0.9rem; }
+        /* Search Bar Logic */
+        .search-wrapper { display: flex; align-items: center; flex-grow: 1; justify-content: flex-end; margin-right: 15px; }
+        .search-container { position: relative; display: flex; align-items: center; transition: all 0.4s ease; width: 40px; }
+        .search-container.expanded { width: 100%; }
+        .search-bar { width: 0; opacity: 0; background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 20px; padding: 8px 10px; color: white; outline: none; transition: all 0.4s ease; pointer-events: none; }
+        .search-container.expanded .search-bar { width: 100%; opacity: 1; padding-left: 35px; pointer-events: auto; }
+        .search-icon-btn { cursor: pointer; font-size: 1.2rem; color: #fff; position: absolute; left: 10px; z-index: 5; }
 
-        /* Navigation & Categories */
-        .nav-tabs { display: flex; background: #000; }
+        /* Dropdown Menu */
+        .menu-wrapper { position: relative; }
+        .menu-trigger { font-size: 1.5rem; cursor: pointer; color: white; }
+        .dropdown-content { 
+            position: absolute; right: 0; top: 40px; background: #111; border: 1px solid var(--glass-border); 
+            border-radius: 12px; min-width: 160px; display: none; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .dropdown-content.show { display: flex; }
+        .dropdown-item { padding: 12px 15px; font-size: 0.9rem; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+        .dropdown-item:hover { background: var(--glass-white); }
+        .logout-item { background: #1a1a1a; color: var(--helostar-pink); text-align: center; border-bottom: none; font-size: 1.2rem; padding: 15px; }
+
+        /* Navigation */
+        .nav-tabs { display: flex; background: #000; border-bottom: 1px solid #111; }
         .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #555; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom-color: var(--helostar-pink); }
 
-        .filter-section { padding: 10px 20px; display: flex; align-items: center; gap: 10px; }
-        .cat-select { background: #222; color: white; border: 1px solid var(--glass-border); padding: 5px 12px; border-radius: 15px; outline: none; }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-card { width: 100%; max-width: 400px; background: #111; border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
-        select, textarea { width: 100%; background: #222; border: 1px solid #333; border-radius: 10px; color: white; padding: 12px; font-family: inherit; box-sizing: border-box; }
-
+        /* General UI */
         .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 120px; }
         .card { width: 100%; margin-bottom: 30px; border-bottom: 1px solid #111; }
         .v-wrap { width: 100%; background: #000; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
@@ -53,19 +60,8 @@
         .v-short { aspect-ratio: 9/16; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        .heart-pop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 80px; text-shadow: 0 0 20px var(--helostar-pink); pointer-events: none; opacity: 0; z-index: 10; }
-        .animate-heart { animation: heartFade 0.7s ease-out; }
-        @keyframes heartFade { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
-
-        .action-row { display: flex; gap: 10px; margin-top: 15px; padding: 0 15px; flex-wrap: wrap; }
-        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; transition: 0.2s; color: white; }
-        .btn-act.liked { color: var(--helostar-pink); border-color: var(--helostar-pink); }
-        
-        /* Updated Logout Button Style */
-        #logoutBtn { background: var(--helostar-pink); color: white; border: none; font-weight: bold; }
-
-        .comm-panel { margin-top: 15px; padding: 15px; display: none; border-radius: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); margin: 10px; }
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; box-shadow: 0 8px 25px rgba(211,21,157,0.4); z-index: 1001; }
+        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; color: white; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; }
         .hidden { display: none !important; }
         #authOverlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
@@ -81,16 +77,30 @@
     </div>
 
     <header>
-        <div class="header-top">
-            <div class="logo">HELOSTAR</div>
-            <div class="user-info" style="display:flex; align-items:center;">
-                <span id="userNameDisplay" style="font-size:0.8rem; margin-right:10px;"></span>
-                <button id="logoutBtn" class="btn-act hidden" onclick="logout()"><i class="fas fa-power-off"></i> Logout</button>
+        <div class="header-content">
+            <div class="logo" id="headerLogo">HELOSTAR</div>
+            
+            <div class="search-wrapper">
+                <div class="search-container" id="searchContainer">
+                    <i class="fas fa-search search-icon-btn" onclick="toggleSearch()"></i>
+                    <input type="text" id="searchInput" class="search-bar" placeholder="Search..." oninput="renderFeed()">
+                </div>
             </div>
-        </div>
-        <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" class="search-bar" placeholder="Search videos or users..." oninput="renderFeed()">
+
+            <div class="menu-wrapper">
+                <i class="fas fa-bars menu-trigger" onclick="toggleMenu()"></i>
+                <div class="dropdown-content" id="catDropdown">
+                    <div class="dropdown-item" onclick="filterByCat('All')">All Categories</div>
+                    <div class="dropdown-item" onclick="filterByCat('Comedy')">Comedy</div>
+                    <div class="dropdown-item" onclick="filterByCat('Party')">Party</div>
+                    <div class="dropdown-item" onclick="filterByCat('Bhakti')">Bhakti</div>
+                    <div class="dropdown-item" onclick="filterByCat('Tech')">Tech</div>
+                    <div class="dropdown-item" onclick="filterByCat('News')">News</div>
+                    <div class="dropdown-item logout-item" id="logoutMenuBtn" onclick="logout()">
+                        <i class="fas fa-power-off"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -99,48 +109,39 @@
         <button id="tFull" class="tab-btn" onclick="setTab('full')">VIDEOS</button>
     </div>
 
-    <div class="filter-section">
-        <span style="font-size: 0.8rem; color: #888;">Category:</span>
-        <select class="cat-select" onchange="filterByCat(this.value)">
-            <option value="All">All Categories</option>
-            <option value="Comedy">Comedy</option>
-            <option value="Party">Party</option>
-            <option value="Bhakti">Bhakti</option>
-            <option value="Tech">Tech</option>
-            <option value="News">News</option>
-        </select>
-    </div>
-
     <div class="container" id="feed"></div>
 
     <input type="file" id="fileIn" style="display:none" accept="video/*">
     <button id="uploadBtn" class="fab" onclick="openModal()"><i class="fa fa-plus"></i></button>
 
-    <div class="modal-overlay" id="uploadModal">
-        <div class="modal-card">
-            <h2>Post New Video</h2>
-            <div class="form-group">
-                <span class="form-label">Category</span>
-                <select id="upCat">
-                    <option value="Comedy">Comedy</option>
-                    <option value="Party">Party</option>
-                    <option value="Bhakti">Bhakti</option>
-                    <option value="Tech">Tech</option>
-                    <option value="News">News</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <span class="form-label">Description</span>
-                <textarea id="upDesc" placeholder="Write a catchy caption..."></textarea>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-act" style="flex:1; justify-content:center; color:white" onclick="closeModal()">Cancel</button>
-                <button class="btn-act" style="flex:1; justify-content:center; background:var(--helostar-pink); border:none;" onclick="processUpload()">Upload Now</button>
-            </div>
-        </div>
-    </div>
-
 <script>
+    // UI Toggle Functions
+    function toggleSearch() {
+        const container = document.getElementById('searchContainer');
+        const logo = document.getElementById('headerLogo');
+        container.classList.toggle('expanded');
+        
+        if(container.classList.contains('expanded')) {
+            logo.style.opacity = '0';
+            document.getElementById('searchInput').focus();
+        } else {
+            logo.style.opacity = '1';
+        }
+    }
+
+    function toggleMenu() {
+        document.getElementById('catDropdown').classList.toggle('show');
+    }
+
+    // Close dropdown when clicking outside
+    window.onclick = function(event) {
+        if (!event.target.matches('.menu-trigger')) {
+            const dropdowns = document.getElementsByClassName("dropdown-content");
+            for (let d of dropdowns) { if (d.classList.contains('show')) d.classList.remove('show'); }
+        }
+    }
+
+    // Existing Logic (Configured for Supabase/Firebase)
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
@@ -155,12 +156,10 @@
     let currentTab = 'short';
     let currentCat = 'All';
     let isGuest = false;
-    let pendingFile = null;
 
     firebase.auth().onAuthStateChanged(user => {
         if (user) { 
             currentUserEmail = user.email; 
-            document.getElementById('userNameDisplay').innerText = user.displayName || user.email.split('@')[0];
             start(false); 
         }
         else if (localStorage.getItem('guest')) { start(true); }
@@ -169,45 +168,21 @@
     function start(g) {
         isGuest = g;
         document.getElementById('authOverlay').classList.add('hidden');
-        document.getElementById('logoutBtn').classList.remove('hidden');
+        if(isGuest) document.getElementById('logoutMenuBtn').classList.add('hidden');
         if(!isGuest) document.getElementById('uploadBtn').style.display = 'flex';
         renderFeed();
     }
 
-    function openModal() { document.getElementById('fileIn').click(); }
-    document.getElementById('fileIn').onchange = (e) => {
-        pendingFile = e.target.files[0];
-        if(pendingFile) document.getElementById('uploadModal').style.display = 'flex';
-    };
-    function closeModal() { document.getElementById('uploadModal').style.display = 'none'; }
-
-    async function processUpload() {
-        if(!pendingFile) return;
-        const cat = document.getElementById('upCat').value;
-        const desc = document.getElementById('upDesc').value;
-        closeModal();
-        
-        const bar = document.getElementById('uploadProgress');
-        bar.style.width = '30%';
-        const name = `${Date.now()}_${pendingFile.name}`;
-        await _supabase.storage.from('videos').upload(name, pendingFile);
-        bar.style.width = '70%';
-        const { data } = _supabase.storage.from('videos').getPublicUrl(name);
-        // Added views: 0 to insert
-        await _supabase.from('videos').insert([{ url: data.publicUrl, description: desc, category: cat, owner: currentUserEmail, likes: 0, views: 0 }]);
-        bar.style.width = '100%';
-        setTimeout(() => location.reload(), 500);
+    function filterByCat(cat) {
+        currentCat = cat;
+        toggleMenu(); // Close menu after selection
+        renderFeed();
     }
 
     function setTab(t) {
         currentTab = t;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(t === 'short' ? 'tShort' : 'tFull').classList.add('active');
-        renderFeed();
-    }
-
-    function filterByCat(cat) {
-        currentCat = cat;
         renderFeed();
     }
 
@@ -220,13 +195,9 @@
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         
         const { data: videos } = await q;
-        let myLikes = [];
-        if (currentUserEmail) {
-            const { data: lks } = await _supabase.from('likes').select('video_id').eq('user_email', currentUserEmail);
-            myLikes = lks ? lks.map(l => l.video_id) : [];
-        }
-
         feed.innerHTML = '';
+        if(!videos) return;
+
         const filtered = videos.filter(v => 
             v.description.toLowerCase().includes(searchTerm) || 
             v.owner.toLowerCase().includes(searchTerm)
@@ -235,105 +206,29 @@
         filtered.forEach(v => {
             const vTemp = document.createElement('video');
             vTemp.src = v.url;
-            vTemp.onloadedmetadata = async () => {
+            vTemp.onloadedmetadata = () => {
                 const isVertical = vTemp.videoHeight > vTemp.videoWidth;
                 if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
-                    const { count } = await _supabase.from('comments').select('*', { count: 'exact', head: true }).eq('video_id', v.id);
-                    createCard(v, myLikes.includes(v.id), isVertical, count || 0);
+                    createCard(v, isVertical);
                 }
             };
         });
     }
 
-    function createCard(v, hasLiked, isVertical, cCount) {
+    function createCard(v, isVertical) {
         const card = document.createElement('div');
         card.className = 'card';
-        const wrapType = isVertical ? 'v-short' : 'v-full';
         card.innerHTML = `
-            <div class="v-wrap ${wrapType}" ondblclick="handleDoubleTap(${v.id}, this)">
-                <div class="heart-pop" id="heart-${v.id}"><i class="fas fa-heart"></i></div>
-                <video src="${v.url}" onplay="incrementView(${v.id})" ${!isVertical ? 'controls' : 'loop muted onclick="togglePlay(this)"' }></video>
+            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
+                <video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted onclick="this.paused?this.play():this.pause()"' }></video>
             </div>
-            <div class="action-row">
-                <div id="btn-like-${v.id}" class="btn-act ${hasLiked ? 'liked' : ''}" onclick="doLike(${v.id}, this)">
-                    <i class="fas fa-heart"></i> <span id="lc-${v.id}">${v.likes || 0}</span>
-                </div>
-                <div class="btn-act" onclick="viewComm(${v.id})">
-                    <i class="fas fa-comment"></i> <span id="cc-${v.id}">${cCount}</span>
-                </div>
-                <div class="btn-act">
-                    <i class="fas fa-eye"></i> <span id="vc-${v.id}">${v.views || 0}</span>
-                </div>
-                <div class="btn-act" onclick="shareVideo('${v.url}')"><i class="fas fa-paper-plane"></i></div>
-            </div>
-            <div style="padding:10px 20px; font-size:0.9rem;">
-                <b>@${v.owner?.split('@')[0] || 'User'}</b> ${v.description}
-                <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:4px;">#${v.category}</div>
-            </div>
-            <div id="cb-${v.id}" class="comm-panel">
-                <div id="cl-${v.id}" style="max-height:150px; overflow-y:auto; font-size:0.8rem;"></div>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <input type="text" id="ci-${v.id}" style="flex:1; background:#222; border:1px solid #444; color:white; padding:8px; border-radius:5px;" placeholder="Add comment...">
-                    <button class="btn-act" style="background:var(--helostar-pink); border:none;" onclick="sendComm(${v.id})">Post</button>
-                </div>
+            <div style="padding:15px;">
+                <b>@${v.owner?.split('@')[0]}</b> ${v.description}
+                <div style="color:var(--helostar-pink); font-size:0.75rem;">#${v.category}</div>
             </div>`;
         document.getElementById('feed').appendChild(card);
     }
 
-    async function incrementView(vid) {
-        const viewKey = `viewed_${vid}`;
-        if (sessionStorage.getItem(viewKey)) return; // Prevents spamming views in one session
-        
-        const { data } = await _supabase.from('videos').select('views').eq('id', vid).single();
-        await _supabase.from('videos').update({ views: (data.views || 0) + 1 }).eq('id', vid);
-        sessionStorage.setItem(viewKey, 'true');
-        const vCountEl = document.getElementById(`vc-${vid}`);
-        if(vCountEl) vCountEl.innerText = (data.views || 0) + 1;
-    }
-
-    function togglePlay(v) { v.paused ? v.play() : v.pause(); }
-
-    async function handleDoubleTap(vid, el) {
-        if (isGuest) return;
-        const heart = document.getElementById(`heart-${vid}`);
-        heart.classList.add('animate-heart');
-        setTimeout(() => heart.classList.remove('animate-heart'), 700);
-        const btn = document.getElementById(`btn-like-${vid}`);
-        if (!btn.classList.contains('liked')) doLike(vid, btn);
-    }
-
-    async function doLike(vid, btn) {
-        if (isGuest || btn.classList.contains('liked')) return;
-        const { error } = await _supabase.from('likes').insert([{ video_id: vid, user_email: currentUserEmail }]);
-        if (error) return;
-        const { data } = await _supabase.from('videos').select('likes').eq('id', vid).single();
-        await _supabase.from('videos').update({ likes: (data.likes || 0) + 1 }).eq('id', vid);
-        btn.classList.add('liked');
-        document.getElementById(`lc-${vid}`).innerText = (data.likes || 0) + 1;
-    }
-
-    function viewComm(vid) {
-        const box = document.getElementById(`cb-${vid}`);
-        box.style.display = box.style.display === 'block' ? 'none' : 'block';
-        if (box.style.display === 'block') refreshComm(vid);
-    }
-
-    async function refreshComm(vid) {
-        const { data } = await _supabase.from('comments').select('*').eq('video_id', vid).order('created_at', {ascending: false});
-        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div style="margin-bottom:5px;"><b>@${c.user_name}</b> ${c.comment_text}</div>`).join('') || 'No comments yet';
-        document.getElementById(`cc-${vid}`).innerText = data.length;
-    }
-
-    async function sendComm(vid) {
-        if (isGuest) return alert("Please login to comment");
-        const val = document.getElementById(`ci-${vid}`).value;
-        if (!val.trim()) return;
-        await _supabase.from('comments').insert([{ video_id: vid, user_name: currentUserEmail.split('@')[0], comment_text: val }]);
-        document.getElementById(`ci-${vid}`).value = '';
-        refreshComm(vid);
-    }
-
-    function shareVideo(url) { navigator.clipboard.writeText(url); alert("Link copied!"); }
     function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
     function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }

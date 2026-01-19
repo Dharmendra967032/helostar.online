@@ -22,28 +22,29 @@
         
         #uploadProgress { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: var(--helostar-pink); z-index: 4000; transition: 0.3s; box-shadow: 0 0 10px var(--helostar-pink); }
 
-        header { background: rgba(0,0,0,0.8); backdrop-filter: var(--blur); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
+        header { background: rgba(0,0,0,0.8); backdrop-filter: var(--blur); padding: 12px 20px; display: flex; flex-direction: column; gap: 10px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); }
+
+        /* Search Bar */
+        .search-container { width: 100%; position: relative; }
+        .search-bar { width: 100%; background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 20px; padding: 8px 15px 8px 35px; color: white; box-sizing: border-box; outline: none; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; font-size: 0.9rem; }
 
         /* Navigation & Categories */
         .nav-tabs { display: flex; background: #000; }
         .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #555; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom-color: var(--helostar-pink); }
 
-        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 12px 20px; scrollbar-width: none; background: #000; }
-        .filter-bar::-webkit-scrollbar { display: none; }
-        .cat-chip { padding: 8px 18px; border-radius: 20px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
-        .cat-chip.active { background: var(--helostar-pink); border-color: var(--helostar-pink); }
+        .filter-section { padding: 10px 20px; display: flex; align-items: center; gap: 10px; }
+        .cat-select { background: #222; color: white; border: 1px solid var(--glass-border); padding: 5px 12px; border-radius: 15px; outline: none; }
 
-        /* Modal / Popup Styles */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-card { width: 100%; max-width: 400px; background: #111; border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; }
-        .modal-card h2 { margin-top: 0; color: var(--helostar-pink); font-size: 1.2rem; }
         
         .form-group { margin-bottom: 15px; }
         .form-label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         select, textarea { width: 100%; background: #222; border: 1px solid #333; border-radius: 10px; color: white; padding: 12px; font-family: inherit; box-sizing: border-box; }
-        textarea { height: 80px; resize: none; }
 
         .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 120px; }
         .card { width: 100%; margin-bottom: 30px; border-bottom: 1px solid #111; }
@@ -52,17 +53,18 @@
         .v-short { aspect-ratio: 9/16; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Double Tap Heart */
         .heart-pop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 80px; text-shadow: 0 0 20px var(--helostar-pink); pointer-events: none; opacity: 0; z-index: 10; }
         .animate-heart { animation: heartFade 0.7s ease-out; }
         @keyframes heartFade { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
 
-        .action-row { display: flex; gap: 12px; margin-top: 15px; padding: 0 15px; }
-        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.85rem; transition: 0.2s; }
+        .action-row { display: flex; gap: 10px; margin-top: 15px; padding: 0 15px; flex-wrap: wrap; }
+        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; transition: 0.2s; color: white; }
         .btn-act.liked { color: var(--helostar-pink); border-color: var(--helostar-pink); }
+        
+        /* Updated Logout Button Style */
+        #logoutBtn { background: var(--helostar-pink); color: white; border: none; font-weight: bold; }
 
         .comm-panel { margin-top: 15px; padding: 15px; display: none; border-radius: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); margin: 10px; }
-        
         .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; box-shadow: 0 8px 25px rgba(211,21,157,0.4); z-index: 1001; }
         .hidden { display: none !important; }
         #authOverlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -71,6 +73,48 @@
 <body>
 
     <div id="uploadProgress"></div>
+
+    <div id="authOverlay">
+        <h1 class="logo" style="font-size: 3rem; margin-bottom: 40px;">HELOSTAR</h1>
+        <button onclick="signInWithGoogle()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; background: #fff; color: #000;"><i class="fab fa-google"></i> Login with Google</button>
+        <button onclick="guestMode()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; margin-top: 15px; background:none;">Guest Mode</button>
+    </div>
+
+    <header>
+        <div class="header-top">
+            <div class="logo">HELOSTAR</div>
+            <div class="user-info" style="display:flex; align-items:center;">
+                <span id="userNameDisplay" style="font-size:0.8rem; margin-right:10px;"></span>
+                <button id="logoutBtn" class="btn-act hidden" onclick="logout()"><i class="fas fa-power-off"></i> Logout</button>
+            </div>
+        </div>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search videos or users..." oninput="renderFeed()">
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <button id="tShort" class="tab-btn active" onclick="setTab('short')">SHORTS</button>
+        <button id="tFull" class="tab-btn" onclick="setTab('full')">VIDEOS</button>
+    </div>
+
+    <div class="filter-section">
+        <span style="font-size: 0.8rem; color: #888;">Category:</span>
+        <select class="cat-select" onchange="filterByCat(this.value)">
+            <option value="All">All Categories</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Party">Party</option>
+            <option value="Bhakti">Bhakti</option>
+            <option value="Tech">Tech</option>
+            <option value="News">News</option>
+        </select>
+    </div>
+
+    <div class="container" id="feed"></div>
+
+    <input type="file" id="fileIn" style="display:none" accept="video/*">
+    <button id="uploadBtn" class="fab" onclick="openModal()"><i class="fa fa-plus"></i></button>
 
     <div class="modal-overlay" id="uploadModal">
         <div class="modal-card">
@@ -90,44 +134,11 @@
                 <textarea id="upDesc" placeholder="Write a catchy caption..."></textarea>
             </div>
             <div style="display:flex; gap:10px;">
-                <button class="btn-act" style="flex:1; justify-content:center;" onclick="closeModal()">Cancel</button>
+                <button class="btn-act" style="flex:1; justify-content:center; color:white" onclick="closeModal()">Cancel</button>
                 <button class="btn-act" style="flex:1; justify-content:center; background:var(--helostar-pink); border:none;" onclick="processUpload()">Upload Now</button>
             </div>
         </div>
     </div>
-
-    <div id="authOverlay">
-        <h1 class="logo" style="font-size: 3rem; margin-bottom: 40px;">HELOSTAR</h1>
-        <button onclick="signInWithGoogle()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; background: #fff; color: #000;"><i class="fab fa-google"></i> Login with Google</button>
-        <button onclick="guestMode()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; margin-top: 15px; background:none;">Guest Mode</button>
-    </div>
-
-    <header>
-        <div class="logo">HELOSTAR</div>
-        <div class="user-info">
-            <span id="userNameDisplay" style="font-size:0.8rem; margin-right:10px;"></span>
-            <button id="logoutBtn" class="btn-act hidden" style="padding:8px;" onclick="logout()"><i class="fas fa-power-off"></i></button>
-        </div>
-    </header>
-
-    <div class="nav-tabs">
-        <button id="tShort" class="tab-btn active" onclick="setTab('short')">SHORTS</button>
-        <button id="tFull" class="tab-btn" onclick="setTab('full')">VIDEOS</button>
-    </div>
-
-    <div class="filter-bar">
-        <div class="cat-chip active" onclick="filterByCat('All')">All</div>
-        <div class="cat-chip" onclick="filterByCat('Comedy')">Comedy</div>
-        <div class="cat-chip" onclick="filterByCat('Party')">Party</div>
-        <div class="cat-chip" onclick="filterByCat('Bhakti')">Bhakti</div>
-        <div class="cat-chip" onclick="filterByCat('Tech')">Tech</div>
-        <div class="cat-chip" onclick="filterByCat('News')">News</div>
-    </div>
-
-    <div class="container" id="feed"></div>
-
-    <input type="file" id="fileIn" style="display:none" accept="video/*">
-    <button id="uploadBtn" class="fab" onclick="openModal()"><i class="fa fa-plus"></i></button>
 
 <script>
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
@@ -182,7 +193,8 @@
         await _supabase.storage.from('videos').upload(name, pendingFile);
         bar.style.width = '70%';
         const { data } = _supabase.storage.from('videos').getPublicUrl(name);
-        await _supabase.from('videos').insert([{ url: data.publicUrl, description: desc, category: cat, owner: currentUserEmail, likes: 0 }]);
+        // Added views: 0 to insert
+        await _supabase.from('videos').insert([{ url: data.publicUrl, description: desc, category: cat, owner: currentUserEmail, likes: 0, views: 0 }]);
         bar.style.width = '100%';
         setTimeout(() => location.reload(), 500);
     }
@@ -196,17 +208,18 @@
 
     function filterByCat(cat) {
         currentCat = cat;
-        document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.innerText === cat));
         renderFeed();
     }
 
     async function renderFeed() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const feed = document.getElementById('feed');
-        feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">Refreshing Feed...</p>';
+        feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">Loading...</p>';
+        
         let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
         if (currentCat !== 'All') q = q.eq('category', currentCat);
-        const { data: videos } = await q;
         
+        const { data: videos } = await q;
         let myLikes = [];
         if (currentUserEmail) {
             const { data: lks } = await _supabase.from('likes').select('video_id').eq('user_email', currentUserEmail);
@@ -214,7 +227,12 @@
         }
 
         feed.innerHTML = '';
-        videos.forEach(v => {
+        const filtered = videos.filter(v => 
+            v.description.toLowerCase().includes(searchTerm) || 
+            v.owner.toLowerCase().includes(searchTerm)
+        );
+
+        filtered.forEach(v => {
             const vTemp = document.createElement('video');
             vTemp.src = v.url;
             vTemp.onloadedmetadata = async () => {
@@ -234,14 +252,17 @@
         card.innerHTML = `
             <div class="v-wrap ${wrapType}" ondblclick="handleDoubleTap(${v.id}, this)">
                 <div class="heart-pop" id="heart-${v.id}"><i class="fas fa-heart"></i></div>
-                <video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted onclick="this.play()"' }></video>
+                <video src="${v.url}" onplay="incrementView(${v.id})" ${!isVertical ? 'controls' : 'loop muted onclick="togglePlay(this)"' }></video>
             </div>
             <div class="action-row">
-                <div id="btn-like-${v.id}" class="btn-act ${isGuest ? 'guest-mode' : ''} ${hasLiked ? 'liked' : ''}" onclick="doLike(${v.id}, this)">
+                <div id="btn-like-${v.id}" class="btn-act ${hasLiked ? 'liked' : ''}" onclick="doLike(${v.id}, this)">
                     <i class="fas fa-heart"></i> <span id="lc-${v.id}">${v.likes || 0}</span>
                 </div>
-                <div class="btn-act ${isGuest ? 'guest-mode' : ''}" onclick="viewComm(${v.id})">
+                <div class="btn-act" onclick="viewComm(${v.id})">
                     <i class="fas fa-comment"></i> <span id="cc-${v.id}">${cCount}</span>
+                </div>
+                <div class="btn-act">
+                    <i class="fas fa-eye"></i> <span id="vc-${v.id}">${v.views || 0}</span>
                 </div>
                 <div class="btn-act" onclick="shareVideo('${v.url}')"><i class="fas fa-paper-plane"></i></div>
             </div>
@@ -252,12 +273,25 @@
             <div id="cb-${v.id}" class="comm-panel">
                 <div id="cl-${v.id}" style="max-height:150px; overflow-y:auto; font-size:0.8rem;"></div>
                 <div style="display:flex; gap:8px; margin-top:10px;">
-                    <input type="text" id="ci-${v.id}" placeholder="Add comment...">
+                    <input type="text" id="ci-${v.id}" style="flex:1; background:#222; border:1px solid #444; color:white; padding:8px; border-radius:5px;" placeholder="Add comment...">
                     <button class="btn-act" style="background:var(--helostar-pink); border:none;" onclick="sendComm(${v.id})">Post</button>
                 </div>
             </div>`;
         document.getElementById('feed').appendChild(card);
     }
+
+    async function incrementView(vid) {
+        const viewKey = `viewed_${vid}`;
+        if (sessionStorage.getItem(viewKey)) return; // Prevents spamming views in one session
+        
+        const { data } = await _supabase.from('videos').select('views').eq('id', vid).single();
+        await _supabase.from('videos').update({ views: (data.views || 0) + 1 }).eq('id', vid);
+        sessionStorage.setItem(viewKey, 'true');
+        const vCountEl = document.getElementById(`vc-${vid}`);
+        if(vCountEl) vCountEl.innerText = (data.views || 0) + 1;
+    }
+
+    function togglePlay(v) { v.paused ? v.play() : v.pause(); }
 
     async function handleDoubleTap(vid, el) {
         if (isGuest) return;
@@ -286,11 +320,12 @@
 
     async function refreshComm(vid) {
         const { data } = await _supabase.from('comments').select('*').eq('video_id', vid).order('created_at', {ascending: false});
-        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div><b>@${c.user_name}</b> ${c.comment_text}</div>`).join('') || 'No comments yet';
+        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div style="margin-bottom:5px;"><b>@${c.user_name}</b> ${c.comment_text}</div>`).join('') || 'No comments yet';
         document.getElementById(`cc-${vid}`).innerText = data.length;
     }
 
     async function sendComm(vid) {
+        if (isGuest) return alert("Please login to comment");
         const val = document.getElementById(`ci-${vid}`).value;
         if (!val.trim()) return;
         await _supabase.from('comments').insert([{ video_id: vid, user_name: currentUserEmail.split('@')[0], comment_text: val }]);
@@ -298,7 +333,7 @@
         refreshComm(vid);
     }
 
-    function shareVideo(url) { navigator.clipboard.writeText(url); alert("Copied to clipboard!"); }
+    function shareVideo(url) { navigator.clipboard.writeText(url); alert("Link copied!"); }
     function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
     function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }

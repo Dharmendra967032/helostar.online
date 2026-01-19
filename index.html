@@ -15,89 +15,119 @@
             --helostar-pink: #d3159d;
             --glass-white: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.15);
+            --blur: blur(25px);
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: #fff; margin: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: #fff; margin: 0; overflow-x: hidden; }
         
-        header { background: rgba(0,0,0,0.95); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
-        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); text-decoration: none; }
-        .logout-btn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+        #uploadProgress { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: var(--helostar-pink); z-index: 4000; transition: 0.3s; box-shadow: 0 0 10px var(--helostar-pink); }
 
-        .tools-row { padding: 10px 15px; display: flex; gap: 10px; background: #000; }
-        .cat-select { flex: 1; background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 10px; color: white; padding: 10px; outline: none; }
-        .search-box { flex: 2; background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px; color: white; outline: none; }
+        header { background: rgba(0,0,0,0.8); backdrop-filter: var(--blur); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); }
 
-        .nav-tabs { display: flex; background: #000; border-bottom: 1px solid #111; }
+        /* Navigation & Categories */
+        .nav-tabs { display: flex; background: #000; }
         .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #555; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom-color: var(--helostar-pink); }
 
-        .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 100px; }
-        .card { width: 100%; margin-bottom: 25px; border-bottom: 1px solid #111; position: relative; padding-bottom: 15px; }
-        .v-wrap { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 12px 20px; scrollbar-width: none; background: #000; }
+        .filter-bar::-webkit-scrollbar { display: none; }
+        .cat-chip { padding: 8px 18px; border-radius: 20px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
+        .cat-chip.active { background: var(--helostar-pink); border-color: var(--helostar-pink); }
+
+        /* Modal / Popup Styles */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-card { width: 100%; max-width: 400px; background: #111; border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; }
+        .modal-card h2 { margin-top: 0; color: var(--helostar-pink); font-size: 1.2rem; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        select, textarea { width: 100%; background: #222; border: 1px solid #333; border-radius: 10px; color: white; padding: 12px; font-family: inherit; box-sizing: border-box; }
+        textarea { height: 80px; resize: none; }
+
+        .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 120px; }
+        .card { width: 100%; margin-bottom: 30px; border-bottom: 1px solid #111; }
+        .v-wrap { width: 100%; background: #000; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .v-full { height: 400px; }
-        .v-short { aspect-ratio: 9/16; max-height: 85vh; }
+        .v-short { aspect-ratio: 9/16; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+
+        /* Double Tap Heart */
+        .heart-pop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 80px; text-shadow: 0 0 20px var(--helostar-pink); pointer-events: none; opacity: 0; z-index: 10; }
+        .animate-heart { animation: heartFade 0.7s ease-out; }
+        @keyframes heartFade { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
+
+        .action-row { display: flex; gap: 12px; margin-top: 15px; padding: 0 15px; }
+        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.85rem; transition: 0.2s; }
+        .btn-act.liked { color: var(--helostar-pink); border-color: var(--helostar-pink); }
+
+        .comm-panel { margin-top: 15px; padding: 15px; display: none; border-radius: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); margin: 10px; }
         
-        video { width: 100%; height: 100%; object-fit: contain; background: #000; cursor: pointer; }
-
-        /* Mute Toggle Icon Overlay */
-        .mute-overlay { position: absolute; bottom: 15px; right: 15px; background: rgba(0,0,0,0.5); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; }
-
-        .emoji-float { position: absolute; pointer-events: none; font-size: 30px; animation: floatUp 0.8s ease-out forwards; z-index: 100; left: 50%; }
-        @keyframes floatUp { 0% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, -100px); opacity: 0; } }
-
-        .action-row { display: flex; gap: 20px; padding: 12px 15px; }
-        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 1rem; color: #fff; border: none; background: none; }
-        .btn-act.liked { color: var(--helostar-pink); }
-
-        .comm-panel { margin: 0 15px; padding: 12px; display: none; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); }
-        .cl-list { max-height: 150px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 10px; }
-        .c-item { margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px; }
-        .c-input-grp { display: flex; gap: 8px; }
-        .c-input-grp input { flex: 1; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; padding: 8px; outline: none; }
-
-        .upload-trigger { position: fixed; bottom: 30px; right: 25px; font-size: 3.5rem; color: var(--helostar-pink); cursor: pointer; z-index: 1001; background: none; border: none; line-height: 1; }
-        
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; box-shadow: 0 8px 25px rgba(211,21,157,0.4); z-index: 1001; }
         .hidden { display: none !important; }
         #authOverlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
+    <div id="uploadProgress"></div>
+
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal-card">
+            <h2>Post New Video</h2>
+            <div class="form-group">
+                <span class="form-label">Category</span>
+                <select id="upCat">
+                    <option value="Comedy">Comedy</option>
+                    <option value="Party">Party</option>
+                    <option value="Bhakti">Bhakti</option>
+                    <option value="Tech">Tech</option>
+                    <option value="News">News</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Description</span>
+                <textarea id="upDesc" placeholder="Write a catchy caption..."></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-act" style="flex:1; justify-content:center;" onclick="closeModal()">Cancel</button>
+                <button class="btn-act" style="flex:1; justify-content:center; background:var(--helostar-pink); border:none;" onclick="processUpload()">Upload Now</button>
+            </div>
+        </div>
+    </div>
+
     <div id="authOverlay">
-        <h1 class="logo" style="font-size: 3.5rem; margin-bottom: 30px;">HELOSTAR</h1>
-        <button onclick="signInWithGoogle()" style="padding: 15px 40px; border-radius: 30px; border: none; background: #fff; font-weight: bold; cursor: pointer;">Login with Google</button>
-        <p onclick="guestMode()" style="margin-top: 20px; color: #666; cursor: pointer;">Continue as Guest</p>
+        <h1 class="logo" style="font-size: 3rem; margin-bottom: 40px;">HELOSTAR</h1>
+        <button onclick="signInWithGoogle()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; background: #fff; color: #000;"><i class="fab fa-google"></i> Login with Google</button>
+        <button onclick="guestMode()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; margin-top: 15px; background:none;">Guest Mode</button>
     </div>
 
     <header>
         <div class="logo">HELOSTAR</div>
-        <div style="display:flex; align-items:center; gap:12px;">
-            <span id="userNameDisplay" style="font-size:0.85rem; color:var(--helostar-pink)"></span>
-            <button id="logoutBtn" class="logout-btn hidden" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        <div class="user-info">
+            <span id="userNameDisplay" style="font-size:0.8rem; margin-right:10px;"></span>
+            <button id="logoutBtn" class="btn-act hidden" style="padding:8px;" onclick="logout()"><i class="fas fa-power-off"></i></button>
         </div>
     </header>
-
-    <div class="tools-row">
-        <select id="catFilter" class="cat-select" onchange="filterByCat(this.value)">
-            <option value="All">All Categories</option>
-            <option value="Comedy">Comedy</option>
-            <option value="Party">Party</option>
-            <option value="Bhakti">Bhakti</option>
-            <option value="Tech">Tech</option>
-            <option value="News">News</option>
-        </select>
-        <input type="text" id="searchInput" class="search-box" placeholder="Search..." oninput="handleSearch()">
-    </div>
 
     <div class="nav-tabs">
         <button id="tShort" class="tab-btn active" onclick="setTab('short')">SHORTS</button>
         <button id="tFull" class="tab-btn" onclick="setTab('full')">VIDEOS</button>
     </div>
 
+    <div class="filter-bar">
+        <div class="cat-chip active" onclick="filterByCat('All')">All</div>
+        <div class="cat-chip" onclick="filterByCat('Comedy')">Comedy</div>
+        <div class="cat-chip" onclick="filterByCat('Party')">Party</div>
+        <div class="cat-chip" onclick="filterByCat('Bhakti')">Bhakti</div>
+        <div class="cat-chip" onclick="filterByCat('Tech')">Tech</div>
+        <div class="cat-chip" onclick="filterByCat('News')">News</div>
+    </div>
+
     <div class="container" id="feed"></div>
 
-    <button id="uploadBtn" class="upload-trigger hidden" onclick="document.getElementById('fileIn').click()"><i class="fa fa-plus-circle"></i></button>
     <input type="file" id="fileIn" style="display:none" accept="video/*">
+    <button id="uploadBtn" class="fab" onclick="openModal()"><i class="fa fa-plus"></i></button>
 
 <script>
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
@@ -110,126 +140,145 @@
     });
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let currentUserEmail = null, currentTab = 'short', currentCat = 'All', searchQuery = "";
-    let isGlobalMuted = true; // Default to muted like TikTok/Instagram
+    let currentUserEmail = null;
+    let currentTab = 'short';
+    let currentCat = 'All';
+    let isGuest = false;
+    let pendingFile = null;
 
     firebase.auth().onAuthStateChanged(user => {
         if (user) { 
             currentUserEmail = user.email; 
-            document.getElementById('userNameDisplay').innerText = "@" + (user.displayName || user.email.split('@')[0]);
-            startApp();
-        } else if (localStorage.getItem('guest')) {
-            document.getElementById('userNameDisplay').innerText = "@Guest";
-            startApp();
+            document.getElementById('userNameDisplay').innerText = user.displayName || user.email.split('@')[0];
+            start(false); 
         }
+        else if (localStorage.getItem('guest')) { start(true); }
     });
 
-    function startApp() {
+    function start(g) {
+        isGuest = g;
         document.getElementById('authOverlay').classList.add('hidden');
         document.getElementById('logoutBtn').classList.remove('hidden');
-        document.getElementById('uploadBtn').classList.remove('hidden');
+        if(!isGuest) document.getElementById('uploadBtn').style.display = 'flex';
         renderFeed();
     }
 
-    function setTab(t) { currentTab = t; renderFeed(); }
-    function filterByCat(cat) { currentCat = cat; renderFeed(); }
-    function handleSearch() { searchQuery = document.getElementById('searchInput').value.toLowerCase(); renderFeed(); }
+    function openModal() { document.getElementById('fileIn').click(); }
+    document.getElementById('fileIn').onchange = (e) => {
+        pendingFile = e.target.files[0];
+        if(pendingFile) document.getElementById('uploadModal').style.display = 'flex';
+    };
+    function closeModal() { document.getElementById('uploadModal').style.display = 'none'; }
+
+    async function processUpload() {
+        if(!pendingFile) return;
+        const cat = document.getElementById('upCat').value;
+        const desc = document.getElementById('upDesc').value;
+        closeModal();
+        
+        const bar = document.getElementById('uploadProgress');
+        bar.style.width = '30%';
+        const name = `${Date.now()}_${pendingFile.name}`;
+        await _supabase.storage.from('videos').upload(name, pendingFile);
+        bar.style.width = '70%';
+        const { data } = _supabase.storage.from('videos').getPublicUrl(name);
+        await _supabase.from('videos').insert([{ url: data.publicUrl, description: desc, category: cat, owner: currentUserEmail, likes: 0 }]);
+        bar.style.width = '100%';
+        setTimeout(() => location.reload(), 500);
+    }
+
+    function setTab(t) {
+        currentTab = t;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(t === 'short' ? 'tShort' : 'tFull').classList.add('active');
+        renderFeed();
+    }
+
+    function filterByCat(cat) {
+        currentCat = cat;
+        document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.innerText === cat));
+        renderFeed();
+    }
 
     async function renderFeed() {
         const feed = document.getElementById('feed');
-        feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.5;">Loading Feed...</p>';
+        feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">Refreshing Feed...</p>';
         let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         const { data: videos } = await q;
-        const filtered = videos.filter(v => v.description.toLowerCase().includes(searchQuery));
-        feed.innerHTML = '';
         
-        filtered.forEach(v => {
+        let myLikes = [];
+        if (currentUserEmail) {
+            const { data: lks } = await _supabase.from('likes').select('video_id').eq('user_email', currentUserEmail);
+            myLikes = lks ? lks.map(l => l.video_id) : [];
+        }
+
+        feed.innerHTML = '';
+        videos.forEach(v => {
             const vTemp = document.createElement('video');
-            vTemp.src = v.url + "#t=0.5";
-            vTemp.preload = "metadata";
-            vTemp.onloadedmetadata = () => {
+            vTemp.src = v.url;
+            vTemp.onloadedmetadata = async () => {
                 const isVertical = vTemp.videoHeight > vTemp.videoWidth;
                 if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
-                    createCard(v, isVertical);
+                    const { count } = await _supabase.from('comments').select('*', { count: 'exact', head: true }).eq('video_id', v.id);
+                    createCard(v, myLikes.includes(v.id), isVertical, count || 0);
                 }
             };
         });
     }
 
-    function createCard(v, isVertical) {
-        const card = document.createElement('div'); card.className = 'card';
+    function createCard(v, hasLiked, isVertical, cCount) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const wrapType = isVertical ? 'v-short' : 'v-full';
         card.innerHTML = `
-            <div class="v-wrap ${isVertical?'v-short':'v-full'}">
-                <video src="${v.url}#t=0.5" preload="metadata" ${!isVertical?'controls':'loop'} 
-                       muted="${isGlobalMuted}" onclick="handleVideoClick(this, ${v.id})"></video>
-                <div class="mute-overlay" onclick="toggleMute(this)">
-                    <i class="fas ${isGlobalMuted ? 'fa-volume-mute' : 'fa-volume-up'}"></i>
-                </div>
+            <div class="v-wrap ${wrapType}" ondblclick="handleDoubleTap(${v.id}, this)">
+                <div class="heart-pop" id="heart-${v.id}"><i class="fas fa-heart"></i></div>
+                <video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted onclick="this.play()"' }></video>
             </div>
             <div class="action-row">
-                <div class="btn-act"><i class="fas fa-eye"></i> <span id="vc-${v.id}">${v.views||0}</span></div>
-                <button id="btn-like-${v.id}" class="btn-act" onclick="doLike(${v.id}, this)">
-                    <i class="fas fa-heart"></i> <span id="lc-${v.id}">${v.likes||0}</span>
-                </button>
-                <div class="btn-act" onclick="toggleComm(${v.id})"><i class="fas fa-comment"></i></div>
+                <div id="btn-like-${v.id}" class="btn-act ${isGuest ? 'guest-mode' : ''} ${hasLiked ? 'liked' : ''}" onclick="doLike(${v.id}, this)">
+                    <i class="fas fa-heart"></i> <span id="lc-${v.id}">${v.likes || 0}</span>
+                </div>
+                <div class="btn-act ${isGuest ? 'guest-mode' : ''}" onclick="viewComm(${v.id})">
+                    <i class="fas fa-comment"></i> <span id="cc-${v.id}">${cCount}</span>
+                </div>
+                <div class="btn-act" onclick="shareVideo('${v.url}')"><i class="fas fa-paper-plane"></i></div>
             </div>
-            <div style="padding:0 15px; font-size:0.9rem;">
-                <b style="color:var(--helostar-pink)">@${v.owner?.split('@')[0]}</b> ${v.description}
+            <div style="padding:10px 20px; font-size:0.9rem;">
+                <b>@${v.owner?.split('@')[0] || 'User'}</b> ${v.description}
+                <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:4px;">#${v.category}</div>
             </div>
             <div id="cb-${v.id}" class="comm-panel">
-                <div id="cl-${v.id}" class="cl-list"></div>
-                <div class="c-input-grp">
-                    <input type="text" id="ci-${v.id}" placeholder="Say something...">
-                    <button onclick="sendComm(${vid})" style="background:var(--helostar-pink); border:none; color:#fff; padding:8px 15px; border-radius:8px;">Post</button>
+                <div id="cl-${v.id}" style="max-height:150px; overflow-y:auto; font-size:0.8rem;"></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <input type="text" id="ci-${v.id}" placeholder="Add comment...">
+                    <button class="btn-act" style="background:var(--helostar-pink); border:none;" onclick="sendComm(${v.id})">Post</button>
                 </div>
             </div>`;
         document.getElementById('feed').appendChild(card);
     }
 
-    function handleVideoClick(video, vid) {
-        if (video.paused) {
-            video.play();
-            addView(vid);
-        } else {
-            video.pause();
-        }
-    }
-
-    function toggleMute(btn) {
-        isGlobalMuted = !isGlobalMuted;
-        const allVideos = document.querySelectorAll('video');
-        const iconClass = isGlobalMuted ? 'fa-volume-mute' : 'fa-volume-up';
-        
-        allVideos.forEach(v => v.muted = isGlobalMuted);
-        document.querySelectorAll('.mute-overlay i').forEach(icon => {
-            icon.className = `fas ${iconClass}`;
-        });
+    async function handleDoubleTap(vid, el) {
+        if (isGuest) return;
+        const heart = document.getElementById(`heart-${vid}`);
+        heart.classList.add('animate-heart');
+        setTimeout(() => heart.classList.remove('animate-heart'), 700);
+        const btn = document.getElementById(`btn-like-${vid}`);
+        if (!btn.classList.contains('liked')) doLike(vid, btn);
     }
 
     async function doLike(vid, btn) {
-        if (!currentUserEmail || btn.classList.contains('liked')) return;
-        const emoji = document.createElement('div');
-        emoji.className = 'emoji-float';
-        emoji.innerText = '😍';
-        btn.appendChild(emoji);
-        setTimeout(() => emoji.remove(), 800);
-
+        if (isGuest || btn.classList.contains('liked')) return;
         const { error } = await _supabase.from('likes').insert([{ video_id: vid, user_email: currentUserEmail }]);
-        if (!error) {
-            btn.classList.add('liked');
-            document.getElementById(`lc-${vid}`).innerText = parseInt(document.getElementById(`lc-${vid}`).innerText) + 1;
-            await _supabase.rpc('increment_likes', { row_id: vid });
-        }
+        if (error) return;
+        const { data } = await _supabase.from('videos').select('likes').eq('id', vid).single();
+        await _supabase.from('videos').update({ likes: (data.likes || 0) + 1 }).eq('id', vid);
+        btn.classList.add('liked');
+        document.getElementById(`lc-${vid}`).innerText = (data.likes || 0) + 1;
     }
 
-    async function addView(vid) {
-        await _supabase.rpc('increment_views', { row_id: vid });
-        let vSpan = document.getElementById(`vc-${vid}`);
-        if(vSpan) vSpan.innerText = parseInt(vSpan.innerText) + 1;
-    }
-
-    function toggleComm(vid) {
+    function viewComm(vid) {
         const box = document.getElementById(`cb-${vid}`);
         box.style.display = box.style.display === 'block' ? 'none' : 'block';
         if (box.style.display === 'block') refreshComm(vid);
@@ -237,10 +286,20 @@
 
     async function refreshComm(vid) {
         const { data } = await _supabase.from('comments').select('*').eq('video_id', vid).order('created_at', {ascending: false});
-        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div class="c-item"><b>@${c.user_name}</b> ${c.comment_text}</div>`).join('') || 'No comments.';
+        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div><b>@${c.user_name}</b> ${c.comment_text}</div>`).join('') || 'No comments yet';
+        document.getElementById(`cc-${vid}`).innerText = data.length;
     }
 
-    function logout() { firebase.auth().signOut().then(() => { localStorage.clear(); location.reload(); }); }
+    async function sendComm(vid) {
+        const val = document.getElementById(`ci-${vid}`).value;
+        if (!val.trim()) return;
+        await _supabase.from('comments').insert([{ video_id: vid, user_name: currentUserEmail.split('@')[0], comment_text: val }]);
+        document.getElementById(`ci-${vid}`).value = '';
+        refreshComm(vid);
+    }
+
+    function shareVideo(url) { navigator.clipboard.writeText(url); alert("Copied to clipboard!"); }
+    function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
     function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 </script>

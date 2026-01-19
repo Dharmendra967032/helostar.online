@@ -26,7 +26,7 @@
         .header-content { display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; }
         .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); transition: opacity 0.3s; }
 
-        /* Search Bar Logic */
+        /* Search Bar */
         .search-wrapper { display: flex; align-items: center; flex-grow: 1; justify-content: flex-end; margin-right: 15px; }
         .search-container { position: relative; display: flex; align-items: center; transition: all 0.4s ease; width: 40px; }
         .search-container.expanded { width: 100%; }
@@ -36,7 +36,7 @@
 
         /* Dropdown Menu */
         .menu-wrapper { position: relative; }
-        .menu-trigger { font-size: 1.5rem; cursor: pointer; color: white; }
+        .menu-trigger { font-size: 1.5rem; cursor: pointer; color: white; padding-left: 10px; }
         .dropdown-content { 
             position: absolute; right: 0; top: 40px; background: #111; border: 1px solid var(--glass-border); 
             border-radius: 12px; min-width: 160px; display: none; flex-direction: column; overflow: hidden;
@@ -48,11 +48,11 @@
         .logout-item { background: #1a1a1a; color: var(--helostar-pink); text-align: center; border-bottom: none; font-size: 1.2rem; padding: 15px; }
 
         /* Navigation */
-        .nav-tabs { display: flex; background: #000; border-bottom: 1px solid #111; }
+        .nav-tabs { display: flex; background: #000; }
         .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #555; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom-color: var(--helostar-pink); }
 
-        /* General UI */
+        /* Video Feed UI */
         .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 120px; }
         .card { width: 100%; margin-bottom: 30px; border-bottom: 1px solid #111; }
         .v-wrap { width: 100%; background: #000; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
@@ -60,7 +60,15 @@
         .v-short { aspect-ratio: 9/16; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; color: white; }
+        .heart-pop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 80px; text-shadow: 0 0 20px var(--helostar-pink); pointer-events: none; opacity: 0; z-index: 10; }
+        .animate-heart { animation: heartFade 0.7s ease-out; }
+        @keyframes heartFade { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
+
+        .action-row { display: flex; gap: 10px; margin-top: 15px; padding: 0 15px; flex-wrap: wrap; }
+        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; transition: 0.2s; color: white; }
+        .btn-act.liked { color: var(--helostar-pink); border-color: var(--helostar-pink); }
+        
+        .comm-panel { margin-top: 15px; padding: 15px; display: none; border-radius: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); margin: 10px; }
         .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; }
         .hidden { display: none !important; }
         #authOverlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -112,36 +120,9 @@
     <div class="container" id="feed"></div>
 
     <input type="file" id="fileIn" style="display:none" accept="video/*">
-    <button id="uploadBtn" class="fab" onclick="openModal()"><i class="fa fa-plus"></i></button>
+    <button id="uploadBtn" class="fab" onclick="document.getElementById('fileIn').click()"><i class="fa fa-plus"></i></button>
 
 <script>
-    // UI Toggle Functions
-    function toggleSearch() {
-        const container = document.getElementById('searchContainer');
-        const logo = document.getElementById('headerLogo');
-        container.classList.toggle('expanded');
-        
-        if(container.classList.contains('expanded')) {
-            logo.style.opacity = '0';
-            document.getElementById('searchInput').focus();
-        } else {
-            logo.style.opacity = '1';
-        }
-    }
-
-    function toggleMenu() {
-        document.getElementById('catDropdown').classList.toggle('show');
-    }
-
-    // Close dropdown when clicking outside
-    window.onclick = function(event) {
-        if (!event.target.matches('.menu-trigger')) {
-            const dropdowns = document.getElementsByClassName("dropdown-content");
-            for (let d of dropdowns) { if (d.classList.contains('show')) d.classList.remove('show'); }
-        }
-    }
-
-    // Existing Logic (Configured for Supabase/Firebase)
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
@@ -157,6 +138,31 @@
     let currentCat = 'All';
     let isGuest = false;
 
+    // Header Interaction Functions
+    function toggleSearch() {
+        const container = document.getElementById('searchContainer');
+        const logo = document.getElementById('headerLogo');
+        container.classList.toggle('expanded');
+        if(container.classList.contains('expanded')) {
+            logo.style.opacity = '0';
+            document.getElementById('searchInput').focus();
+        } else {
+            logo.style.opacity = '1';
+        }
+    }
+
+    function toggleMenu() {
+        document.getElementById('catDropdown').classList.toggle('show');
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('.menu-trigger')) {
+            const dropdowns = document.getElementsByClassName("dropdown-content");
+            for (let d of dropdowns) { if (d.classList.contains('show')) d.classList.remove('show'); }
+        }
+    }
+
+    // Auth & Feed Logic
     firebase.auth().onAuthStateChanged(user => {
         if (user) { 
             currentUserEmail = user.email; 
@@ -168,14 +174,7 @@
     function start(g) {
         isGuest = g;
         document.getElementById('authOverlay').classList.add('hidden');
-        if(isGuest) document.getElementById('logoutMenuBtn').classList.add('hidden');
         if(!isGuest) document.getElementById('uploadBtn').style.display = 'flex';
-        renderFeed();
-    }
-
-    function filterByCat(cat) {
-        currentCat = cat;
-        toggleMenu(); // Close menu after selection
         renderFeed();
     }
 
@@ -183,6 +182,11 @@
         currentTab = t;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(t === 'short' ? 'tShort' : 'tFull').classList.add('active');
+        renderFeed();
+    }
+
+    function filterByCat(cat) {
+        currentCat = cat;
         renderFeed();
     }
 
@@ -195,9 +199,13 @@
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         
         const { data: videos } = await q;
-        feed.innerHTML = '';
-        if(!videos) return;
+        let myLikes = [];
+        if (currentUserEmail) {
+            const { data: lks } = await _supabase.from('likes').select('video_id').eq('user_email', currentUserEmail);
+            myLikes = lks ? lks.map(l => l.video_id) : [];
+        }
 
+        feed.innerHTML = '';
         const filtered = videos.filter(v => 
             v.description.toLowerCase().includes(searchTerm) || 
             v.owner.toLowerCase().includes(searchTerm)
@@ -206,29 +214,102 @@
         filtered.forEach(v => {
             const vTemp = document.createElement('video');
             vTemp.src = v.url;
-            vTemp.onloadedmetadata = () => {
+            vTemp.onloadedmetadata = async () => {
                 const isVertical = vTemp.videoHeight > vTemp.videoWidth;
                 if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
-                    createCard(v, isVertical);
+                    const { count } = await _supabase.from('comments').select('*', { count: 'exact', head: true }).eq('video_id', v.id);
+                    createCard(v, myLikes.includes(v.id), isVertical, count || 0);
                 }
             };
         });
     }
 
-    function createCard(v, isVertical) {
+    function createCard(v, hasLiked, isVertical, cCount) {
         const card = document.createElement('div');
         card.className = 'card';
+        const wrapType = isVertical ? 'v-short' : 'v-full';
         card.innerHTML = `
-            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
-                <video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted onclick="this.paused?this.play():this.pause()"' }></video>
+            <div class="v-wrap ${wrapType}" ondblclick="handleDoubleTap(${v.id}, this)">
+                <div class="heart-pop" id="heart-${v.id}"><i class="fas fa-heart"></i></div>
+                <video src="${v.url}" onplay="incrementView(${v.id})" ${!isVertical ? 'controls' : 'loop muted onclick="togglePlay(this)"' }></video>
             </div>
-            <div style="padding:15px;">
+            <div class="action-row">
+                <div id="btn-like-${v.id}" class="btn-act ${hasLiked ? 'liked' : ''}" onclick="doLike(${v.id}, this)">
+                    <i class="fas fa-heart"></i> <span id="lc-${v.id}">${v.likes || 0}</span>
+                </div>
+                <div class="btn-act" onclick="viewComm(${v.id})">
+                    <i class="fas fa-comment"></i> <span id="cc-${v.id}">${cCount}</span>
+                </div>
+                <div class="btn-act">
+                    <i class="fas fa-eye"></i> <span id="vc-${v.id}">${v.views || 0}</span>
+                </div>
+                <div class="btn-act" onclick="shareVideo('${v.url}')"><i class="fas fa-paper-plane"></i></div>
+            </div>
+            <div style="padding:10px 20px; font-size:0.9rem;">
                 <b>@${v.owner?.split('@')[0]}</b> ${v.description}
-                <div style="color:var(--helostar-pink); font-size:0.75rem;">#${v.category}</div>
+                <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:4px;">#${v.category}</div>
+            </div>
+            <div id="cb-${v.id}" class="comm-panel">
+                <div id="cl-${v.id}" style="max-height:150px; overflow-y:auto; font-size:0.8rem;"></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <input type="text" id="ci-${v.id}" style="flex:1; background:#222; border:1px solid #444; color:white; padding:8px; border-radius:5px;" placeholder="Add comment...">
+                    <button class="btn-act" style="background:var(--helostar-pink); border:none;" onclick="sendComm(${v.id})">Post</button>
+                </div>
             </div>`;
         document.getElementById('feed').appendChild(card);
     }
 
+    // Interaction Handlers
+    async function incrementView(vid) {
+        const viewKey = `viewed_${vid}`;
+        if (sessionStorage.getItem(viewKey)) return;
+        const { data } = await _supabase.from('videos').select('views').eq('id', vid).single();
+        await _supabase.from('videos').update({ views: (data.views || 0) + 1 }).eq('id', vid);
+        sessionStorage.setItem(viewKey, 'true');
+        document.getElementById(`vc-${vid}`).innerText = (data.views || 0) + 1;
+    }
+
+    function togglePlay(v) { v.paused ? v.play() : v.pause(); }
+
+    async function handleDoubleTap(vid, el) {
+        if (isGuest) return;
+        const heart = document.getElementById(`heart-${vid}`);
+        heart.classList.add('animate-heart');
+        setTimeout(() => heart.classList.remove('animate-heart'), 700);
+        doLike(vid, document.getElementById(`btn-like-${vid}`));
+    }
+
+    async function doLike(vid, btn) {
+        if (isGuest || btn.classList.contains('liked')) return;
+        await _supabase.from('likes').insert([{ video_id: vid, user_email: currentUserEmail }]);
+        const { data } = await _supabase.from('videos').select('likes').eq('id', vid).single();
+        await _supabase.from('videos').update({ likes: (data.likes || 0) + 1 }).eq('id', vid);
+        btn.classList.add('liked');
+        document.getElementById(`lc-${vid}`).innerText = (data.likes || 0) + 1;
+    }
+
+    function viewComm(vid) {
+        const box = document.getElementById(`cb-${vid}`);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        if (box.style.display === 'block') refreshComm(vid);
+    }
+
+    async function refreshComm(vid) {
+        const { data } = await _supabase.from('comments').select('*').eq('video_id', vid).order('created_at', {ascending: false});
+        document.getElementById(`cl-${vid}`).innerHTML = data.map(c => `<div style="margin-bottom:5px;"><b>@${c.user_name}</b> ${c.comment_text}</div>`).join('') || 'No comments yet';
+        document.getElementById(`cc-${vid}`).innerText = data.length;
+    }
+
+    async function sendComm(vid) {
+        if (isGuest) return alert("Please login to comment");
+        const val = document.getElementById(`ci-${vid}`).value;
+        if (!val.trim()) return;
+        await _supabase.from('comments').insert([{ video_id: vid, user_name: currentUserEmail.split('@')[0], comment_text: val }]);
+        document.getElementById(`ci-${vid}`).value = '';
+        refreshComm(vid);
+    }
+
+    function shareVideo(url) { navigator.clipboard.writeText(url); alert("Link copied!"); }
     function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
     function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }

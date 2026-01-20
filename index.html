@@ -245,8 +245,9 @@
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
-                <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop muted playsinline onclick="togglePlay(this)"' }></video>
+            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;">
+                <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
+                ${isVertical ? `<button class="btn-mute" onclick="toggleMute(this)" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); border:none; color:white; padding:8px 12px; border-radius:20px; cursor:pointer; z-index:10;"><i class="fas fa-volume-mute"></i></button>` : ''}
             </div>
             <div class="action-row">
                 <button class="btn-act like-btn" data-id="${v.id}" data-liked="false" onclick="handleLike(this, '${v.id}')">
@@ -388,16 +389,36 @@
         const input = document.getElementById(`input-${id}`);
         if(!input.value.trim()) return;
         
-        await _supabase.from('comments').insert([{ 
-            video_id: id, 
-            text: input.value, 
-            user_email: currentUserEmail 
-        }]);
+        const commentText = input.value;
         input.value = '';
-        loadComments(id);
-        loadCommentsCount(id);
+        input.disabled = true;
+        
+        try {
+            const { error } = await _supabase.from('comments').insert([{ 
+                video_id: id, 
+                text: commentText, 
+                user_email: currentUserEmail 
+            }]);
+            
+            if(error) throw error;
+            
+            await new Promise(r => setTimeout(r, 300));
+            await loadComments(id);
+            await loadCommentsCount(id);
+        } catch(err) {
+            alert('Error posting comment: ' + err.message);
+            input.value = commentText;
+        } finally {
+            input.disabled = false;
+        }
     }
     function togglePlay(vid) { vid.paused ? vid.play() : vid.pause(); }
+    
+    function toggleMute(btn) {
+        const vid = btn.closest('.v-wrap').querySelector('video');
+        vid.muted = !vid.muted;
+        btn.innerHTML = vid.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+    }
     
     // --- UI HELPERS ---
     function toggleSearch() {

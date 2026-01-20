@@ -53,8 +53,8 @@
         .v-wrap { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; align-items: center; }
         .v-full { height: 400px; }
         .v-short { aspect-ratio: 9/16; }
-        .v-short.fullscreen-short { position: fixed; inset: 0; aspect-ratio: auto; z-index: 999; }
-        .v-short.fullscreen-short video { width: 100vw; height: 100vh; }
+        .v-short.fullscreen-short { position: fixed; inset: 0; aspect-ratio: auto; z-index: 999; width: 100vw; height: 100vh; }
+        .v-short.fullscreen-short video { width: 100vw; height: 100vh; object-fit: contain; }
         video { width: 100%; height: 100%; object-fit: contain; }
         
         .action-row { display: flex; gap: 10px; padding: 15px; }
@@ -300,9 +300,12 @@
         if (nextCard && nextCard.classList.contains('card')) {
             const nextVideo = nextCard.querySelector('video');
             if (nextVideo) {
+                // Auto-swipe/scroll to next video
+                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
                 setTimeout(() => {
                     nextVideo.play().catch(() => {});
-                }, 500);
+                }, 1000);
             }
         }
     }
@@ -430,11 +433,19 @@
     function toggleFullscreenShort(vWrap) {
         vWrap.classList.toggle('fullscreen-short');
         const container = document.querySelector('.container');
+        const header = document.querySelector('header');
+        const navTabs = document.querySelector('.nav-tabs');
+        
         if(vWrap.classList.contains('fullscreen-short')) {
             container.style.display = 'none';
+            header.style.display = 'none';
+            navTabs.style.display = 'none';
             document.body.style.overflow = 'hidden';
+            vWrap.scrollIntoView();
         } else {
             container.style.display = 'block';
+            header.style.display = 'block';
+            navTabs.style.display = 'flex';
             document.body.style.overflow = 'auto';
         }
     }

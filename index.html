@@ -19,12 +19,10 @@
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: #fff; margin: 0; overflow-x: hidden; }
-        
         header { background: rgba(0,0,0,0.8); backdrop-filter: var(--blur); padding: 12px 20px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
         .header-content { display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; }
         .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); transition: opacity 0.3s; }
 
-        /* Search Bar */
         .search-wrapper { display: flex; align-items: center; flex-grow: 1; justify-content: flex-end; margin-right: 15px; }
         .search-container { position: relative; display: flex; align-items: center; transition: all 0.4s ease; width: 40px; }
         .search-container.expanded { width: 100%; }
@@ -32,7 +30,6 @@
         .search-container.expanded .search-bar { width: 100%; opacity: 1; padding-left: 35px; pointer-events: auto; }
         .search-icon-btn { cursor: pointer; font-size: 1.2rem; color: #fff; position: absolute; left: 10px; z-index: 5; }
 
-        /* Dropdown Menu */
         .menu-wrapper { position: relative; }
         .menu-trigger { font-size: 1.5rem; cursor: pointer; color: white; padding-left: 10px; }
         .dropdown-content { 
@@ -41,33 +38,31 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
         .dropdown-content.show { display: flex; }
-        
         .user-header { padding: 15px; background: #1a1a1a; border-bottom: 1px solid #333; font-size: 0.85rem; color: var(--helostar-pink); font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        
         .dropdown-item { padding: 12px 15px; font-size: 0.9rem; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
         .dropdown-item:hover { background: var(--glass-white); }
         .dropdown-item i { width: 20px; color: #888; }
-        
-        .external-links { background: #0a0a0a; }
-        .external-links .dropdown-item { color: #aaa; font-size: 0.8rem; }
-
         .logout-item { background: #1a1a1a; color: #ff4d4d; justify-content: center; border-bottom: none; font-size: 1.2rem; padding: 15px; }
 
-        /* Navigation & Feed */
         .nav-tabs { display: flex; background: #000; }
         .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #555; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom-color: var(--helostar-pink); }
+        
         .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 120px; }
         .card { width: 100%; margin-bottom: 30px; border-bottom: 1px solid #111; }
         .v-wrap { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; align-items: center; }
         .v-full { height: 400px; }
         .v-short { aspect-ratio: 9/16; }
         video { width: 100%; height: 100%; object-fit: contain; }
+        
         .action-row { display: flex; gap: 10px; padding: 15px; }
-        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; color: white; }
-        .btn-act.liked { color: var(--helostar-pink); border-color: var(--helostar-pink); }
-        .comm-panel { padding: 15px; display: none; background: rgba(255,255,255,0.03); margin: 10px; border-radius: 10px; }
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; }
+        .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; color: white; border: none; }
+        .btn-act:active { transform: scale(0.95); }
+        .liked { color: var(--helostar-pink) !important; }
+        
+        .comm-panel { padding: 15px; display: none; background: rgba(255,255,255,0.05); margin: 0 15px 15px 15px; border-radius: 10px; }
+        
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); }
         .hidden { display: none !important; }
         #authOverlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
@@ -83,37 +78,22 @@
     <header>
         <div class="header-content">
             <div class="logo" id="headerLogo">HELOSTAR</div>
-            
             <div class="search-wrapper">
                 <div class="search-container" id="searchContainer">
                     <i class="fas fa-search search-icon-btn" onclick="toggleSearch()"></i>
-                    <input type="text" id="searchInput" class="search-bar" placeholder="Search..." oninput="renderFeed()">
+                    <input type="text" id="searchInput" class="search-bar" placeholder="Search videos..." oninput="renderFeed()">
                 </div>
             </div>
-
             <div class="menu-wrapper">
                 <i class="fas fa-bars menu-trigger" onclick="toggleMenu()"></i>
                 <div class="dropdown-content" id="catDropdown">
                     <div class="user-header" id="userDisplay"><i class="fas fa-user-circle"></i> Guest User</div>
-                    
                     <div class="dropdown-item" onclick="filterByCat('All')"><i class="fas fa-border-all"></i> All Videos</div>
                     <div class="dropdown-item" onclick="filterByCat('Comedy')"><i class="fas fa-laugh"></i> Comedy</div>
                     <div class="dropdown-item" onclick="filterByCat('Party')"><i class="fas fa-music"></i> Party</div>
                     <div class="dropdown-item" onclick="filterByCat('Bhakti')"><i class="fas fa-om"></i> Bhakti</div>
                     <div class="dropdown-item" onclick="filterByCat('Tech')"><i class="fas fa-microchip"></i> Tech</div>
-                    
-                    <div class="external-links">
-                        <a href="#" id="appDownloadLink" style="text-decoration:none; color:inherit;">
-                            <div class="dropdown-item"><i class="fas fa-download"></i> Download App</div>
-                        </a>
-                        <a href="oldsite.html" style="text-decoration:none; color:inherit;">
-                            <div class="dropdown-item"><i class="fas fa-history"></i> Old Version</div>
-                        </a>
-                    </div>
-
-                    <div class="dropdown-item logout-item" id="logoutMenuBtn" onclick="logout()">
-                        <i class="fas fa-power-off"></i>
-                    </div>
+                    <div class="dropdown-item logout-item" id="logoutMenuBtn" onclick="logout()"><i class="fas fa-power-off"></i></div>
                 </div>
             </div>
         </div>
@@ -130,6 +110,7 @@
     <button id="uploadBtn" class="fab" onclick="document.getElementById('fileIn').click()"><i class="fa fa-plus"></i></button>
 
 <script>
+    // --- CONFIG ---
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
@@ -145,31 +126,15 @@
     let currentCat = 'All';
     let isGuest = false;
 
-    // UI Controls
-    function toggleSearch() {
-        const container = document.getElementById('searchContainer');
-        const logo = document.getElementById('headerLogo');
-        container.classList.toggle('expanded');
-        if(container.classList.contains('expanded')) {
-            logo.style.opacity = '0';
-            document.getElementById('searchInput').focus();
-        } else {
-            logo.style.opacity = '1';
-        }
-    }
-
-    function toggleMenu() {
-        document.getElementById('catDropdown').classList.toggle('show');
-    }
-
-    // Auth state
+    // --- AUTH ---
     firebase.auth().onAuthStateChanged(user => {
         if (user) { 
             currentUserEmail = user.email;
             document.getElementById('userDisplay').innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
             start(false); 
+        } else if (localStorage.getItem('guest')) {
+            start(true);
         }
-        else if (localStorage.getItem('guest')) { start(true); }
     });
 
     function start(g) {
@@ -178,24 +143,49 @@
         if(isGuest) {
             document.getElementById('logoutMenuBtn').classList.add('hidden');
             document.getElementById('userDisplay').innerHTML = `<i class="fas fa-user-secret"></i> Guest Mode`;
+        } else {
+            document.getElementById('uploadBtn').style.display = 'flex';
         }
-        if(!isGuest) document.getElementById('uploadBtn').style.display = 'flex';
         renderFeed();
     }
 
-    function filterByCat(cat) {
-        currentCat = cat;
-        toggleMenu();
-        renderFeed();
-    }
+    // --- UPLOAD LOGIC ---
+    document.getElementById('fileIn').onchange = async (e) => {
+        if(isGuest) return alert("Please login to upload!");
+        const file = e.target.files[0];
+        if(!file) return;
 
-    function setTab(t) {
-        currentTab = t;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(t === 'short' ? 'tShort' : 'tFull').classList.add('active');
-        renderFeed();
-    }
+        const desc = prompt("Enter video description:");
+        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, etc):") || 'All';
+        
+        alert("Uploading... please wait.");
+        const fileName = `${Date.now()}_${file.name}`;
+        
+        // 1. Upload to Supabase Storage
+        const { data: uploadData, error: uploadErr } = await _supabase.storage
+            .from('videos')
+            .upload(fileName, file);
 
+        if(uploadErr) return alert("Upload failed: " + uploadErr.message);
+
+        // 2. Get Public URL
+        const { data: urlData } = _supabase.storage.from('videos').getPublicUrl(fileName);
+
+        // 3. Save to Database
+        await _supabase.from('videos').insert([{
+            url: urlData.publicUrl,
+            description: desc || "No description",
+            owner: currentUserEmail,
+            category: category,
+            likes: 0,
+            views: 0
+        }]);
+
+        alert("Upload Success!");
+        renderFeed();
+    };
+
+    // --- FEED LOGIC ---
     async function renderFeed() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const feed = document.getElementById('feed');
@@ -230,13 +220,21 @@
         card.className = 'card';
         card.innerHTML = `
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
-                <video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted onclick="this.paused?this.play():this.pause()"' }></video>
+                <video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted playsinline onclick="togglePlay(this)"' }></video>
             </div>
             <div class="action-row">
-                <div class="btn-act"><i class="fas fa-heart"></i> ${v.likes || 0}</div>
-                <div class="btn-act"><i class="fas fa-comment"></i></div>
-                <div class="btn-act"><i class="fas fa-eye"></i> ${v.views || 0}</div>
-                <div class="btn-act" onclick="navigator.clipboard.writeText('${v.url}');alert('Copied!')"><i class="fas fa-paper-plane"></i></div>
+                <button class="btn-act" onclick="handleLike(this, '${v.id}')">
+                    <i class="fas fa-heart"></i> <span class="count">${v.likes || 0}</span>
+                </button>
+                <button class="btn-act" onclick="toggleComments('${v.id}')">
+                    <i class="fas fa-comment"></i>
+                </button>
+                <button class="btn-act" onclick="handleShare('${v.url}', '${v.description}')">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div id="comm-${v.id}" class="comm-panel">
+                <small>Comments are coming soon!</small>
             </div>
             <div style="padding:0 15px 15px 15px;">
                 <b>@${v.owner?.split('@')[0]}</b> ${v.description}
@@ -245,11 +243,57 @@
         document.getElementById('feed').appendChild(card);
     }
 
+    // --- INTERACTIONS ---
+    async function handleLike(btn, id) {
+        if(isGuest) return alert("Login to like!");
+        btn.classList.toggle('liked');
+        const countSpan = btn.querySelector('.count');
+        let currentLikes = parseInt(countSpan.innerText);
+        
+        const newLikes = btn.classList.contains('liked') ? currentLikes + 1 : currentLikes - 1;
+        countSpan.innerText = newLikes;
+
+        await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+    }
+
+    function handleShare(url, desc) {
+        if (navigator.share) {
+            navigator.share({ title: 'Helostar', text: desc, url: url });
+        } else {
+            navigator.clipboard.writeText(url);
+            alert('Link copied to clipboard!');
+        }
+    }
+
+    function toggleComments(id) {
+        const panel = document.getElementById(`comm-${id}`);
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function togglePlay(vid) { vid.paused ? vid.play() : vid.pause(); }
+    
+    // --- UI HELPERS ---
+    function toggleSearch() {
+        const container = document.getElementById('searchContainer');
+        const logo = document.getElementById('headerLogo');
+        container.classList.toggle('expanded');
+        if(container.classList.contains('expanded')) {
+            logo.style.opacity = '0';
+            document.getElementById('searchInput').focus();
+        } else { logo.style.opacity = '1'; }
+    }
+    function toggleMenu() { document.getElementById('catDropdown').classList.toggle('show'); }
+    function filterByCat(cat) { currentCat = cat; toggleMenu(); renderFeed(); }
+    function setTab(t) {
+        currentTab = t;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(t === 'short' ? 'tShort' : 'tFull').classList.add('active');
+        renderFeed();
+    }
     function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
     function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
-    // Close menu when clicking outside
     window.onclick = function(event) {
         if (!event.target.matches('.menu-trigger') && !event.target.closest('.dropdown-content')) {
             const dropdowns = document.getElementsByClassName("dropdown-content");

@@ -53,6 +53,8 @@
         .v-wrap { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; align-items: center; }
         .v-full { height: 400px; }
         .v-short { aspect-ratio: 9/16; }
+        .v-short.fullscreen-short { position: fixed; inset: 0; aspect-ratio: auto; z-index: 999; }
+        .v-short.fullscreen-short video { width: 100vw; height: 100vh; }
         video { width: 100%; height: 100%; object-fit: contain; }
         
         .action-row { display: flex; gap: 10px; padding: 15px; }
@@ -245,7 +247,7 @@
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;">
+            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;" ondblclick="${isVertical ? 'toggleFullscreenShort(this)' : ''}">
                 <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
                 ${isVertical ? `<button class="btn-mute" onclick="toggleMute(this)" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); border:none; color:white; padding:8px 12px; border-radius:20px; cursor:pointer; z-index:10;"><i class="fas fa-volume-mute"></i></button>` : ''}
             </div>
@@ -382,7 +384,7 @@
         
         if(data && data.length) {
             list.innerHTML = data.map(c => {
-                return `<div class="comm-item"><b>${c.user_email.split('@')[0]}</b>: ${c.comment_text}</div>`;
+                return `<div class="comm-item">${c.comment_text}</div>`;
             }).join('');
         } else {
             list.innerHTML = '<div style="font-size:0.85rem; color:#888;">No comments yet.</div>';
@@ -401,8 +403,7 @@
         try {
             const { error } = await _supabase.from('comments').insert([{ 
                 video_id: id, 
-                comment_text: commentText, 
-                user_email: currentUserEmail 
+                comment_text: commentText
             }]);
             
             if(error) throw error;
@@ -424,6 +425,18 @@
         const vid = btn.closest('.v-wrap').querySelector('video');
         vid.muted = !vid.muted;
         btn.innerHTML = vid.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+    }
+
+    function toggleFullscreenShort(vWrap) {
+        vWrap.classList.toggle('fullscreen-short');
+        const container = document.querySelector('.container');
+        if(vWrap.classList.contains('fullscreen-short')) {
+            container.style.display = 'none';
+            document.body.style.overflow = 'hidden';
+        } else {
+            container.style.display = 'block';
+            document.body.style.overflow = 'auto';
+        }
     }
     
     // --- UI HELPERS ---

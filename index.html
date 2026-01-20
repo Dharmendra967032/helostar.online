@@ -56,8 +56,6 @@
         .v-short.fullscreen-short { position: fixed; inset: 0; aspect-ratio: auto; z-index: 999; width: 100vw; height: 100vh; }
         .v-short.fullscreen-short video { width: 100vw; height: 100vh; object-fit: cover; }
         video { width: 100%; height: 100%; object-fit: contain; }
-        .fullscreen-short ~ .action-row { position: fixed; bottom: 80px; left: 0; right: 0; width: 100%; z-index: 1000; background: rgba(0,0,0,0.3); }
-        .fullscreen-short ~ .action-row .btn-act { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
         
         .action-row { display: flex; gap: 10px; padding: 15px; }
         .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; color: white; border: none; }
@@ -81,14 +79,14 @@
 <body>
 
     <div id="authOverlay">
-        <h1 href ="index.html" class="logo" style="font-size: 3rem; margin-bottom: 40px;">HELOSTAR</h1>
+        <h1 class="logo" style="font-size: 3rem; margin-bottom: 40px;">HELOSTAR</h1>
         <button onclick="signInWithGoogle()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; background: #fff; color: #000;"><i class="fab fa-google"></i> Login with Google</button>
         <button onclick="guestMode()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; margin-top: 15px; background:none;">Guest Mode</button>
     </div>
 
     <header>
         <div class="header-content">
-            <div class="logo" id="headerLogo">HELOSTAR</div>
+            <div class="logo" id="headerLogo"><a href="index.html" style="text-decoration: none; color: inherit;">HELOSTAR</a></div>
             <div class="search-wrapper">
                 <div class="search-container" id="searchContainer">
                     <i class="fas fa-search search-icon-btn" onclick="toggleSearch()"></i>
@@ -329,6 +327,10 @@
 
     function playNextVideo(currentCard) {
         const nextCard = currentCard.nextElementSibling;
+        while(nextCard && !nextCard.classList.contains('card')) {
+            nextCard = nextCard.nextElementSibling;
+        }
+        
         if (nextCard && nextCard.classList.contains('card')) {
             const nextVideo = nextCard.querySelector('video');
             if (nextVideo) {
@@ -336,19 +338,23 @@
                 const isInFullscreen = currentCard.classList.contains('fullscreen-active');
                 
                 if(isInFullscreen) {
-                    // In fullscreen, just exit and show next video in normal view
+                    // Exit fullscreen when video ends
                     const vWrap = currentCard.querySelector('.v-wrap');
-                    if(vWrap.classList.contains('fullscreen-short')) {
-                        toggleFullscreenShort(vWrap);
+                    const actionRow = currentCard.querySelector('.action-row');
+                    if(vWrap && vWrap.classList.contains('fullscreen-short')) {
+                        toggleFullscreenShort(currentCard, vWrap, actionRow);
                     }
                 }
                 
                 // Auto-swipe/scroll to next video
-                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
                 
+                // Auto-play next video
                 setTimeout(() => {
                     nextVideo.play().catch(() => {});
-                }, 1000);
+                }, 1200);
             }
         }
     }
@@ -481,14 +487,21 @@
             vWrap.classList.add('fullscreen-short');
             card.classList.add('fullscreen-active');
             actionRow.style.position = 'fixed';
-            actionRow.style.bottom = '80px';
-            actionRow.style.left = '0';
-            actionRow.style.right = '0';
+            actionRow.style.bottom = '60px';
+            actionRow.style.left = '15px';
+            actionRow.style.right = '15px';
             actionRow.style.zIndex = '1000';
-            actionRow.style.background = 'rgba(0,0,0,0.3)';
+            actionRow.style.background = 'transparent';
+            actionRow.style.width = 'auto';
             document.body.style.overflow = 'hidden';
             document.body.style.margin = '0';
             document.body.style.padding = '0';
+            
+            // Style action buttons to be transparent
+            actionRow.querySelectorAll('.btn-act').forEach(btn => {
+                btn.style.background = 'rgba(0,0,0,0.2)';
+                btn.style.border = '1px solid rgba(255,255,255,0.15)';
+            });
             
             // Hide other cards
             document.querySelectorAll('.card').forEach(c => {
@@ -506,9 +519,16 @@
             actionRow.style.right = 'auto';
             actionRow.style.zIndex = 'auto';
             actionRow.style.background = 'transparent';
+            actionRow.style.width = '100%';
             document.body.style.overflow = 'auto';
             document.body.style.margin = '';
             document.body.style.padding = '';
+            
+            // Reset button styles
+            actionRow.querySelectorAll('.btn-act').forEach(btn => {
+                btn.style.background = '';
+                btn.style.border = '';
+            });
             
             // Show all cards and UI
             document.querySelectorAll('.card').forEach(c => c.style.display = 'block');

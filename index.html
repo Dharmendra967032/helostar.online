@@ -205,12 +205,6 @@
         alert("Upload Success!");
         renderFeed();
     };
-// AUTO-START NEXT VIDEO LOGIC
-        videoElem.onended = () => {
-            const nextCard = card.nextElementSibling;
-            if(nextCard) nextCard.scrollIntoView({ behavior: 'smooth' });
-        };
-    
 
     // --- INTERACTIONS ---
     async function incrementView(id) {
@@ -252,40 +246,118 @@
         card.className = 'card';
         card.innerHTML = `
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
-                <video src="${v.url}" ${!isVertical ? 'controls' : 'loop muted playsinline onclick="togglePlay(this)"' }></video>
+                <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop muted playsinline onclick="togglePlay(this)"' }></video>
             </div>
             <div class="action-row">
-                <button class="btn-act" onclick="handleLike(this, '${v.id}')">
+                <button class="btn-act like-btn" data-id="${v.id}" data-liked="false" onclick="handleLike(this, '${v.id}')">
                     <i class="fas fa-heart"></i> <span class="count">${v.likes || 0}</span>
                 </button>
                 <button class="btn-act" onclick="toggleComments('${v.id}')">
-                    <i class="fas fa-comment"></i>
+                    <i class="fas fa-comment"></i> <span class="comment-count" data-id="${v.id}">0</span>
+                </button>
+                <button class="btn-act">
+                    <i class="fas fa-eye"></i> <span class="view-count" data-id="${v.id}">${v.views || 0}</span>
                 </button>
                 <button class="btn-act" onclick="handleShare('${v.url}', '${v.description}')">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
-            <div id="comm-${v.id}" class="comm-panel">
-                <small>Comments are coming soon!</small>
+            <div id="comm-panel-${v.id}" class="comm-panel">
+                <div id="list-${v.id}" class="comm-list"></div>
+                <div class="comm-input-wrap">
+                    <input type="text" id="input-${v.id}" class="comm-input" placeholder="Add comment...">
+                    <button class="comm-post-btn" onclick="postComment('${v.id}')"><i class="fas fa-paper-plane"></i></button>
+                </div>
             </div>
             <div style="padding:0 15px 15px 15px;">
                 <b>@${v.owner?.split('@')[0]}</b> ${v.description}
                 <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:5px;">#${v.category}</div>
             </div>`;
         document.getElementById('feed').appendChild(card);
+        
+        // Attach video reference and auto-play/pause logic
+        const videoElem = card.querySelector('video');
+        videoElem.onplay = () => pauseAllOtherVideos(videoElem);
+        videoElem.onended = () => playNextVideo(card);
+        videoObserver.observe(videoElem);
+        
+        // Load initial comments count and check if user liked
+        loadCommentsCount(v.id);
+        checkUserLike(v.id);
+    }
+
+    function pauseAllOtherVideos(currentVideo) {
+        document.querySelectorAll('video').forEach(vid => {
+            if (vid !== currentVideo) vid.pause();
+        });
+    }
+
+    function playNextVideo(currentCard) {
+        const nextCard = currentCard.nextElementSibling;
+        if (nextCard && nextCard.classList.contains('card')) {
+            const nextVideo = nextCard.querySelector('video');
+            if (nextVideo) {
+                setTimeout(() => {
+                    nextVideo.play().catch(() => {});
+                }, 500);
+            }
+        }
     }
 
     // --- INTERACTIONS ---
+    async function incrementView(id) {
+        const viewSpan = document.querySelector(`.view-count[data-id="${id}"]`);
+        if(viewSpan && !viewSpan.dataset.counted) {
+            viewSpan.dataset.counted = 'true';
+            let currentViews = parseInt(viewSpan.innerText);
+            viewSpan.innerText = currentViews + 1;
+            await _supabase.from('videos').update({ views: currentViews + 1 }).eq('id', id);
+        }
+    }
+
     async function handleLike(btn, id) {
         if(isGuest) return alert("Login to like!");
+        
+        const isAlreadyLiked = btn.dataset.liked === 'true';
+        if(isAlreadyLiked) return alert("You already liked this video!");
+
         btn.classList.toggle('liked');
+        btn.dataset.liked = 'true';
         const countSpan = btn.querySelector('.count');
         let currentLikes = parseInt(countSpan.innerText);
         
-        const newLikes = btn.classList.contains('liked') ? currentLikes + 1 : currentLikes - 1;
+        const newLikes = currentLikes + 1;
         countSpan.innerText = newLikes;
 
+        // Save like to database with user email
         await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+        
+        // Save like record to track user likes
+        await _supabase.from('likes').insert([{
+            video_id: id,
+            user_email: currentUserEmail
+        }]).select();
+    }
+
+    async function checkUserLike(videoId) {
+        if(isGuest) return;
+        const { data } = await _supabase.from('likes').select('*').eq('video_id', videoId).eq('user_email', currentUserEmail);
+        
+        if(data && data.length > 0) {
+            const likeBtn = document.querySelector(`.like-btn[data-id="${videoId}"]`);
+            if(likeBtn) {
+                likeBtn.classList.add('liked');
+                likeBtn.dataset.liked = 'true';
+            }
+        }
+    }
+
+    async function loadCommentsCount(videoId) {
+        const { data } = await _supabase.from('comments').select('*').eq('video_id', videoId);
+        const countSpan = document.querySelector(`.comment-count[data-id="${videoId}"]`);
+        if(countSpan) {
+            countSpan.innerText = data ? data.length : 0;
+        }
     }
 
     function handleShare(url, desc) {
@@ -298,11 +370,7 @@
     }
 
     function toggleComments(id) {
-        const panel = document.getElementById(`comm-${id}`);
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-    }
-async function toggleComments(id) {
-        const panel = document.getElementById(`panel-${id}`);
+        const panel = document.getElementById(`comm-panel-${id}`);
         panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         if(panel.style.display === 'block') loadComments(id);
     }
@@ -312,17 +380,22 @@ async function toggleComments(id) {
         const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
         list.innerHTML = data && data.length ? data.map(c => `
             <div class="comm-item"><b>${c.user_email.split('@')[0]}</b>: ${c.text}</div>
-        `).join('') : 'No comments yet.';
+        `).join('') : '<div style="font-size:0.85rem; color:#888;">No comments yet.</div>';
     }
 
     async function postComment(id) {
         if(isGuest) return alert("Please Login");
         const input = document.getElementById(`input-${id}`);
-        if(!input.value) return;
+        if(!input.value.trim()) return;
         
-        await _supabase.from('comments').insert([{ video_id: id, text: input.value, user_email: currentUserEmail }]);
+        await _supabase.from('comments').insert([{ 
+            video_id: id, 
+            text: input.value, 
+            user_email: currentUserEmail 
+        }]);
         input.value = '';
         loadComments(id);
+        loadCommentsCount(id);
     }
     function togglePlay(vid) { vid.paused ? vid.play() : vid.pause(); }
     

@@ -280,9 +280,35 @@
         
         // Attach video reference and auto-play/pause logic
         const videoElem = card.querySelector('video');
+        const vWrap = card.querySelector('.v-wrap');
+        
         videoElem.onplay = () => pauseAllOtherVideos(videoElem);
         videoElem.onended = () => playNextVideo(card);
         videoObserver.observe(videoElem);
+        
+        // Add swipe/touch detection for shorts
+        if(isVertical) {
+            let touchStartY = 0;
+            vWrap.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            }, false);
+            
+            vWrap.addEventListener('touchend', (e) => {
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY - touchEndY;
+                
+                if(diff > 50) {
+                    // Swiped up - go to next video
+                    playNextVideo(card);
+                } else if(diff < -50) {
+                    // Swiped down - go to previous video
+                    const prevCard = card.previousElementSibling;
+                    if(prevCard && prevCard.classList.contains('card')) {
+                        prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, false);
+        }
         
         // Load initial comments count and check if user liked
         loadCommentsCount(v.id);
@@ -300,6 +326,17 @@
         if (nextCard && nextCard.classList.contains('card')) {
             const nextVideo = nextCard.querySelector('video');
             if (nextVideo) {
+                // Check if we're in fullscreen mode
+                const isInFullscreen = currentCard.classList.contains('fullscreen-active');
+                
+                if(isInFullscreen) {
+                    // In fullscreen, just exit and show next video in normal view
+                    const vWrap = currentCard.querySelector('.v-wrap');
+                    if(vWrap.classList.contains('fullscreen-short')) {
+                        toggleFullscreenShort(vWrap);
+                    }
+                }
+                
                 // Auto-swipe/scroll to next video
                 nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
@@ -431,22 +468,37 @@
     }
 
     function toggleFullscreenShort(vWrap) {
-        vWrap.classList.toggle('fullscreen-short');
-        const container = document.querySelector('.container');
-        const header = document.querySelector('header');
-        const navTabs = document.querySelector('.nav-tabs');
+        const card = vWrap.closest('.card');
+        const isFullscreen = vWrap.classList.contains('fullscreen-short');
         
-        if(vWrap.classList.contains('fullscreen-short')) {
-            container.style.display = 'none';
-            header.style.display = 'none';
-            navTabs.style.display = 'none';
+        if(!isFullscreen) {
+            // Enter fullscreen
+            vWrap.classList.add('fullscreen-short');
             document.body.style.overflow = 'hidden';
-            vWrap.scrollIntoView();
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
+            
+            // Hide other UI elements
+            document.querySelectorAll('header, .nav-tabs, .card:not(.fullscreen-active)').forEach(el => {
+                if(el.tagName !== 'HEADER' && !el.classList.contains('nav-tabs')) {
+                    if(el !== card && el.classList.contains('card')) el.style.display = 'none';
+                }
+            });
+            document.querySelector('header').style.display = 'none';
+            document.querySelector('.nav-tabs').style.display = 'none';
+            card.classList.add('fullscreen-active');
         } else {
-            container.style.display = 'block';
-            header.style.display = 'block';
-            navTabs.style.display = 'flex';
+            // Exit fullscreen
+            vWrap.classList.remove('fullscreen-short');
             document.body.style.overflow = 'auto';
+            document.body.style.margin = '';
+            document.body.style.padding = '';
+            
+            // Show all UI elements
+            document.querySelector('header').style.display = 'block';
+            document.querySelector('.nav-tabs').style.display = 'flex';
+            document.querySelectorAll('.card').forEach(el => el.style.display = 'block');
+            card.classList.remove('fullscreen-active');
         }
     }
     

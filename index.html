@@ -73,15 +73,64 @@
         .comm-post-btn { background: var(--helostar-pink); border: none; color: white; padding: 0 15px; border-radius: 5px; cursor: pointer; }
         .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); }
         .hidden { display: none !important; }
-        #authOverlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #authOverlay { 
+            position: fixed; inset: 0; background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%); 
+            z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        #authOverlay::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(211, 21, 157, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(211, 21, 157, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
-        <h1 class="logo" style="font-size: 3rem; margin-bottom: 40px;">HELOSTAR</h1>
-        <button onclick="signInWithGoogle()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; background: #fff; color: #000;"><i class="fab fa-google"></i> Login with Google</button>
-        <button onclick="guestMode()" class="btn-act" style="width: 240px; justify-content: center; padding: 15px; margin-top: 15px; background:none;">Guest Mode</button>
+        <div style="position: relative; z-index: 10; text-align: center; animation: fadeInDown 0.8s ease;">
+            <h1 class="logo" style="font-size: 4rem; margin-bottom: 15px; text-shadow: 0 0 20px rgba(211, 21, 157, 0.4); letter-spacing: 2px;">HELOSTAR</h1>
+            <div style="height: 2px; width: 80px; background: linear-gradient(90deg, transparent, var(--helostar-pink), transparent); margin: 0 auto 25px;"></div>
+            <p style="font-size: 0.95rem; text-align: center; margin-bottom: 40px; color: var(--helostar-pink); font-style: italic; font-weight: 500; letter-spacing: 1px;">
+                "Shine Bright, Share Bold, Inspire Millions" ✨
+            </p>
+            <p style="font-size: 1.15rem; text-align: center; margin-bottom: 40px; color: #ddd; max-width: 320px; line-height: 1.6;">
+                Welcome to Helostar! 🎬<br>
+                <span style="font-size: 0.95rem; color: #aaa; margin-top: 12px; display: block; line-height: 1.7;">
+                    Discover amazing short videos and<br>premium content. Sign in to like,<br>comment, and share with our community.
+                </span>
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 35px;">
+                <button onclick="signInWithGoogle()" class="btn-act" style="width: 260px; justify-content: center; padding: 14px 20px; background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%); color: #000; font-weight: 600; font-size: 1rem; box-shadow: 0 8px 24px rgba(211, 21, 157, 0.2); transition: all 0.3s ease; border: none;">
+                    <i class="fab fa-google" style="margin-right: 8px;"></i> Login with Google
+                </button>
+                <button onclick="guestMode()" class="btn-act" style="width: 260px; justify-content: center; padding: 14px 20px; background: rgba(255,255,255,0.08); color: #fff; font-weight: 600; font-size: 1rem; border: 1.5px solid rgba(211, 21, 157, 0.4); transition: all 0.3s ease;">
+                    <i class="fas fa-user-secret" style="margin-right: 8px;"></i> Continue as Guest
+                </button>
+            </div>
+        </div>
+        <style>
+            @keyframes fadeInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            #authOverlay .btn-act:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 32px rgba(211, 21, 157, 0.3) !important;
+            }
+            #authOverlay .btn-act:active {
+                transform: translateY(-1px);
+            }
+        </style>
     </div>
 
     <header>

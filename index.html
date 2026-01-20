@@ -379,9 +379,14 @@
     async function loadComments(id) {
         const list = document.getElementById(`list-${id}`);
         const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
-        list.innerHTML = data && data.length ? data.map(c => `
-            <div class="comm-item"><b>${c.user_email.split('@')[0]}</b>: ${c.text}</div>
-        `).join('') : '<div style="font-size:0.85rem; color:#888;">No comments yet.</div>';
+        
+        if(data && data.length) {
+            list.innerHTML = data.map(c => {
+                return `<div class="comm-item"><b>${c.user_email.split('@')[0]}</b>: ${c.comment_text}</div>`;
+            }).join('');
+        } else {
+            list.innerHTML = '<div style="font-size:0.85rem; color:#888;">No comments yet.</div>';
+        }
     }
 
     async function postComment(id) {
@@ -396,7 +401,7 @@
         try {
             const { error } = await _supabase.from('comments').insert([{ 
                 video_id: id, 
-                text: commentText, 
+                comment_text: commentText, 
                 user_email: currentUserEmail 
             }]);
             
@@ -406,6 +411,7 @@
             await loadComments(id);
             await loadCommentsCount(id);
         } catch(err) {
+            console.error('Comment Error:', err);
             alert('Error posting comment: ' + err.message);
             input.value = commentText;
         } finally {

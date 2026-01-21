@@ -307,7 +307,8 @@
         card.innerHTML = `
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;">
                 <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
-                ${isVertical ? `<button class="btn-mute" onclick="event.stopPropagation(); toggleMute(this)" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); border:none; color:white; padding:8px 12px; border-radius:20px; cursor:pointer; z-index:50;"><i class="fas fa-volume-mute"></i></button>` : ''}
+                ${isVertical ? `<button class="btn-mute" onclick="event.stopPropagation(); toggleMute(this)" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); border:none; color:white; padding:8px 12px; border-radius:20px; 
+                cursor:pointer; z-index:50;"><i class="fas fa-volume-mute"></i></button>` : ''}
             </div>
             <div class="action-row" ${isVertical ? 'style="position:relative;"' : ''}>
                 <button class="btn-act like-btn" data-id="${v.id}" data-liked="false" onclick="event.stopPropagation(); handleLike(this, '${v.id}')">
@@ -537,7 +538,7 @@
         btn.innerHTML = vid.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
     }
 
-    function toggleFullscreenShort(card, vWrap, actionRow) {
+   /*  ( function toggleFullscreenShort(card, vWrap, actionRow) {
         const isFullscreen = vWrap.classList.contains('fullscreen-short');
         
         if(!isFullscreen) {
@@ -586,15 +587,73 @@
             actionRow.querySelectorAll('.btn-act').forEach(btn => {
                 btn.style.background = '';
                 btn.style.border = '';
-            });
+            }); 
             
             // Show all cards and UI
             document.querySelectorAll('.card').forEach(c => c.style.display = 'block');
             document.querySelector('header').style.display = 'block';
             document.querySelector('.nav-tabs').style.display = 'flex';
         }
-    }
+    } */
     
+// --- NEW SHORT TIKTOK LOGIC ---
+    function handleShortTap(wrapper) {
+        const vid = wrapper.querySelector('video');
+        const icon = wrapper.querySelector('.mute-overlay-icon');
+
+        // 1. Toggle Mute/Unmute
+        vid.muted = !vid.muted;
+        
+        // 2. Toggle "Fullscreen/Width" (Contain vs Cover)
+        wrapper.classList.toggle('fill-mode');
+
+        // 3. Show Visual Feedback for Mute
+        icon.className = vid.muted ? 'fas fa-volume-mute mute-overlay-icon show' : 'fas fa-volume-up mute-overlay-icon show';
+        setTimeout(() => icon.classList.remove('show'), 600);
+    }
+
+    const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.play().catch(()=>{});
+            else entry.target.pause();
+        });
+    }, { threshold: 0.6 });
+
+    function toggleComments(id) {
+        const panel = document.getElementById(`comm-panel-${id}`);
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        if(panel.style.display === 'block') loadComments(id);
+    }
+
+    async function loadComments(id) {
+        const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
+        document.getElementById(`list-${id}`).innerHTML = data?.length ? 
+            data.map(c => `<div class="comm-item">${c.comment_text}</div>`).join('') : 'No comments';
+    }
+
+    async function postComment(id) {
+        const input = document.getElementById(`input-${id}`);
+        if(!input.value.trim() || isGuest) return alert("Login to comment");
+        await _supabase.from('comments').insert([{ video_id: id, comment_text: input.value }]);
+        input.value = ''; loadComments(id);
+    }
+
+    async function handleLike(btn, id) {
+        if(isGuest) return;
+        btn.classList.add('liked');
+        let count = btn.querySelector('span');
+        count.innerText = parseInt(count.innerText) + 1;
+        await _supabase.from('videos').update({ likes: parseInt(count.innerText) }).eq('id', id);
+    }
+
+    function setTab(t) { currentTab = t; renderFeed(); }
+    function toggleMenu() { document.getElementById('catDropdown').classList.toggle('show'); }
+    function toggleSearch() { document.getElementById('searchContainer').classList.toggle('expanded'); }
+    function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
+    function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
+    function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+
+
     // --- UI HELPERS ---
     function toggleSearch() {
         const container = document.getElementById('searchContainer');

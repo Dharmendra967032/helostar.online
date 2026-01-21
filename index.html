@@ -104,8 +104,7 @@
                 </span>
             </p>
             <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 35px; width: 100%; align-items: center;">
-                <button onclick="signInWithGoogle()" class="btn-act" style="width: 260px; justify-content: center; padding: 14px 20px; background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%); color: #000; font-weight: 600; font-size: 1rem; box-shadow: 0 8px 24px rgba(211, 21, 157, 0.2); 
-                transition: all 0.3s ease; border: none;">
+                <button onclick="signInWithGoogle()" class="btn-act" style="width: 260px; justify-content: center; padding: 14px 20px; background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%); color: #000; font-weight: 600; font-size: 1rem; box-shadow: 0 8px 24px rgba(211, 21, 157, 0.2); transition: all 0.3s ease; border: none;">
                     <i class="fab fa-google" style="margin-right: 10px;"></i> Login with Google
                 </button>
                 <button onclick="guestMode()" class="btn-act" style="width: 260px; justify-content: center; padding: 14px 20px; background: rgba(255,255,255,0.08); color: #fff; font-weight: 600; font-size: 1rem; border: 1.5px solid rgba(211, 21, 157, 0.4); transition: all 0.3s ease;">
@@ -147,10 +146,10 @@
                 <i class="fas fa-bars menu-trigger" onclick="toggleMenu()"></i>
                 <div class="dropdown-content" id="catDropdown">
                     <div class="user-header" id="userDisplay"><i class="fas fa-user-circle"></i> Guest User
-                    <button onclick="signInWithGoogle()" class="btn-act" style="width: 260px; justify-content: center; padding: 14px 20px; background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%); color: #000; font-weight: 600; font-size: 1rem; box-shadow: 0 8px 24px rgba(211, 21, 157, 0.2); 
-                transition: all 0.3s ease; border: none;">
-                    <i class="fab fa-google" style="margin-right: 10px;"></i> Login with Google
-                </button>
+                    <div class="dropdown-item logout-item" id="logoutMenuBtn" onclick="logout()" style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-power-off"></i> <span>Logout</span>
+                    </div>
+                    </div>
     
                     <div class="dropdown-item" onclick="filterByCat('All')"><i class="fas fa-border-all"></i> All Videos</div>
                     <div class="dropdown-item" onclick="filterByCat('Comedy')"><i class="fas fa-laugh"></i> Comedy</div>
@@ -161,9 +160,6 @@
                      <div class="dropdown-item" ><i class="fas fa-download"></i> Donwnload App</div>
                       <div class="dropdown-item"><i class="fas fa-clock-rotate-left"></i><a href="indexold.html">Old Version</a></div>
                    
-                    </div>
-                     <div class="dropdown-item logout-item hidden" id="guestExitBtn" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> <span>Exit Guest Mode</span>
                     <div class="dropdown-item logout-item" id="logoutMenuBtn" onclick="logout()" style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-power-off"></i> <span>Logout</span></div>
                 </div>
             </div>

@@ -594,6 +594,89 @@
             document.querySelector('.nav-tabs').style.display = 'flex';
         }
     }
+
+    // --- RENDER FEED WITH 3-DOT MENU ---
+    async function renderFeed() {
+        const feed = document.getElementById('feed');
+        feed.innerHTML = '<p style="text-align:center; padding:50px;">Loading...</p>';
+        
+        let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
+        if (currentCat !== 'All') q = q.eq('category', currentCat);
+        
+        const { data: videos } = await q;
+        feed.innerHTML = '';
+        if(!videos) return;
+
+        videos.forEach(v => {
+            const vTemp = document.createElement('video');
+            vTemp.src = v.url;
+            vTemp.onloadedmetadata = () => {
+                const isVertical = vTemp.videoHeight > vTemp.videoWidth;
+                if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
+                    createCard(v, isVertical);
+                }
+            };
+        });
+    }
+
+    function createCard(v, isVertical) {
+        const isOwner = v.owner === currentUserEmail;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            ${isOwner ? `
+                <i class="fas fa-ellipsis-v card-menu-btn" onclick="toggleCardMenu(event, '${v.id}')"></i>
+                <div id="menu-${v.id}" class="card-dropdown">
+                    <div onclick="editVideo('${v.id}', '${v.description}', '${v.category}')"><i class="fas fa-edit"></i> Edit</div>
+                    <div class="delete-opt" onclick="deleteVideo('${v.id}')"><i class="fas fa-trash"></i> Delete</div>
+                </div>
+            ` : ''}
+            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
+                <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"'}></video>
+            </div>
+            <div class="action-row">
+                <button class="btn-act like-btn" onclick="handleLike(this, '${v.id}')"><i class="fas fa-heart"></i> ${v.likes || 0}</button>
+                <button class="btn-act" onclick="toggleComments('${v.id}')"><i class="fas fa-comment"></i></button>
+            </div>
+            <div id="comm-panel-${v.id}" class="comm-panel">
+                <div id="list-${v.id}" class="comm-list"></div>
+            </div>
+            <div style="padding:0 15px 15px 15px;">
+                <b>@${v.owner?.split('@')[0]}</b> ${v.description}
+                <div style="color:var(--helostar-pink); font-size:0.75rem;">#${v.category}</div>
+            </div>`;
+        document.getElementById('feed').appendChild(card);
+    }
+
+    // --- EDIT & DELETE LOGIC ---
+    function toggleCardMenu(e, id) {
+        e.stopPropagation();
+        document.querySelectorAll('.card-dropdown').forEach(d => {
+            if(d.id !== `menu-${id}`) d.classList.remove('show');
+        });
+        document.getElementById(`menu-${id}`).classList.toggle('show');
+    }
+
+    async function deleteVideo(id) {
+        if(!confirm("Are you sure you want to delete this video?")) return;
+        const { error } = await _supabase.from('videos').delete().eq('id', id);
+        if(error) alert("Error deleting video");
+        else renderFeed();
+    }
+
+    async function editVideo(id, oldDesc, oldCat) {
+        const newDesc = prompt("Edit Description:", oldDesc);
+        const newCat = prompt("Edit Category:", oldCat);
+        if(newDesc === null) return;
+
+        const { error } = await _supabase.from('videos').update({ 
+            description: newDesc, 
+            category: newCat || 'All' 
+        }).eq('id', id);
+
+        if(error) alert("Error updating video");
+        else renderFeed();
+    }
     
     // --- UI HELPERS ---
     function toggleSearch() {

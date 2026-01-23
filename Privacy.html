@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helostar.online - Contact & Privacy</title>
+    <style>
+        :root {
+            --primary-pink: #ff4d6d;
+            --dark-bg: #0f0c29;
+            --text-gray: #e0e0e0;
+            --card-bg: #1a1a2e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-gray);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary-pink);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1, h2 {
+            color: #fff;
+            margin-top: 0;
+        }
+
+        .highlight {
+            color: var(--primary-pink);
+            font-weight: bold;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        ul li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--primary-pink);
+        }
+
+        .contact-info {
+            background: rgba(255, 77, 109, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .footer-note {
+            font-style: italic;
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 20px;
+        }
+
+        a {
+            color: var(--primary-pink);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <section id="contact">
+        <h1>Get in Touch with <span class="highlight">Helostar</span></h1>
+        <p>Have a question, feedback, or a technical issue? We’re here to help! At Helostar, we are constantly improving our platform and we value your input.</p>
+        
+        <div class="contact-info">
+            <ul>
+                <li><strong>Support Email:</strong> <a href="mailto:dharmendra96703@gmail.com">dharmendra96703@gmail.com</a></li>
+                <li><strong>Business Inquiries:</strong> <a href="mailto:dharmendra96703@gmail.com">dharmendra96703@gmail.com</a></li>
+                <li><strong>GitHub/Developer Info:</strong> <a href="https://github.com/dharmendra967032" target="_blank">github.com/dharmendra967032</a></li>
+                <li><strong>Location:</strong> India</li>
+            </ul>
+        </div>
+        <p class="footer-note"><strong>Response Time:</strong> We typically respond to all inquiries within 24–48 hours.</p>
+    </section>
+
+    <section id="privacy">
+        <h1>Privacy Policy</h1>
+        <p><strong>Last Updated:</strong> January 2026</p>
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+        <h2>1. Data We Collect</h2>
+        <ul>
+            <li><strong>Account Information:</strong> When you sign up via Firebase, we store your email and UID to manage your uploads and interactions.</li>
+            <li><strong>Usage Data:</strong> We track video views and categories (Tech, Comedy, Bhakti) to improve our Auto-Swipe recommendation logic.</li>
+            <li><strong>Guest Access:</strong> If you use Helostar as a Guest, we do not store personal identification data; we only provide view-only access.</li>
+        </ul>
+
+        <h2>2. How We Use Data</h2>
+        <p>We use your information to:</p>
+        <ul>
+            <li>Manage your video uploads and comments.</li>
+            <li>Ensure the "Single-Play" logic works correctly on your device.</li>
+            <li>Prevent spam and maintain a safe community.</li>
+        </ul>
+
+        <h2>3. Third-Party Services</h2>
+        <p>Helostar utilizes professional third-party tools to ensure a high-quality experience:</p>
+        <ul>
+            <li><strong>Supabase:</strong> For secure PostgreSQL database storage.</li>
+            <li><strong>Firebase:</strong> For industry-standard authentication.</li>
+        </ul>
+
+        <h2>4. Data Security</h2>
+        <p>Your data is stored in our secure PostgreSQL database. We do not sell your personal data to third parties.</p>
+    </section>
+
+</div>
+
+</body>
+</html>

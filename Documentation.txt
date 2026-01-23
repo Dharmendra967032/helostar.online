@@ -8,3 +8,6 @@ Glass UI: Translucent white panels with blurred backgrounds.
 Dynamic Comment Count: Real-time updates on engagement.
 
 Cinematic Video Scaling: Balanced height for a professional widescreen feel.
+
+
+GitHub Action to automatically build your Android APK every time you push code to your repository?

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helostar | Premium</title>
+    <title>Helostar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -107,6 +107,48 @@
     pointer-events: none;
     z-index: 100;
 }
+/* 1. Hide Global UI when a video is maximized */
+body.cinema-mode header, 
+body.cinema-mode .tabs {
+    display: none;
+}
+
+/* 2. Make Action Icons Bigger & Cleaner */
+.action-row {
+    position: absolute;
+    right: 15px;
+    bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px; /* More space between buttons */
+    z-index: 20;
+}
+
+.btn-act {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px; /* Bigger Icons */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.act-item span {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: -5px;
+    color: white;
+}
+
+/* 3. New Upload Button Style (+ only) */
+.btn-upload-circle {
+    background: none !important; /* Remove pink circle */
+    box-shadow: none !important;
+    color: var(--helostar-pink);
+    font-size: 35px !important;
+}
 
 @keyframes heartPop {
     0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
@@ -124,7 +166,7 @@
         
         /* Comments UI */
         .comm-panel { display: none; padding: 15px; background: #111; border-top: 1px solid #222; }
-        .comm-list { max-height: 150px; overflow-y: auto; margin-bottom: 10px; font-size: 0.85rem; }
+        .comm-list { max-height: 150px; overflow-y: auto; margin-bottom: 10px; font-size: 0.50rem; }
         .comm-item { margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #222; }
         .comm-input-wrap { display: flex; gap: 10px; }
         .comm-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 5px; outline: none; }
@@ -232,7 +274,11 @@
 
     <div class="container" id="feed"></div>
 
-    <input type="file" id="fileIn" style="display:none" accept="video/*">
+    <label>Video File:</label>
+<input type="file" id="videoFile" accept="video/*">
+
+<label>Thumbnail (Optional):</label>
+<input type="file" id="thumbFile" accept="image/*">
     <button id="uploadBtn" class="fab" onclick="document.getElementById('fileIn').click()"><i class="fa fa-plus"></i></button>
 
 <script>
@@ -294,9 +340,20 @@
         if(isGuest) return alert("Please login to upload!");
         const file = e.target.files[0];
         if(!file) return;
+        
+        // Inside your upload function:
+const thumbFile = document.getElementById('thumbFile').files[0];
+let thumbUrl = '';
 
+if (thumbFile) {
+    const { data } = await supabase.storage.from('thumbnails').upload(`thumb_${Date.now()}`, thumbFile);
+    thumbUrl = supabase.storage.from('thumbnails').getPublicUrl(data.path).data.publicUrl;
+}
+
+// Then save the video record with: { url: videoUrl, thumbnail_url: thumbUrl, ... }
         const desc = prompt("Enter video description:");
         const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, etc):") || 'All';
+        
         
         alert("Uploading... please wait.");
         const fileName = `${Date.now()}_${file.name}`;
@@ -365,9 +422,13 @@
     card.className = 'card';
     card.innerHTML = `
         <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" onclick="handleVideoTap(this, '${v.id}')">
-            <video data-id="${v.id}" src="${v.url}" 
-                ${!isVertical ? 'controls' : 'loop playsinline'}>
-            </video>
+            // Locate this inside your createCard function
+<video 
+    data-id="${v.id}" 
+    src="${v.url}" 
+    poster="${v.thumbnail_url || ''}" 
+    ${!isVertical ? 'controls' : 'loop playsinline'}>
+</video>
             <div class="mute-indicator" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0; pointer-events:none; transition:0.3s; background:rgba(0,0,0,0.4); padding:20px; border-radius:50%; z-index:10;">
                 <i class="fas fa-volume-mute fa-2x" style="color:white;"></i>
             </div>
@@ -403,55 +464,41 @@
 
 // Add these helper functions at the bottom of your script
 let lastTap = 0;
-function handleVideoTap(vid) {
+function handleVideoTap(wrapper, id) {
     const now = Date.now();
+    const vid = wrapper.querySelector('video');
+    const card = wrapper.closest('.card');
+    const body = document.body;
+
     if (now - lastTap < 300) {
-        // Double Tap Detection
-        const container = vid.parentElement;
-        const heart = document.createElement('i');
-        heart.className = 'fas fa-heart heart-pop';
-        container.appendChild(heart);
-        setTimeout(() => heart.remove(), 800);
-        
-        const likeBtn = vid.closest('.card').querySelector('.like-btn');
-        handleLike(likeBtn, vid.dataset.id);
+        // DOUBLE TAP: Like
+        showHeart(wrapper);
+        handleLike(card.querySelector('.like-btn'), id);
     } else {
-        // Single Tap: Mute/Unmute
+        // SINGLE TAP: Full Screen (Instagram Style)
+        const isMaximized = card.classList.toggle('maximized');
+        
+        if (isMaximized) {
+            body.classList.add('cinema-mode');
+            card.style.height = '100vh'; // Take full screen height
+        } else {
+            body.classList.remove('cinema-mode');
+            card.style.height = 'calc(100vh - 110px)'; // Return to normal
+        }
+
+        // Mute Toggle
         vid.muted = !vid.muted;
-        const indicator = vid.parentElement.querySelector('.mute-indicator');
-        indicator.innerHTML = vid.muted ? '<i class="fas fa-volume-mute fa-2x"></i>' : '<i class="fas fa-volume-up fa-2x"></i>';
-        indicator.style.opacity = '1';
-        setTimeout(() => indicator.style.opacity = '0', 500);
+        showMuteIndicator(wrapper, vid.muted);
     }
     lastTap = now;
 }
 
-    function pauseAllOtherVideos(currentVideo) {
-        document.querySelectorAll('video').forEach(vid => {
-            if (vid !== currentVideo) vid.pause();
-        });
-    }
-
-    function playNextVideo(currentCard) {
-        const nextCard = currentCard.nextElementSibling;
-        while(nextCard && !nextCard.classList.contains('card')) {
-            nextCard = nextCard.nextElementSibling;
-        }
-        
-        if (nextCard && nextCard.classList.contains('card')) {
-            const nextVideo = nextCard.querySelector('video');
-            if (nextVideo) {
-                // Check if we're in fullscreen mode
-                const isInFullscreen = currentCard.classList.contains('fullscreen-active');
-                
-                if(isInFullscreen) {
-                    // Exit fullscreen when video ends
-                    const vWrap = currentCard.querySelector('.v-wrap');
-                    const actionRow = currentCard.querySelector('.action-row');
-                    if(vWrap && vWrap.classList.contains('fullscreen-short')) {
-                        toggleFullscreenShort(currentCard, vWrap, actionRow);
-                    }
-                }
+function showMuteIndicator(wrapper, isMuted) {
+    const indicator = wrapper.querySelector('.mute-indicator');
+    indicator.innerHTML = isMuted ? '<i class="fas fa-volume-mute fa-2x"></i>' : '<i class="fas fa-volume-up fa-2x"></i>';
+    indicator.style.opacity = '1';
+    setTimeout(() => indicator.style.opacity = '0', 600);
+}
                 
                 // Auto-swipe/scroll to next video
                 setTimeout(() => {

@@ -48,13 +48,61 @@
         .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: #555; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom-color: var(--helostar-pink); }
         
-        .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 120px; }
-        .card { width: 100%; margin-bottom: 30px; border-bottom: 1px solid #111; }
-        .v-wrap { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; align-items: center; }
-        .v-full { height: 400px; }
-        .v-short { aspect-ratio: 9/16; }
-        .v-short.fullscreen-short { position: fixed; inset: 0; aspect-ratio: auto; z-index: 999; width: 100vw; height: 100vh; }
-        .v-short.fullscreen-short video { width: 100vw; height: 100vh; object-fit: cover; }
+        .container { 
+    width: 100%; 
+    max-width: 500px; 
+    margin: 0 auto; 
+    height: calc(100vh - 110px); /* Height minus header and tabs */
+    overflow-y: scroll; 
+    scroll-snap-type: y mandatory; /* This enables the TikTok snap effect */
+}
+        .card { 
+    width: 100%; 
+    height: calc(100vh - 110px); 
+    scroll-snap-align: start; 
+    position: relative; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center;
+    background: #000;
+}
+       .v-short { 
+    height: 100% !important; 
+    width: 100%; 
+}
+
+.v-short video { 
+    object-fit: cover; /* Makes video fill the screen like TikTok */
+}
+
+/* Floating Action Buttons */
+.v-short + .action-row {
+    position: absolute;
+    right: 15px;
+    bottom: 80px;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 10;
+}
+
+/* Heart Animation style */
+.heart-pop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--helostar-pink);
+    font-size: 80px;
+    animation: heartPop 0.8s ease-out forwards;
+    pointer-events: none;
+    z-index: 100;
+}
+
+@keyframes heartPop {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
         video { width: 100%; height: 100%; object-fit: contain; }
         
         .action-row { display: flex; gap: 10px; padding: 15px; }
@@ -159,7 +207,7 @@
                     <div class="dropdown-item" onclick="filterByCat('Other')"><i class="fas fa-icons"></i>Other</div>
                      <div class="dropdown-item" ><i class="fas fa-download"></i><a href = "Helostar.apk"> Donwnload App</a></div>
                       <div class="dropdown-item"><i class="fas fa-clock-rotate-left"></i><a href="indexold.html">Old Version</a></div>
-                      <a href="Privacy.html"> Privacy Policy</a>
+                      <a href="Privacy.html">   Privacy Policy</a>
                    
                     <div class="dropdown-item logout-item" id="logoutMenuBtn" onclick="logout()" style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-power-off"></i> <span>Logout</span></div>
                 </div>
@@ -303,80 +351,65 @@
     }
 
     function createCard(v, isVertical) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;">
-                <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
-                ${isVertical ? `<button class="btn-mute" onclick="event.stopPropagation(); toggleMute(this)" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); border:none; color:white; padding:8px 12px; border-radius:20px; cursor:pointer; z-index:50;"><i class="fas fa-volume-mute"></i></button>` : ''}
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;">
+            <video data-id="${v.id}" src="${v.url}" 
+                ${!isVertical ? 'controls' : 'loop playsinline'} 
+                onclick="handleVideoTap(this)">
+            </video>
+            <div class="mute-indicator" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0; pointer-events:none; transition:0.3s; background:rgba(0,0,0,0.4); padding:20px; border-radius:50%;">
+                <i class="fas fa-volume-mute fa-2x"></i>
             </div>
-            <div class="action-row" ${isVertical ? 'style="position:relative;"' : ''}>
-                <button class="btn-act like-btn" data-id="${v.id}" data-liked="false" onclick="event.stopPropagation(); handleLike(this, '${v.id}')">
-                    <i class="fas fa-heart"></i> <span class="count">${v.likes || 0}</span>
-                </button>
-                <button class="btn-act" onclick="event.stopPropagation(); toggleComments('${v.id}')">
-                    <i class="fas fa-comment"></i> <span class="comment-count" data-id="${v.id}">0</span>
-                </button>
-                <button class="btn-act">
-                    <i class="fas fa-eye"></i> <span class="view-count" data-id="${v.id}">${v.views || 0}</span>
-                </button>
-                <button class="btn-act" onclick="event.stopPropagation(); handleShare('${v.url}', '${v.description}')">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-            <div id="comm-panel-${v.id}" class="comm-panel">
-                <div id="list-${v.id}" class="comm-list"></div>
-                <div class="comm-input-wrap">
-                    <input type="text" id="input-${v.id}" class="comm-input" placeholder="Add comment...">
-                    <button class="comm-post-btn" onclick="postComment('${v.id}')"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-            <div style="padding:0 15px 15px 15px;">
-                <b>@${v.owner?.split('@')[0]}</b> ${v.description}
-                <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:5px;">#${v.category}</div>
-            </div>`;
-        document.getElementById('feed').appendChild(card);
+        </div>
+        <div class="action-row">
+            <button class="btn-act like-btn" data-id="${v.id}" onclick="handleLike(this, '${v.id}')">
+                <i class="fas fa-heart"></i>
+            </button>
+            <span style="font-size:12px; text-align:center; margin-top:-15px;">${v.likes || 0}</span>
+            <button class="btn-act" onclick="toggleComments('${v.id}')">
+                <i class="fas fa-comment"></i>
+            </button>
+            <button class="btn-act" onclick="handleShare('${v.url}')">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        <div class="video-info" style="position:absolute; bottom:20px; left:15px; z-index:5; pointer-events:none;">
+            <b style="font-size:1.1rem;">@${v.owner?.split('@')[0]}</b>
+            <p style="margin:5px 0; font-size:0.9rem; opacity:0.9;">${v.description}</p>
+        </div>
+    `;
+
+    document.getElementById('feed').appendChild(card);
+    const videoElem = card.querySelector('video');
+    videoObserver.observe(videoElem);
+}
+
+// Add these helper functions at the bottom of your script
+let lastTap = 0;
+function handleVideoTap(vid) {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+        // Double Tap Detection
+        const container = vid.parentElement;
+        const heart = document.createElement('i');
+        heart.className = 'fas fa-heart heart-pop';
+        container.appendChild(heart);
+        setTimeout(() => heart.remove(), 800);
         
-        // Attach video reference and auto-play/pause logic
-        const videoElem = card.querySelector('video');
-        const vWrap = card.querySelector('.v-wrap');
-        const actionRow = card.querySelector('.action-row');
-        
-        videoElem.onplay = () => pauseAllOtherVideos(videoElem);
-        videoElem.onended = () => playNextVideo(card);
-        videoObserver.observe(videoElem);
-        
-        // Add double-click fullscreen for shorts
-        if(isVertical) {
-            vWrap.ondblclick = () => toggleFullscreenShort(card, vWrap, actionRow);
-            
-            // Add swipe/touch detection for shorts
-            let touchStartY = 0;
-            vWrap.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-            }, false);
-            
-            vWrap.addEventListener('touchend', (e) => {
-                const touchEndY = e.changedTouches[0].clientY;
-                const diff = touchStartY - touchEndY;
-                
-                if(diff > 50) {
-                    // Swiped up - go to next video
-                    playNextVideo(card);
-                } else if(diff < -50) {
-                    // Swiped down - go to previous video
-                    const prevCard = card.previousElementSibling;
-                    if(prevCard && prevCard.classList.contains('card')) {
-                        prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            }, false);
-        }
-        
-        // Load initial comments count and check if user liked
-        loadCommentsCount(v.id);
-        checkUserLike(v.id);
+        const likeBtn = vid.closest('.card').querySelector('.like-btn');
+        handleLike(likeBtn, vid.dataset.id);
+    } else {
+        // Single Tap: Mute/Unmute
+        vid.muted = !vid.muted;
+        const indicator = vid.parentElement.querySelector('.mute-indicator');
+        indicator.innerHTML = vid.muted ? '<i class="fas fa-volume-mute fa-2x"></i>' : '<i class="fas fa-volume-up fa-2x"></i>';
+        indicator.style.opacity = '1';
+        setTimeout(() => indicator.style.opacity = '0', 500);
     }
+    lastTap = now;
+}
 
     function pauseAllOtherVideos(currentVideo) {
         document.querySelectorAll('video').forEach(vid => {

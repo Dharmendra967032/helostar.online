@@ -142,19 +142,7 @@ body.cinema-mode .tabs {
     color: white;
 }
 /* Update your upload button style to be transparent and clean */
-.btn-upload-circle {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1001;
-    background: transparent !important; /* No pink background */
-    border: none !important;
-    color: var(--helostar-pink); /* Only the icon is pink */
-    font-size: 50px !important; /* Large + icon */
-    cursor: pointer;
-    box-shadow: none !important; /* Remove the shadow */
-}
+
 
 /* Make sure the + icon doesn't have a background */
 #uploadBtn {
@@ -285,10 +273,10 @@ body.cinema-mode .tabs {
 
     <div class="container" id="feed"></div>
 
-    <label>Video File:</label>
-<input type="file" id="videoFile" accept="video/*">
 
-<label>Thumbnail (Optional):</label>
+
+
+<input type="file" id="videoFile" accept="video/*">
 <input type="file" id="thumbFile" accept="image/*">
     <button id="uploadBtn" class="fab" onclick="document.getElementById('fileIn').click()"><i class="fa fa-plus"></i></button>
 

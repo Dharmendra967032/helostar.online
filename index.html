@@ -141,13 +141,24 @@ body.cinema-mode .tabs {
     margin-top: -5px;
     color: white;
 }
-
-/* 3. New Upload Button Style (+ only) */
+/* Update your upload button style to be transparent and clean */
 .btn-upload-circle {
-    background: none !important; /* Remove pink circle */
-    box-shadow: none !important;
-    color: var(--helostar-pink);
-    font-size: 35px !important;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+    background: transparent !important; /* No pink background */
+    border: none !important;
+    color: var(--helostar-pink); /* Only the icon is pink */
+    font-size: 50px !important; /* Large + icon */
+    cursor: pointer;
+    box-shadow: none !important; /* Remove the shadow */
+}
+
+/* Make sure the + icon doesn't have a background */
+#uploadBtn {
+    background: none !important;
 }
 
 @keyframes heartPop {
@@ -341,18 +352,18 @@ body.cinema-mode .tabs {
         const file = e.target.files[0];
         if(!file) return;
         
-        // Inside your upload function:
-const thumbFile = document.getElementById('thumbFile').files[0];
-let thumbUrl = '';
+        
+    const thumbFile = document.getElementById('thumbFile').files[0];
+    let thumbUrl = '';
 
-if (thumbFile) {
+    if (thumbFile) {
     const { data } = await supabase.storage.from('thumbnails').upload(`thumb_${Date.now()}`, thumbFile);
     thumbUrl = supabase.storage.from('thumbnails').getPublicUrl(data.path).data.publicUrl;
-}
+        }
 
-// Then save the video record with: { url: videoUrl, thumbnail_url: thumbUrl, ... }
+        // Then save the video record with: { url: videoUrl, thumbnail_url: thumbUrl, ... }
         const desc = prompt("Enter video description:");
-        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, etc):") || 'All';
+        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Others etc):") || 'All';
         
         
         alert("Uploading... please wait.");
@@ -422,13 +433,13 @@ if (thumbFile) {
     card.className = 'card';
     card.innerHTML = `
         <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" onclick="handleVideoTap(this, '${v.id}')">
-            // Locate this inside your createCard function
-<video 
+           
+    <video 
     data-id="${v.id}" 
     src="${v.url}" 
     poster="${v.thumbnail_url || ''}" 
     ${!isVertical ? 'controls' : 'loop playsinline'}>
-</video>
+    </video>
             <div class="mute-indicator" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0; pointer-events:none; transition:0.3s; background:rgba(0,0,0,0.4); padding:20px; border-radius:50%; z-index:10;">
                 <i class="fas fa-volume-mute fa-2x" style="color:white;"></i>
             </div>

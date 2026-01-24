@@ -92,38 +92,3 @@
             #authOverlay .btn-act:active {
                 transform: translateY(-1px);
             }
-/* Container for the feed - adjust based on your layout */
-#feed {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
-}
-
-/* Base Card Style */
-.video-card {
-    background: #1a1a1a;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-}
-
-/* 9:16 Ratio for Shorts */
-.video-card.short {
-    max-width: 300px;
-    aspect-ratio: 9 / 16;
-    margin: 0 auto;
-}
-
-/* 16:9 Ratio for Full Videos */
-.video-card.full {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-}
-
-.main-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Keeps thumbnail/video filling the box */
-    cursor: pointer;
-}

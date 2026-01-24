@@ -1,4 +1,5 @@
-  :root {
+
+        :root {
             --bg-color: #000;
             --helostar-pink: #d3159d;
             --glass-white: rgba(255, 255, 255, 0.1);
@@ -74,21 +75,4 @@
                         radial-gradient(circle at 80% 80%, rgba(211, 21, 157, 0.05) 0%, transparent 50%);
             pointer-events: none;
         }
-
-          @keyframes fadeInDown {
-                from {
-                    opacity: 0;
-                    transform: translateY(-30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-            #authOverlay .btn-act:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 12px 32px rgba(211, 21, 157, 0.3) !important;
-            }
-            #authOverlay .btn-act:active {
-                transform: translateY(-1px);
-            }
+    

@@ -1,4 +1,5 @@
-// --- CONFIG ---
+
+    // --- CONFIG ---
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
@@ -58,7 +59,7 @@
         if(!file) return;
 
         const desc = prompt("Enter video description:");
-        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, etc):") || 'All';
+        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
         
         alert("Uploading... please wait.");
         const fileName = `${Date.now()}_${file.name}`;

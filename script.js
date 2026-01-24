@@ -58,7 +58,7 @@
         if(!file) return;
 
         const desc = prompt("Enter video description:");
-        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
+        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech etc):") || 'All';
         
         alert("Uploading... please wait.");
         const fileName = `${Date.now()}_${file.name}`;

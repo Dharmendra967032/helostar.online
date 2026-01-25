@@ -457,19 +457,35 @@
 
     async function toggleFollow(targetEmail, btn) {
     if (isGuest) return alert("Login to follow creators!");
-    
+    if (targetEmail === currentUserEmail) return alert("You cannot follow yourself!");
+
     const isFollowing = btn.classList.contains('following');
     
     if (isFollowing) {
-        // Unfollow
-        await _supabase.from('follows').delete().eq('follower_email', currentUserEmail).eq('following_email', targetEmail);
-        btn.classList.remove('following');
-        btn.innerText = "Follow";
+        // Unfollow Logic
+        const { error } = await _supabase.from('follows')
+            .delete()
+            .eq('follower_email', currentUserEmail)
+            .eq('following_email', targetEmail);
+        
+        if (!error) {
+            // Update UI for all cards belonging to this creator
+            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                b.classList.remove('following');
+                b.innerText = "Follow";
+            });
+        }
     } else {
-        // Follow
-        await _supabase.from('follows').insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
-        btn.classList.add('following');
-        btn.innerText = "Following";
+        // Follow Logic
+        const { error } = await _supabase.from('follows')
+            .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
+        
+        if (!error) {
+            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                b.classList.add('following');
+                b.innerText = "Following";
+            });
+        }
     }
 }
 
@@ -516,4 +532,31 @@ async function handleUpload() {
         thumbIn.click();
     };
     videoIn.click();
+}
+
+async function updateProfilePicture() {
+    const fileIn = document.createElement('input');
+    fileIn.type = 'file'; fileIn.accept = 'image/*';
+    fileIn.onchange = async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
+        
+        // 1. Upload to 'avatars' bucket
+        const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
+        if(error) return alert("Upload failed: " + error.message);
+
+        const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+        
+        // 2. Update profiles table (Using email as the key)
+        await _supabase.from('profiles').upsert({ 
+            email: currentUserEmail, 
+            avatar_url: urlData.publicUrl 
+        }, { onConflict: 'email' });
+        
+        alert("Profile Picture Updated!");
+        location.reload();
+    };
+    fileIn.click();
 }

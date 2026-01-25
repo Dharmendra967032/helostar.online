@@ -129,14 +129,20 @@
         `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
         card.innerHTML = `
         <div class="card-header">
-            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar">
+            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar"
             onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
             <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
             ${followBtn}
         </div>
-            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;">
-                <video data-id="${v.id}" src="${v.url}" poster="${v.thumbnail_url || ''}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
-                ${isVertical ? `<button class="btn-mute" onclick="event.stopPropagation(); toggleMute(this)" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); border:none; color:white; padding:8px 12px; border-radius:20px; cursor:pointer; z-index:50;"><i class="fas fa-volume-mute"></i></button>` : ''}
+            
+            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
+                <video 
+                src="${v.url}" 
+                poster="${v.thumbnail_url || ''}" 
+                ${isVertical ? 'loop playsinline' : 'controls'}
+                onclick="togglePlay(this)"
+            ></video>
+               
             </div>
             
             <div class="action-row" ${isVertical ? 'style="position:relative;"' : ''}>

@@ -125,11 +125,19 @@
     function createCard(v, isVertical) {
         const card = document.createElement('div');
         card.className = 'card';
+        const followBtn = currentUserEmail !== v.owner ? 
+        `<button class="btn-follow" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
         card.innerHTML = `
+        <div class="card-header">
+            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar">
+            <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
+            ${followBtn}
+        </div>
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}" style="position:relative;">
-                <video data-id="${v.id}" src="${v.url}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
+                <video data-id="${v.id}" src="${v.url}" poster="${v.thumbnail_url || ''}" ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
                 ${isVertical ? `<button class="btn-mute" onclick="event.stopPropagation(); toggleMute(this)" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); border:none; color:white; padding:8px 12px; border-radius:20px; cursor:pointer; z-index:50;"><i class="fas fa-volume-mute"></i></button>` : ''}
             </div>
+            
             <div class="action-row" ${isVertical ? 'style="position:relative;"' : ''}>
                 <button class="btn-act like-btn" data-id="${v.id}" data-liked="false" onclick="event.stopPropagation(); handleLike(this, '${v.id}')">
                     <i class="fas fa-heart"></i> <span class="count">${v.likes || 0}</span>
@@ -144,6 +152,7 @@
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
+            
             <div id="comm-panel-${v.id}" class="comm-panel">
                 <div id="list-${v.id}" class="comm-list"></div>
                 <div class="comm-input-wrap">
@@ -236,6 +245,7 @@
                 }, 1200);
             }
         }
+        
     }
 
     // --- INTERACTIONS ---
@@ -444,3 +454,66 @@
             for (let d of dropdowns) { if (d.classList.contains('show')) d.classList.remove('show'); }
         }
     }
+
+    async function toggleFollow(targetEmail, btn) {
+    if (isGuest) return alert("Login to follow creators!");
+    
+    const isFollowing = btn.classList.contains('following');
+    
+    if (isFollowing) {
+        // Unfollow
+        await _supabase.from('follows').delete().eq('follower_email', currentUserEmail).eq('following_email', targetEmail);
+        btn.classList.remove('following');
+        btn.innerText = "Follow";
+    } else {
+        // Follow
+        await _supabase.from('follows').insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
+        btn.classList.add('following');
+        btn.innerText = "Following";
+    }
+}
+
+// Triggered when user clicks the upload button
+async function handleUpload() {
+    if(isGuest) return alert("Please login to upload!");
+    
+    const videoIn = document.getElementById('fileIn');
+    videoIn.onchange = async (e) => {
+        const videoFile = e.target.files[0];
+        
+        // Create an image input on the fly for the thumbnail
+        const thumbIn = document.createElement('input');
+        thumbIn.type = 'file'; thumbIn.accept = 'image/*';
+        alert("Video selected! Now please select a thumbnail image (Cover).");
+        
+        thumbIn.onchange = async (te) => {
+            const thumbFile = te.target.files[0];
+            const desc = prompt("Enter video description:");
+            
+            const vName = `vid_${Date.now()}`;
+            const tName = `thumb_${Date.now()}`;
+
+            // Upload Video
+            await _supabase.storage.from('videos').upload(vName, videoFile);
+            const vUrl = _supabase.storage.from('videos').getPublicUrl(vName).data.publicUrl;
+
+            // Upload Thumbnail
+            await _supabase.storage.from('thumbnails').upload(tName, thumbFile);
+            const tUrl = _supabase.storage.from('thumbnails').getPublicUrl(tName).data.publicUrl;
+
+            // Save to DB
+            await _supabase.from('videos').insert([{
+                url: vUrl,
+                thumbnail_url: tUrl,
+                description: desc,
+                owner: currentUserEmail,
+                category: currentCat
+            }]);
+
+            alert("Uploaded successfully!");
+            renderFeed();
+        };
+        thumbIn.click();
+    };
+    videoIn.click();
+}

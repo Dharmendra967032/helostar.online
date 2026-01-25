@@ -92,3 +92,18 @@
             #authOverlay .btn-act:active {
                 transform: translateY(-1px);
             }
+
+            /* Profile and Follow Button */
+.card-header { display: flex; align-items: center; padding: 10px 15px; gap: 10px; }
+.user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--helostar-pink); }
+.btn-follow { 
+    background: var(--helostar-pink); border: none; color: white; padding: 6px 16px; 
+    border-radius: 18px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+}
+.btn-follow.following { background: #333; color: #ccc; }
+
+/* Thumbnail preview for upload */
+.thumb-input-label { 
+    display: block; margin-top: 10px; color: var(--helostar-pink); 
+    font-size: 0.8rem; cursor: pointer; text-decoration: underline; 
+}

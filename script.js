@@ -136,32 +136,29 @@ const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad,
             };
         });
     }
-
-    function createCard(v, isVertical) {
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        const isOwner = currentUserEmail === v.owner;
-        const followBtn = !isOwner ?
-        
+function createCard(v, isVertical) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const isOwner = currentUserEmail === v.owner;
+    // We add 'data-creator' so the follow script knows which buttons to update
+    const followBtn = !isOwner ? 
         `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
-        card.innerHTML = `
-        <div class="card-header">
-            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar"
-            style="${isOwner ? 'cursor:pointer' : ''}"
-            onclick="${isOwner ? 'updateProfilePicture()' : ''}">
 
-            
+    card.innerHTML = `
+        <div class="card-header">
+            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" 
+                 class="user-avatar" 
+                 style="${isOwner ? 'cursor:pointer' : ''}"
+                 onclick="${isOwner ? 'updateProfilePicture()' : ''}">
             <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
             ${followBtn}
         </div>
-            
-            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
-            <video data-id="${v.id}" src="${v.url}" poster="${v.thumbnail_url || ''}"
-            ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
-              
-               
-            </div>
+        <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
+            <video data-id="${v.id}" src="${v.url}" poster="${v.thumbnail_url || ''}" 
+                   ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
+        </div>
+       
             
             <div class="action-row" ${isVertical ? 'style="position:relative;"' : ''}>
                 <button class="btn-act like-btn" data-id="${v.id}" data-liked="false" onclick="event.stopPropagation(); handleLike(this, '${v.id}')">
@@ -188,8 +185,11 @@ const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad,
             <div style="padding:0 15px 15px 15px;">
                 <b>@${v.owner?.split('@')[0]}</b> ${v.description}
                 <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:5px;">#${v.category}</div>
-            </div>...`;
-        document.getElementById('feed').appendChild(card);
+            </div>
+        
+         `;
+    document.getElementById('feed').appendChild(card);
+}
         
         // Attach video reference and auto-play/pause logic
         const videoElem = card.querySelector('video');
@@ -230,7 +230,7 @@ const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad,
         // Load initial comments count and check if user liked
         loadCommentsCount(v.id);
         checkUserLike(v.id);
-    }
+    
 
     function pauseAllOtherVideos(currentVideo) {
         document.querySelectorAll('video').forEach(vid => {
@@ -487,21 +487,21 @@ const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad,
     const isFollowing = btn.classList.contains('following');
     
     if (isFollowing) {
-        // Unfollow Logic
+        // Unfollow globally in Database
         const { error } = await _supabase.from('follows')
             .delete()
             .eq('follower_email', currentUserEmail)
             .eq('following_email', targetEmail);
         
         if (!error) {
-            // Update UI for all cards belonging to this creator
+            // Update every button for this creator in the current feed
             document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
                 b.classList.remove('following');
                 b.innerText = "Follow";
             });
         }
     } else {
-        // Follow Logic
+        // Follow globally in Database
         const { error } = await _supabase.from('follows')
             .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
         
@@ -579,20 +579,20 @@ async function updateProfilePicture() {
         if(!file) return;
 
         const fileName = `avatar_${Date.now()}`;
+        // Note: Ensure the 'avatars' bucket is PUBLIC in Supabase
         const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
         
         if(error) return alert("Avatar upload failed: " + error.message);
         const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
         
-        // Save to profiles table
+        // Update the profiles table
         await _supabase.from('profiles').upsert({ 
-            id: firebase.auth().currentUser.uid,
             email: currentUserEmail, 
             avatar_url: urlData.publicUrl 
-        });
+        }, { onConflict: 'email' });
         
         alert("Profile picture updated!");
-        location.reload();
+        location.reload(); 
     };
     fileIn.click();
 }

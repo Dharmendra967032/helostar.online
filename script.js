@@ -52,56 +52,41 @@
     }
 
     // --- UPLOAD LOGIC ---
-    async function handleUpload() {
-    if(isGuest) return alert("Please login to upload!");
-    
-    const videoIn = document.getElementById('fileIn');
-    videoIn.onchange = async (e) => {
-        const videoFile = e.target.files[0];
-        if(!videoFile) return;
+    document.getElementById('fileIn').onchange = async (e) => {
+        if(isGuest) return alert("Please login to upload!");
+        const file = e.target.files[0];
+        if(!file) return;
 
-        // Step 2: Select Thumbnail
-        const thumbIn = document.createElement('input');
-        thumbIn.type = 'file'; thumbIn.accept = 'image/*';
-        alert("Video selected! Now select a Thumbnail image (Cover).");
+        const desc = prompt("Enter video description:");
+        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
         
-        thumbIn.onchange = async (te) => {
-            const thumbFile = te.target.files[0];
-            if(!thumbFile) return alert("Thumbnail is required!");
-            const desc = prompt("Enter video description:");
-const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
-            const timestamp = Date.now();
-            const vName = `vid_${timestamp}`;
-            const tName = `thumb_${timestamp}`;
+        alert("Uploading... please wait.");
+        const fileName = `${Date.now()}_${file.name}`;
+        
+        // 1. Upload to Supabase Storage
+        const { data: uploadData, error: uploadErr } = await _supabase.storage
+            .from('videos')
+            .upload(fileName, file);
 
-            alert("Uploading... Please wait.");
+        if(uploadErr) return alert("Upload failed: " + uploadErr.message);
 
-            // 1. Upload Video to 'videos' bucket
-            await _supabase.storage.from('videos').upload(vName, videoFile);
-            const vUrl = _supabase.storage.from('videos').getPublicUrl(vName).data.publicUrl;
+        // 2. Get Public URL
+        const { data: urlData } = _supabase.storage.from('videos').getPublicUrl(fileName);
 
-            // 2. Upload Thumbnail to 'thumbnails' bucket
-            const { error: tErr } = await _supabase.storage.from('thumbnails').upload(tName, thumbFile);
-            if(tErr) return alert("Thumbnail upload failed. Make sure 'thumbnails' bucket exists!");
-            
-            const tUrl = _supabase.storage.from('thumbnails').getPublicUrl(tName).data.publicUrl;
+        // 3. Save to Database
+        await _supabase.from('videos').insert([{
+            url: urlData.publicUrl,
+            description: desc || "No description",
+            owner: currentUserEmail,
+            category: category,
+            likes: 0,
+            views: 0
+        }]);
 
-            // 3. Save to Database
-            await _supabase.from('videos').insert([{
-                url: vUrl,
-                thumbnail_url: tUrl,
-                description: desc || "No description",
-                owner: currentUserEmail,
-                category: currentCat
-            }]);
-
-            alert("Upload Success!");
-            renderFeed();
-        };
-        thumbIn.click();
+        alert("Upload Success!");
+        renderFeed();
     };
-    videoIn.click();
-}
+
     // --- INTERACTIONS ---
     async function incrementView(id) {
         // Calls the SQL function created in Supabase
@@ -136,29 +121,29 @@ const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad,
             };
         });
     }
-function createCard(v, isVertical) {
-    const card = document.createElement('div');
-    card.className = 'card';
-    
-    const isOwner = currentUserEmail === v.owner;
-    // We add 'data-creator' so the follow script knows which buttons to update
-    const followBtn = !isOwner ? 
-        `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
 
-    card.innerHTML = `
+    function createCard(v, isVertical) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const followBtn = currentUserEmail !== v.owner ? 
+        `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
+        card.innerHTML = `
         <div class="card-header">
-            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" 
-                 class="user-avatar" 
-                 style="${isOwner ? 'cursor:pointer' : ''}"
-                 onclick="${isOwner ? 'updateProfilePicture()' : ''}">
+            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar"
+            onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
             <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
             ${followBtn}
         </div>
-        <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
-            <video data-id="${v.id}" src="${v.url}" poster="${v.thumbnail_url || ''}" 
-                   ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
-        </div>
-       
+            
+            <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
+                <video 
+                src="${v.url}" 
+                poster="${v.thumbnail_url || ''}" 
+                ${isVertical ? 'loop playsinline' : 'controls'}
+                onclick="togglePlay(this)"
+            ></video>
+               
+            </div>
             
             <div class="action-row" ${isVertical ? 'style="position:relative;"' : ''}>
                 <button class="btn-act like-btn" data-id="${v.id}" data-liked="false" onclick="event.stopPropagation(); handleLike(this, '${v.id}')">
@@ -185,11 +170,8 @@ function createCard(v, isVertical) {
             <div style="padding:0 15px 15px 15px;">
                 <b>@${v.owner?.split('@')[0]}</b> ${v.description}
                 <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:5px;">#${v.category}</div>
-            </div>
-        
-         `;
-    document.getElementById('feed').appendChild(card);
-}
+            </div>`;
+        document.getElementById('feed').appendChild(card);
         
         // Attach video reference and auto-play/pause logic
         const videoElem = card.querySelector('video');
@@ -230,7 +212,7 @@ function createCard(v, isVertical) {
         // Load initial comments count and check if user liked
         loadCommentsCount(v.id);
         checkUserLike(v.id);
-    
+    }
 
     function pauseAllOtherVideos(currentVideo) {
         document.querySelectorAll('video').forEach(vid => {
@@ -487,21 +469,21 @@ function createCard(v, isVertical) {
     const isFollowing = btn.classList.contains('following');
     
     if (isFollowing) {
-        // Unfollow globally in Database
+        // Unfollow Logic
         const { error } = await _supabase.from('follows')
             .delete()
             .eq('follower_email', currentUserEmail)
             .eq('following_email', targetEmail);
         
         if (!error) {
-            // Update every button for this creator in the current feed
+            // Update UI for all cards belonging to this creator
             document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
                 b.classList.remove('following');
                 b.innerText = "Follow";
             });
         }
     } else {
-        // Follow globally in Database
+        // Follow Logic
         const { error } = await _supabase.from('follows')
             .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
         
@@ -517,41 +499,29 @@ function createCard(v, isVertical) {
 // Triggered when user clicks the upload button
 async function handleUpload() {
     if(isGuest) return alert("Please login to upload!");
+    
     const videoIn = document.getElementById('fileIn');
     videoIn.onchange = async (e) => {
-        
-
-    const videoFile = e.target.files[0];
-    if(!videoFile) return;
-
-    const thumbIn = document.createElement('input');
-    thumbIn.type = 'file'; thumbIn.accept = 'image/*';
-    alert("Video selected! Now select a Thumbnail image (Cover).");
-
-    
+        const videoFile = e.target.files[0];
         
         // Create an image input on the fly for the thumbnail
- 
+        const thumbIn = document.createElement('input');
+        thumbIn.type = 'file'; thumbIn.accept = 'image/*';
+        alert("Video selected! Now please select a thumbnail image (Cover).");
+        
         thumbIn.onchange = async (te) => {
             const thumbFile = te.target.files[0];
-            if(!thumbFile) return alert("Thumbnail is required!");
             const desc = prompt("Enter video description:");
-            const category = prompt("Category (Comedy, Party, Bhakti, Tech,  Sad, Love Others etc):") || 'All';
             
-            const timestamp = Date.now();
-       
-        const vName = `vid_${timestamp}`;
-        const tName = `thumb_${timestamp}`;
-alert("Uploading... Please wait.");
-           
+            const vName = `vid_${Date.now()}`;
+            const tName = `thumb_${Date.now()}`;
 
             // Upload Video
             await _supabase.storage.from('videos').upload(vName, videoFile);
             const vUrl = _supabase.storage.from('videos').getPublicUrl(vName).data.publicUrl;
 
             // Upload Thumbnail
-            const { error: tErr } = await _supabase.storage.from('thumbnails').upload(tName, thumbFile);
-            if(tErr) return alert("Thumbnail upload failed. Make sure 'thumbnails' bucket exists!");
+            await _supabase.storage.from('thumbnails').upload(tName, thumbFile);
             const tUrl = _supabase.storage.from('thumbnails').getPublicUrl(tName).data.publicUrl;
 
             // Save to DB
@@ -560,7 +530,7 @@ alert("Uploading... Please wait.");
                 thumbnail_url: tUrl,
                 description: desc,
                 owner: currentUserEmail,
-                category: category
+                category: currentCat
             }]);
 
             alert("Uploaded successfully!");
@@ -578,21 +548,22 @@ async function updateProfilePicture() {
         const file = e.target.files[0];
         if(!file) return;
 
-        const fileName = `avatar_${Date.now()}`;
-        // Note: Ensure the 'avatars' bucket is PUBLIC in Supabase
-        const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
+        const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
         
-        if(error) return alert("Avatar upload failed: " + error.message);
+        // 1. Upload to 'avatars' bucket
+        const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
+        if(error) return alert("Upload failed: " + error.message);
+
         const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
         
-        // Update the profiles table
+        // 2. Update profiles table (Using email as the key)
         await _supabase.from('profiles').upsert({ 
             email: currentUserEmail, 
             avatar_url: urlData.publicUrl 
         }, { onConflict: 'email' });
         
-        alert("Profile picture updated!");
-        location.reload(); 
+        alert("Profile Picture Updated!");
+        location.reload();
     };
     fileIn.click();
 }

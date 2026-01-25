@@ -499,22 +499,31 @@
 // Triggered when user clicks the upload button
 async function handleUpload() {
     if(isGuest) return alert("Please login to upload!");
-    
+
+    const videoFile = e.target.files[0];
+    if(!videoFile) return;
+
+    const thumbIn = document.createElement('input');
+    thumbIn.type = 'file'; thumbIn.accept = 'image/*';
+    alert("Step 1: Video Selected. Step 2: Now select a Thumbnail image.");
+
     const videoIn = document.getElementById('fileIn');
     videoIn.onchange = async (e) => {
-        const videoFile = e.target.files[0];
+        
         
         // Create an image input on the fly for the thumbnail
-        const thumbIn = document.createElement('input');
-        thumbIn.type = 'file'; thumbIn.accept = 'image/*';
-        alert("Video selected! Now please select a thumbnail image (Cover).");
-        
+ 
         thumbIn.onchange = async (te) => {
             const thumbFile = te.target.files[0];
+            if(!thumbFile) return alert("Thumbnail is required!");
             const desc = prompt("Enter video description:");
-            
-            const vName = `vid_${Date.now()}`;
-            const tName = `thumb_${Date.now()}`;
+            const category = prompt("Category (Comedy, Party, Bhakti, Tech,  Sad, Love Others etc):") || 'All';
+            alert("Uploading Cinema... Please wait.");
+            const timestamp = Date.now();
+        const vName = `video_${timestamp}`;
+        const tName = `thumb_${timestamp}`;
+
+           
 
             // Upload Video
             await _supabase.storage.from('videos').upload(vName, videoFile);
@@ -530,7 +539,7 @@ async function handleUpload() {
                 thumbnail_url: tUrl,
                 description: desc,
                 owner: currentUserEmail,
-                category: currentCat
+                category: category
             }]);
 
             alert("Uploaded successfully!");

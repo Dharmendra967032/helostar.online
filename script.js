@@ -126,10 +126,11 @@
         const card = document.createElement('div');
         card.className = 'card';
         const followBtn = currentUserEmail !== v.owner ? 
-        `<button class="btn-follow" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
+        `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
         card.innerHTML = `
         <div class="card-header">
             <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar">
+            onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
             <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
             ${followBtn}
         </div>

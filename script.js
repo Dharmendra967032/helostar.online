@@ -52,41 +52,56 @@
     }
 
     // --- UPLOAD LOGIC ---
-    document.getElementById('fileIn').onchange = async (e) => {
-        if(isGuest) return alert("Please login to upload!");
-        const file = e.target.files[0];
-        if(!file) return;
+    async function handleUpload() {
+    if(isGuest) return alert("Please login to upload!");
+    
+    const videoIn = document.getElementById('fileIn');
+    videoIn.onchange = async (e) => {
+        const videoFile = e.target.files[0];
+        if(!videoFile) return;
 
-        const desc = prompt("Enter video description:");
-        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
+        // Step 2: Select Thumbnail
+        const thumbIn = document.createElement('input');
+        thumbIn.type = 'file'; thumbIn.accept = 'image/*';
+        alert("Video selected! Now select a Thumbnail image (Cover).");
         
-        alert("Uploading... please wait.");
-        const fileName = `${Date.now()}_${file.name}`;
-        
-        // 1. Upload to Supabase Storage
-        const { data: uploadData, error: uploadErr } = await _supabase.storage
-            .from('videos')
-            .upload(fileName, file);
+        thumbIn.onchange = async (te) => {
+            const thumbFile = te.target.files[0];
+            if(!thumbFile) return alert("Thumbnail is required!");
+            const desc = prompt("Enter video description:");
+const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
+            const timestamp = Date.now();
+            const vName = `vid_${timestamp}`;
+            const tName = `thumb_${timestamp}`;
 
-        if(uploadErr) return alert("Upload failed: " + uploadErr.message);
+            alert("Uploading... Please wait.");
 
-        // 2. Get Public URL
-        const { data: urlData } = _supabase.storage.from('videos').getPublicUrl(fileName);
+            // 1. Upload Video to 'videos' bucket
+            await _supabase.storage.from('videos').upload(vName, videoFile);
+            const vUrl = _supabase.storage.from('videos').getPublicUrl(vName).data.publicUrl;
 
-        // 3. Save to Database
-        await _supabase.from('videos').insert([{
-            url: urlData.publicUrl,
-            description: desc || "No description",
-            owner: currentUserEmail,
-            category: category,
-            likes: 0,
-            views: 0
-        }]);
+            // 2. Upload Thumbnail to 'thumbnails' bucket
+            const { error: tErr } = await _supabase.storage.from('thumbnails').upload(tName, thumbFile);
+            if(tErr) return alert("Thumbnail upload failed. Make sure 'thumbnails' bucket exists!");
+            
+            const tUrl = _supabase.storage.from('thumbnails').getPublicUrl(tName).data.publicUrl;
 
-        alert("Upload Success!");
-        renderFeed();
+            // 3. Save to Database
+            await _supabase.from('videos').insert([{
+                url: vUrl,
+                thumbnail_url: tUrl,
+                description: desc || "No description",
+                owner: currentUserEmail,
+                category: currentCat
+            }]);
+
+            alert("Upload Success!");
+            renderFeed();
+        };
+        thumbIn.click();
     };
-
+    videoIn.click();
+}
     // --- INTERACTIONS ---
     async function incrementView(id) {
         // Calls the SQL function created in Supabase
@@ -125,23 +140,26 @@
     function createCard(v, isVertical) {
         const card = document.createElement('div');
         card.className = 'card';
-        const followBtn = currentUserEmail !== v.owner ? 
+
+        const isOwner = currentUserEmail === v.owner;
+        const followBtn = !isOwner ?
+        
         `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
         card.innerHTML = `
         <div class="card-header">
             <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar"
-            onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
+            style="${isOwner ? 'cursor:pointer' : ''}"
+            onclick="${isOwner ? 'updateProfilePicture()' : ''}">
+
+            
             <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
             ${followBtn}
         </div>
             
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
-                <video 
-                src="${v.url}" 
-                poster="${v.thumbnail_url || ''}" 
-                ${isVertical ? 'loop playsinline' : 'controls'}
-                onclick="togglePlay(this)"
-            ></video>
+            <video data-id="${v.id}" src="${v.url}" poster="${v.thumbnail_url || ''}"
+            ${!isVertical ? 'controls' : 'loop playsinline onclick="togglePlay(this)"' }></video>
+              
                
             </div>
             
@@ -170,7 +188,7 @@
             <div style="padding:0 15px 15px 15px;">
                 <b>@${v.owner?.split('@')[0]}</b> ${v.description}
                 <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:5px;">#${v.category}</div>
-            </div>`;
+            </div>...`;
         document.getElementById('feed').appendChild(card);
         
         // Attach video reference and auto-play/pause logic
@@ -499,17 +517,18 @@
 // Triggered when user clicks the upload button
 async function handleUpload() {
     if(isGuest) return alert("Please login to upload!");
+    const videoIn = document.getElementById('fileIn');
+    videoIn.onchange = async (e) => {
+        
 
     const videoFile = e.target.files[0];
     if(!videoFile) return;
 
     const thumbIn = document.createElement('input');
     thumbIn.type = 'file'; thumbIn.accept = 'image/*';
-    alert("Step 1: Video Selected. Step 2: Now select a Thumbnail image.");
+    alert("Video selected! Now select a Thumbnail image (Cover).");
 
-    const videoIn = document.getElementById('fileIn');
-    videoIn.onchange = async (e) => {
-        
+    
         
         // Create an image input on the fly for the thumbnail
  
@@ -518,11 +537,12 @@ async function handleUpload() {
             if(!thumbFile) return alert("Thumbnail is required!");
             const desc = prompt("Enter video description:");
             const category = prompt("Category (Comedy, Party, Bhakti, Tech,  Sad, Love Others etc):") || 'All';
-            alert("Uploading Cinema... Please wait.");
+            
             const timestamp = Date.now();
-        const vName = `video_${timestamp}`;
+       
+        const vName = `vid_${timestamp}`;
         const tName = `thumb_${timestamp}`;
-
+alert("Uploading... Please wait.");
            
 
             // Upload Video
@@ -530,7 +550,8 @@ async function handleUpload() {
             const vUrl = _supabase.storage.from('videos').getPublicUrl(vName).data.publicUrl;
 
             // Upload Thumbnail
-            await _supabase.storage.from('thumbnails').upload(tName, thumbFile);
+            const { error: tErr } = await _supabase.storage.from('thumbnails').upload(tName, thumbFile);
+            if(tErr) return alert("Thumbnail upload failed. Make sure 'thumbnails' bucket exists!");
             const tUrl = _supabase.storage.from('thumbnails').getPublicUrl(tName).data.publicUrl;
 
             // Save to DB
@@ -557,21 +578,20 @@ async function updateProfilePicture() {
         const file = e.target.files[0];
         if(!file) return;
 
-        const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
-        
-        // 1. Upload to 'avatars' bucket
+        const fileName = `avatar_${Date.now()}`;
         const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
-        if(error) return alert("Upload failed: " + error.message);
-
+        
+        if(error) return alert("Avatar upload failed: " + error.message);
         const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
         
-        // 2. Update profiles table (Using email as the key)
+        // Save to profiles table
         await _supabase.from('profiles').upsert({ 
+            id: firebase.auth().currentUser.uid,
             email: currentUserEmail, 
             avatar_url: urlData.publicUrl 
-        }, { onConflict: 'email' });
+        });
         
-        alert("Profile Picture Updated!");
+        alert("Profile picture updated!");
         location.reload();
     };
     fileIn.click();

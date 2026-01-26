@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Helostar Shorts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #000;
+            --helostar-pink: #d3159d;
+            --glass-white: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; color: #fff; font-family: 'Inter', sans-serif;
+            overflow: hidden; 
+        }
+
+        /* Fixed Header */
+        header { 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            padding: 15px 20px; position: fixed; top: 0; width: 100%; 
+            z-index: 1000; box-sizing: border-box;
+        }
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--helostar-pink); }
+
+        /* Fullscreen Feed - Swipe Enabled */
+        #feed {
+            height: 100vh;
+            width: 100vw;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+        }
+        #feed::-webkit-scrollbar { display: none; }
+
+        .short-card {
+            width: 100vw;
+            height: 100vh; /* Fixed height to prevent resizing */
+            scroll-snap-align: start;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .v-wrap {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover ensures it fills the screen without borders */
+        }
+
+        /* Tap Area Logic */
+        .interaction-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+        }
+
+        /* Visual Feedback Icons */
+        .overlay-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            color: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .heart-pop { color: var(--helostar-pink); }
+        .animate-pop { animation: popEffect 0.7s ease-out forwards; }
+
+        @keyframes popEffect {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        /* Side UI Buttons */
+        .side-bar {
+            position: absolute;
+            right: 15px;
+            bottom: 120px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .action-btn {
+            background: none; border: none; color: white;
+            text-align: center; font-size: 0.8rem; cursor: pointer;
+        }
+        .action-btn i { font-size: 2rem; display: block; margin-bottom: 5px; }
+        .btn-delete { color: #ff4d4d; }
+
+        /* Bottom Info */
+        .video-meta {
+            position: absolute;
+            bottom: 30px;
+            left: 15px;
+            z-index: 20;
+            max-width: 75%;
+        }
+    </style>
+</head>
+<body>
+
+    <header><div class="logo">HELOSTAR</div></header>
+
+    <div id="feed"></div>
+
+    <script>
+        // --- CONFIG ---
+        const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUserEmail = ""; 
+        let lastTap = 0;
+
+        // Sync Auth State
+        firebase.initializeApp({ /* Your Firebase Config */ });
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) currentUserEmail = user.email;
+            loadShorts();
+        });
+
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.play().catch(() => {});
+                } else {
+                    entry.target.pause();
+                    entry.target.currentTime = 0;
+                }
+            });
+        }, { threshold: 0.8 });
+
+        // --- RENDER SHORT ---
+        function createShort(v) {
+            const isOwner = currentUserEmail === v.owner;
+            const card = document.createElement('div');
+            card.className = 'short-card';
+
+            card.innerHTML = `
+                <div class="v-wrap">
+                    <video src="${v.url}" loop playsinline></video>
+                    
+                    <div class="interaction-layer" onclick="handleTap(event, this, '${v.id}')">
+                        <div class="overlay-icon mute-icon"><i class="fas fa-volume-mute"></i></div>
+                        <div class="overlay-icon unmute-icon"><i class="fas fa-volume-up"></i></div>
+                        <div class="overlay-icon heart-pop"><i class="fas fa-heart"></i></div>
+                    </div>
+
+                    <div class="side-bar">
+                        <button class="action-btn" onclick="handleLike('${v.id}')">
+                            <i class="fas fa-heart"></i>
+                            <span>${v.likes || 0}</span>
+                        </button>
+                        ${isOwner ? `
+                            <button class="action-btn btn-delete" onclick="deleteVideo('${v.id}')">
+                                <i class="fas fa-trash"></i>
+                                <span>Delete</span>
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <div class="video-meta">
+                        <h4 style="margin:0">@${v.owner.split('@')[0]}</h4>
+                        <p style="margin:5px 0 0; font-size:0.9rem;">${v.description || ''}</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('feed').appendChild(card);
+            videoObserver.observe(card.querySelector('video'));
+        }
+
+        // --- INTERACTION LOGIC ---
+        function handleTap(e, layer, videoId) {
+            const now = Date.now();
+            const video = layer.parentElement.querySelector('video');
+            const heart = layer.querySelector('.heart-pop');
+            const mIcon = layer.querySelector('.mute-icon');
+            const uIcon = layer.querySelector('.unmute-icon');
+
+            // DOUBLE TAP: Like
+            if (now - lastTap < 300) {
+                heart.classList.add('animate-pop');
+                setTimeout(() => heart.classList.remove('animate-pop'), 700);
+                // Call your existing Like function here
+            } 
+            // SINGLE TAP: Mute / Unmute
+            else {
+                video.muted = !video.muted;
+                const icon = video.muted ? mIcon : uIcon;
+                icon.style.opacity = '1';
+                setTimeout(() => icon.style.opacity = '0', 500);
+            }
+            lastTap = now;
+        }
+
+        async function deleteVideo(id) {
+            if (!confirm("Are you sure you want to delete your video?")) return;
+            const { error } = await _supabase.from('videos').delete().eq('id', id);
+            if (!error) {
+                alert("Deleted successfully");
+                location.reload();
+            }
+        }
+
+        async function loadShorts() {
+            const { data } = await _supabase.from('videos').select('*').order('created_at', {ascending: false});
+            if (data) {
+                document.getElementById('feed').innerHTML = '';
+                data.forEach(v => createShort(v));
+            }
+        }
+    </script>
+</body>
+</html>

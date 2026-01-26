@@ -99,7 +99,6 @@
         feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">Loading...</p>';
         
         let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
-        
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         
         const { data: videos } = await q;
@@ -123,40 +122,37 @@
         });
     }
 
-   async function createCard(v, isVertical) {
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    let followClass = "";
-    let followText = "Follow";
+    function createCard(v, isVertical) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.videoId = v.id;
         
-    if(!isGuest && currentUserEmail !== v.owner) {
-        const { data } = await _supabase
-            .from('follows')
-            .select('*')
-            .eq('follower_email', currentUserEmail)
-            .eq('following_email', v.owner)
-            .single();
+        const isOwner = currentUserEmail === v.owner;
+        const followBtn = !isOwner ? 
+        `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
         
-        if(data) {
-            followClass = "following";
-            followText = "Following";
-        }
-    }
-
-    const followBtn = currentUserEmail !== v.owner ? 
-    `<button class="btn-follow ${followClass}" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">${followText}</button>` : '';
-
+        const deleteBtn = isOwner ? 
+        `<button class="btn-delete" onclick="deleteVideo('${v.id}')" title="Delete video">
+            <i class="fas fa-trash"></i>
+        </button>` : '';
+        
         card.innerHTML = `
         <div class="card-header">
             <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar"
             onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
-            <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
+            <div style="flex:1;">
+                <div style="font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
+                <div style="font-size:0.75rem; color:#888;">
+                    <span class="follower-count" data-creator="${v.owner}">0</span> followers
+                </div>
+            </div>
+            ${deleteBtn}
             ${followBtn}
         </div>
             
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
                 <video 
+                data-id="${v.id}"
                 src="${v.url}" 
                 poster="${v.thumbnail_url || ''}" 
                 ${isVertical ? 'loop playsinline' : 'controls'}
@@ -232,6 +228,18 @@
         // Load initial comments count and check if user liked
         loadCommentsCount(v.id);
         checkUserLike(v.id);
+        
+        // Load follower count and check if following
+        updateFollowerCount(v.owner);
+        if(!isOwner) {
+            checkIfFollowing(v.owner).then(isFollowing => {
+                const followBtn = card.querySelector('.btn-follow');
+                if(followBtn && isFollowing) {
+                    followBtn.classList.add('following');
+                    followBtn.innerText = 'Following';
+                }
+            });
+        }
     }
 
     function pauseAllOtherVideos(currentVideo) {
@@ -387,6 +395,7 @@
             input.disabled = false;
         }
     }
+
     function togglePlay(vid) { vid.paused ? vid.play() : vid.pause(); }
     
     function toggleMute(btn) {
@@ -482,39 +491,101 @@
         }
     }
 
-    async function toggleFollow(targetEmail, btn) {
-    if (isGuest) return alert("Login to follow creators!");
-    if (targetEmail === currentUserEmail) return alert("You cannot follow yourself!");
+    // --- FOLLOW FUNCTIONS ---
+    async function updateFollowerCount(creatorEmail) {
+        const { data } = await _supabase.from('follows')
+            .select('*')
+            .eq('following_email', creatorEmail);
+        
+        const count = data ? data.length : 0;
+        document.querySelectorAll(`.follower-count[data-creator="${creatorEmail}"]`).forEach(span => {
+            span.innerText = count;
+        });
+    }
 
-    const isFollowing = btn.classList.contains('following');
-    
-    if (isFollowing) {
-        // Unfollow Logic
-        const { error } = await _supabase.from('follows')
-            .delete()
+    async function checkIfFollowing(creatorEmail) {
+        if(isGuest) return false;
+        const { data } = await _supabase.from('follows')
+            .select('*')
             .eq('follower_email', currentUserEmail)
-            .eq('following_email', targetEmail);
+            .eq('following_email', creatorEmail);
+        return data && data.length > 0;
+    }
+
+    async function toggleFollow(targetEmail, btn) {
+        if (isGuest) return alert("Login to follow creators!");
+        if (targetEmail === currentUserEmail) return alert("You cannot follow yourself!");
+
+        const isFollowing = btn.classList.contains('following');
         
-        if (!error) {
-            // Update UI for all cards belonging to this creator
-            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
-                b.classList.remove('following');
-                b.innerText = "Follow";
-            });
-        }
-    } else {
-        // Follow Logic
-        const { error } = await _supabase.from('follows')
-            .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
-        
-        if (!error) {
-            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
-                b.classList.add('following');
-                b.innerText = "Following";
-            });
+        if (isFollowing) {
+            // Unfollow Logic
+            const { error } = await _supabase.from('follows')
+                .delete()
+                .eq('follower_email', currentUserEmail)
+                .eq('following_email', targetEmail);
+            
+            if (!error) {
+                btn.classList.remove('following');
+                btn.innerText = "Follow";
+                await updateFollowerCount(targetEmail);
+            }
+        } else {
+            // Follow Logic
+            const { error } = await _supabase.from('follows')
+                .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
+            
+            if (!error) {
+                btn.classList.add('following');
+                btn.innerText = "Following";
+                await updateFollowerCount(targetEmail);
+            }
         }
     }
-}
+
+    // --- DELETE VIDEO FUNCTION ---
+    async function deleteVideo(videoId) {
+        if(!confirm("Are you sure you want to delete this video? This action cannot be undone.")) return;
+        
+        try {
+            // Get video details first
+            const { data: videoData } = await _supabase.from('videos').select('*').eq('id', videoId);
+            if(!videoData || videoData.length === 0) return alert("Video not found!");
+            
+            const video = videoData[0];
+            
+            // Delete from storage
+            const videoFileName = video.url.split('/').pop();
+            const thumbFileName = video.thumbnail_url ? video.thumbnail_url.split('/').pop() : null;
+            
+            await _supabase.storage.from('videos').remove([videoFileName]);
+            if(thumbFileName) {
+                await _supabase.storage.from('thumbnails').remove([thumbFileName]);
+            }
+            
+            // Delete comments associated with video
+            await _supabase.from('comments').delete().eq('video_id', videoId);
+            
+            // Delete likes associated with video
+            await _supabase.from('likes').delete().eq('video_id', videoId);
+            
+            // Delete video from database
+            const { error } = await _supabase.from('videos').delete().eq('id', videoId);
+            
+            if(error) throw error;
+            
+            alert("Video deleted successfully!");
+            
+            // Remove card from UI
+            const card = document.querySelector(`[data-video-id="${videoId}"]`);
+            if(card) card.remove();
+            
+            renderFeed();
+        } catch(err) {
+            console.error('Delete Error:', err);
+            alert('Error deleting video: ' + err.message);
+        }
+    }
 
 // Triggered when user clicks the upload button
 async function handleUpload() {
@@ -562,50 +633,28 @@ async function handleUpload() {
 }
 
 async function updateProfilePicture() {
-    if (isGuest) return alert("Please login to change your profile picture!");
-
-    // Create a hidden file input
     const fileIn = document.createElement('input');
-    fileIn.type = 'file'; 
-    fileIn.accept = 'image/*';
-
+    fileIn.type = 'file'; fileIn.accept = 'image/*';
     fileIn.onchange = async (e) => {
         const file = e.target.files[0];
         if(!file) return;
 
-        // Show a loading state
-        alert("Uploading profile picture...");
-
-        const fileExt = file.name.split('.').pop();
-        const fileName = `avatar_${Date.now()}.${fileExt}`;
-        const filePath = `${currentUserEmail}/${fileName}`;
+        const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
         
-        // 1. Upload to Supabase 'avatars' bucket
-        const { data, error: uploadError } = await _supabase.storage
-            .from('avatars')
-            .upload(filePath, file);
+        // 1. Upload to 'avatars' bucket
+        const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
+        if(error) return alert("Upload failed: " + error.message);
 
-        if(uploadError) return alert("Upload failed: " + uploadError.message);
-
-        // 2. Get the public URL
-        const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(filePath);
-        const publicUrl = urlData.publicUrl;
+        const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
         
-        // 3. Update the 'profiles' table
-        const { error: dbError } = await _supabase.from('profiles').upsert({ 
-    email: currentUserEmail, 
-    avatar_url: publicUrl
-    // REMOVED updated_at: new Date() because it's causing the error
-}, { onConflict: 'email' });
-       
-        if(dbError) {
-            alert("Error saving to profile: " + dbError.message);
-        } else {
-            alert("Profile Picture Updated Successfully!");
-            // Refresh the feed to show the new picture immediately
-            renderFeed(); 
-        }
+        // 2. Update profiles table (Using email as the key)
+        await _supabase.from('profiles').upsert({ 
+            email: currentUserEmail, 
+            avatar_url: urlData.publicUrl 
+        }, { onConflict: 'email' });
+        
+        alert("Profile Picture Updated!");
+        location.reload();
     };
-
     fileIn.click();
 }

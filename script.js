@@ -99,6 +99,7 @@
         feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">Loading...</p>';
         
         let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
+        
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         
         const { data: videos } = await q;
@@ -122,11 +123,30 @@
         });
     }
 
-    function createCard(v, isVertical) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        const followBtn = currentUserEmail !== v.owner ? 
-        `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
+   async function createCard(v, isVertical) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    let followClass = "";
+    let followText = "Follow";
+        
+    if(!isGuest && currentUserEmail !== v.owner) {
+        const { data } = await _supabase
+            .from('follows')
+            .select('*')
+            .eq('follower_email', currentUserEmail)
+            .eq('following_email', v.owner)
+            .single();
+        
+        if(data) {
+            followClass = "following";
+            followText = "Following";
+        }
+    }
+
+    const followBtn = currentUserEmail !== v.owner ? 
+    `<button class="btn-follow ${followClass}" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">${followText}</button>` : '';
+
         card.innerHTML = `
         <div class="card-header">
             <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar"
@@ -542,28 +562,50 @@ async function handleUpload() {
 }
 
 async function updateProfilePicture() {
+    if (isGuest) return alert("Please login to change your profile picture!");
+
+    // Create a hidden file input
     const fileIn = document.createElement('input');
-    fileIn.type = 'file'; fileIn.accept = 'image/*';
+    fileIn.type = 'file'; 
+    fileIn.accept = 'image/*';
+
     fileIn.onchange = async (e) => {
         const file = e.target.files[0];
         if(!file) return;
 
-        const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
-        
-        // 1. Upload to 'avatars' bucket
-        const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
-        if(error) return alert("Upload failed: " + error.message);
+        // Show a loading state
+        alert("Uploading profile picture...");
 
-        const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+        const fileExt = file.name.split('.').pop();
+        const fileName = `avatar_${Date.now()}.${fileExt}`;
+        const filePath = `${currentUserEmail}/${fileName}`;
         
-        // 2. Update profiles table (Using email as the key)
-        await _supabase.from('profiles').upsert({ 
+        // 1. Upload to Supabase 'avatars' bucket
+        const { data, error: uploadError } = await _supabase.storage
+            .from('avatars')
+            .upload(filePath, file);
+
+        if(uploadError) return alert("Upload failed: " + uploadError.message);
+
+        // 2. Get the public URL
+        const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(filePath);
+        const publicUrl = urlData.publicUrl;
+        
+        // 3. Update the 'profiles' table
+        const { error: dbError } = await _supabase.from('profiles').upsert({ 
             email: currentUserEmail, 
-            avatar_url: urlData.publicUrl 
+            avatar_url: publicUrl,
+            updated_at: new Date()
         }, { onConflict: 'email' });
-        
-        alert("Profile Picture Updated!");
-        location.reload();
+
+        if(dbError) {
+            alert("Error saving to profile: " + dbError.message);
+        } else {
+            alert("Profile Picture Updated Successfully!");
+            // Refresh the feed to show the new picture immediately
+            renderFeed(); 
+        }
     };
+
     fileIn.click();
 }

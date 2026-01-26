@@ -593,11 +593,11 @@ async function updateProfilePicture() {
         
         // 3. Update the 'profiles' table
         const { error: dbError } = await _supabase.from('profiles').upsert({ 
-            email: currentUserEmail, 
-            avatar_url: publicUrl,
-            updated_at: new Date()
-        }, { onConflict: 'email' });
-
+    email: currentUserEmail, 
+    avatar_url: publicUrl
+    // REMOVED updated_at: new Date() because it's causing the error
+}, { onConflict: 'email' });
+       
         if(dbError) {
             alert("Error saving to profile: " + dbError.message);
         } else {

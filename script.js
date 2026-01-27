@@ -54,37 +54,69 @@
     // --- UPLOAD LOGIC ---
     document.getElementById('fileIn').onchange = async (e) => {
         if(isGuest) return alert("Please login to upload!");
-        const file = e.target.files[0];
-        if(!file) return;
+        const videoFile = e.target.files[0];
+        if(!videoFile) return;
 
         const desc = prompt("Enter video description:");
         const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
         
-        alert("Uploading... please wait.");
-        const fileName = `${Date.now()}_${file.name}`;
+        // Create hidden thumbnail input
+        const thumbInput = document.createElement('input');
+        thumbInput.type = 'file';
+        thumbInput.accept = 'image/*';
+        thumbInput.style.display = 'none';
         
-        // 1. Upload to Supabase Storage
-        const { data: uploadData, error: uploadErr } = await _supabase.storage
-            .from('videos')
-            .upload(fileName, file);
+        thumbInput.onchange = async (te) => {
+            const thumbFile = te.target.files[0];
+            alert("Uploading... please wait.");
+            
+            const videoFileName = `${Date.now()}_${videoFile.name}`;
+            let thumbnailUrl = null;
+            
+            try {
+                // 1. Upload Video to Supabase Storage
+                const { error: videoErr } = await _supabase.storage
+                    .from('videos')
+                    .upload(videoFileName, videoFile);
 
-        if(uploadErr) return alert("Upload failed: " + uploadErr.message);
+                if(videoErr) return alert("Video upload failed: " + videoErr.message);
 
-        // 2. Get Public URL
-        const { data: urlData } = _supabase.storage.from('videos').getPublicUrl(fileName);
+                // 2. Get Video Public URL
+                const { data: videoUrlData } = _supabase.storage.from('videos').getPublicUrl(videoFileName);
 
-        // 3. Save to Database
-        await _supabase.from('videos').insert([{
-            url: urlData.publicUrl,
-            description: desc || "No description",
-            owner: currentUserEmail,
-            category: category,
-            likes: 0,
-            views: 0
-        }]);
+                // 3. Upload Thumbnail if provided
+                if(thumbFile) {
+                    const thumbFileName = `${Date.now()}_thumb_${thumbFile.name}`;
+                    const { error: thumbErr } = await _supabase.storage
+                        .from('thumbnails')
+                        .upload(thumbFileName, thumbFile);
 
-        alert("Upload Success!");
-        renderFeed();
+                    if(!thumbErr) {
+                        const { data: thumbUrlData } = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
+                        thumbnailUrl = thumbUrlData.publicUrl;
+                    }
+                }
+
+                // 4. Save to Database
+                await _supabase.from('videos').insert([{
+                    url: videoUrlData.publicUrl,
+                    thumbnail_url: thumbnailUrl,
+                    description: desc || "No description",
+                    owner: currentUserEmail,
+                    category: category,
+                    likes: 0,
+                    views: 0
+                }]);
+
+                alert("Video uploaded successfully!");
+                renderFeed();
+            } catch(err) {
+                console.error('Upload error:', err);
+                alert('Upload failed: ' + err.message);
+            }
+        };
+        
+        thumbInput.click();
     };
 
     // --- INTERACTIONS ---
@@ -98,7 +130,7 @@
         const feed = document.getElementById('feed');
         feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">Loading...</p>';
         
-        let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
+        let q = _supabase.from('videos').select('*, profiles(avatar_url)').order('created_at', {ascending: false});
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         
         const { data: videos } = await q;
@@ -125,34 +157,22 @@
     function createCard(v, isVertical) {
         const card = document.createElement('div');
         card.className = 'card';
-        card.dataset.videoId = v.id;
-        
-        const isOwner = currentUserEmail === v.owner;
-        const followBtn = !isOwner ? 
+        const followBtn = currentUserEmail !== v.owner ? 
         `<button class="btn-follow" data-creator="${v.owner}" onclick="toggleFollow('${v.owner}', this)">Follow</button>` : '';
-        
-        const deleteBtn = isOwner ? 
-        `<button class="btn-delete" onclick="deleteVideo('${v.id}')" title="Delete video">
-            <i class="fas fa-trash"></i>
-        </button>` : '';
-        
+        const deleteBtn = currentUserEmail === v.owner ? 
+        `<button class="btn-delete" onclick="deleteVideo('${v.id}', this)"><i class="fas fa-trash"></i></button>` : '';
+        const profileImg = Array.isArray(v.profiles) ? v.profiles[0]?.avatar_url : v.profiles?.avatar_url;
         card.innerHTML = `
         <div class="card-header">
-            <img src="${v.profiles?.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar"
-            onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
-            <div style="flex:1;">
-                <div style="font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
-                <div style="font-size:0.75rem; color:#888;">
-                    <span class="follower-count" data-creator="${v.owner}">0</span> followers
-                </div>
-            </div>
-            ${deleteBtn}
+            <img src="${profileImg || 'https://via.placeholder.com/150'}" class="user-avatar"
+            onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}" style="cursor: ${currentUserEmail === v.owner ? 'pointer' : 'default'}">
+            <div style="flex:1; font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
             ${followBtn}
+            ${deleteBtn}
         </div>
             
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
                 <video 
-                data-id="${v.id}"
                 src="${v.url}" 
                 poster="${v.thumbnail_url || ''}" 
                 ${isVertical ? 'loop playsinline' : 'controls'}
@@ -228,18 +248,6 @@
         // Load initial comments count and check if user liked
         loadCommentsCount(v.id);
         checkUserLike(v.id);
-        
-        // Load follower count and check if following
-        updateFollowerCount(v.owner);
-        if(!isOwner) {
-            checkIfFollowing(v.owner).then(isFollowing => {
-                const followBtn = card.querySelector('.btn-follow');
-                if(followBtn && isFollowing) {
-                    followBtn.classList.add('following');
-                    followBtn.innerText = 'Following';
-                }
-            });
-        }
     }
 
     function pauseAllOtherVideos(currentVideo) {
@@ -395,7 +403,6 @@
             input.disabled = false;
         }
     }
-
     function togglePlay(vid) { vid.paused ? vid.play() : vid.pause(); }
     
     function toggleMute(btn) {
@@ -491,33 +498,14 @@
         }
     }
 
-    // --- FOLLOW FUNCTIONS ---
-    async function updateFollowerCount(creatorEmail) {
-        const { data } = await _supabase.from('follows')
-            .select('*')
-            .eq('following_email', creatorEmail);
-        
-        const count = data ? data.length : 0;
-        document.querySelectorAll(`.follower-count[data-creator="${creatorEmail}"]`).forEach(span => {
-            span.innerText = count;
-        });
-    }
-
-    async function checkIfFollowing(creatorEmail) {
-        if(isGuest) return false;
-        const { data } = await _supabase.from('follows')
-            .select('*')
-            .eq('follower_email', currentUserEmail)
-            .eq('following_email', creatorEmail);
-        return data && data.length > 0;
-    }
-
     async function toggleFollow(targetEmail, btn) {
-        if (isGuest) return alert("Login to follow creators!");
-        if (targetEmail === currentUserEmail) return alert("You cannot follow yourself!");
+    if (isGuest) return alert("Login to follow creators!");
+    if (targetEmail === currentUserEmail) return alert("You cannot follow yourself!");
 
-        const isFollowing = btn.classList.contains('following');
-        
+    const isFollowing = btn.classList.contains('following');
+    btn.disabled = true;
+    
+    try {
         if (isFollowing) {
             // Unfollow Logic
             const { error } = await _supabase.from('follows')
@@ -525,67 +513,53 @@
                 .eq('follower_email', currentUserEmail)
                 .eq('following_email', targetEmail);
             
-            if (!error) {
-                btn.classList.remove('following');
-                btn.innerText = "Follow";
-                await updateFollowerCount(targetEmail);
+            if (error) {
+                console.error('Unfollow error:', error);
+                btn.disabled = false;
+                return alert('Error unfollowing: ' + error.message);
             }
+            
+            // Update UI for all cards belonging to this creator
+            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                b.classList.remove('following');
+                b.innerText = "Follow";
+                b.disabled = false;
+            });
         } else {
+            // Check if already following to prevent duplicates
+            const { data: existing } = await _supabase.from('follows')
+                .select('*')
+                .eq('follower_email', currentUserEmail)
+                .eq('following_email', targetEmail);
+            
+            if (existing && existing.length > 0) {
+                btn.disabled = false;
+                return alert('You are already following this creator!');
+            }
+            
             // Follow Logic
             const { error } = await _supabase.from('follows')
                 .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
             
-            if (!error) {
-                btn.classList.add('following');
-                btn.innerText = "Following";
-                await updateFollowerCount(targetEmail);
-            }
-        }
-    }
-
-    // --- DELETE VIDEO FUNCTION ---
-    async function deleteVideo(videoId) {
-        if(!confirm("Are you sure you want to delete this video? This action cannot be undone.")) return;
-        
-        try {
-            // Get video details first
-            const { data: videoData } = await _supabase.from('videos').select('*').eq('id', videoId);
-            if(!videoData || videoData.length === 0) return alert("Video not found!");
-            
-            const video = videoData[0];
-            
-            // Delete from storage
-            const videoFileName = video.url.split('/').pop();
-            const thumbFileName = video.thumbnail_url ? video.thumbnail_url.split('/').pop() : null;
-            
-            await _supabase.storage.from('videos').remove([videoFileName]);
-            if(thumbFileName) {
-                await _supabase.storage.from('thumbnails').remove([thumbFileName]);
+            if (error) {
+                console.error('Follow error:', error);
+                btn.disabled = false;
+                return alert('Error following: ' + error.message);
             }
             
-            // Delete comments associated with video
-            await _supabase.from('comments').delete().eq('video_id', videoId);
-            
-            // Delete likes associated with video
-            await _supabase.from('likes').delete().eq('video_id', videoId);
-            
-            // Delete video from database
-            const { error } = await _supabase.from('videos').delete().eq('id', videoId);
-            
-            if(error) throw error;
-            
-            alert("Video deleted successfully!");
-            
-            // Remove card from UI
-            const card = document.querySelector(`[data-video-id="${videoId}"]`);
-            if(card) card.remove();
-            
-            renderFeed();
-        } catch(err) {
-            console.error('Delete Error:', err);
-            alert('Error deleting video: ' + err.message);
+            // Update UI for all cards belonging to this creator
+            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                b.classList.add('following');
+                b.innerText = "Following";
+                b.disabled = false;
+            });
         }
+    } catch(err) {
+        console.error('Follow error:', err);
+        btn.disabled = false;
+        alert('Error: ' + (err.message || 'Something went wrong'));
     }
+}
 
 // Triggered when user clicks the upload button
 async function handleUpload() {
@@ -639,22 +613,73 @@ async function updateProfilePicture() {
         const file = e.target.files[0];
         if(!file) return;
 
-        const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
-        
-        // 1. Upload to 'avatars' bucket
-        const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
-        if(error) return alert("Upload failed: " + error.message);
+        try {
+            const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
+            
+            // 1. Upload to 'avatars' bucket
+            const { error: uploadError } = await _supabase.storage.from('avatars').upload(fileName, file);
+            if(uploadError) throw uploadError;
 
-        const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
-        
-        // 2. Update profiles table (Using email as the key)
-        await _supabase.from('profiles').upsert({ 
-            email: currentUserEmail, 
-            avatar_url: urlData.publicUrl 
-        }, { onConflict: 'email' });
-        
-        alert("Profile Picture Updated!");
-        location.reload();
+            const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+            
+            // 2. Update profiles table (Using email as the key)
+            const { error: updateError } = await _supabase.from('profiles').upsert({ 
+                email: currentUserEmail, 
+                avatar_url: urlData.publicUrl 
+            }, { onConflict: 'email' });
+            
+            if (updateError) throw updateError;
+            
+            // Update all avatar images on page immediately
+            const avatarImages = document.querySelectorAll('.user-avatar');
+            avatarImages.forEach(img => {
+                if (img.closest('.card-header')) {
+                    const userName = img.closest('.card-header').querySelector('div').textContent;
+                    if (userName.includes(currentUserEmail.split('@')[0])) {
+                        img.src = urlData.publicUrl;
+                    }
+                }
+            });
+            
+            alert("Profile Picture Updated!");
+        } catch(err) {
+            console.error('Profile update error:', err);
+            alert('Error updating profile: ' + err.message);
+        }
     };
     fileIn.click();
+}
+
+async function deleteVideo(videoId, btn) {
+    if (!confirm("Are you sure you want to delete this video?")) return;
+    
+    btn.disabled = true;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        // Delete from database
+        const { error } = await _supabase.from('videos').delete().eq('id', videoId);
+        
+        if (error) throw error;
+        
+        // Remove the card from UI with animation
+        const card = btn.closest('.card');
+        if (card) {
+            card.style.transition = 'opacity 0.3s ease, max-height 0.3s ease';
+            card.style.opacity = '0';
+            card.style.maxHeight = '0';
+            card.style.overflow = 'hidden';
+            setTimeout(() => {
+                if (card.parentNode) card.parentNode.removeChild(card);
+            }, 300);
+        }
+        
+        alert("Video deleted successfully!");
+    } catch(err) {
+        console.error('Delete error:', err);
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+        alert('Error deleting video: ' + err.message);
+    }
 }

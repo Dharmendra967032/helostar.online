@@ -295,82 +295,79 @@
         
         // Instagram-style shorts experience
         if(isVertical) {
-            let isFullscreen = false;
-            let touchStartY = 0;
-            let touchStartX = 0;
-            let isSwiping = false;
-            
-            // Create invisible tap zones (Instagram reels style)
-            const tapOverlay = document.createElement('div');
-            tapOverlay.className = 'tap-overlay-reels';
-            tapOverlay.innerHTML = `
-                <div class="tap-zone tap-left" onclick="reelsTapHandler(event, 'left', '${v.id}')"></div>
-                <div class="tap-zone tap-center" onclick="reelsTapHandler(event, 'center', '${v.id}')"></div>
-                <div class="tap-zone tap-right" onclick="reelsTapHandler(event, 'right', '${v.id}')"></div>
-            `;
-            vWrap.appendChild(tapOverlay);
-            
-            // Store references for fullscreen control
-            vWrap.dataset.videoId = v.id;
-            vWrap.dataset.isMuted = 'false';
-            
-            // Swipe detection for reels
-            vWrap.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-                touchStartX = e.touches[0].clientX;
-                isSwiping = false;
+            // Add tap listener to v-wrap directly
+            vWrap.addEventListener('touchend', (e) => {
+                const touchX = e.changedTouches[0].clientX;
+                const touchY = e.changedTouches[0].clientY;
+                const rect = vWrap.getBoundingClientRect();
+                const relativeTouchX = touchX - rect.left;
+                const relativeHeight = rect.height;
+                const relativeWidth = rect.width;
+                
+                // Determine which third was tapped
+                if (relativeTouchX < relativeWidth / 3) {
+                    // LEFT - mute/unmute
+                    videoElem.muted = !videoElem.muted;
+                    showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
+                } else if (relativeTouchX > (relativeWidth * 2 / 3)) {
+                    // RIGHT - like
+                    const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
+                    if(likeBtn) {
+                        likeBtn.click();
+                        showReelsFeedback('like');
+                    }
+                } else {
+                    // CENTER - fullscreen
+                    const isFs = vWrap.classList.contains('reels-fs');
+                    if(!isFs) {
+                        enterReelsFullscreen(card, vWrap, videoElem);
+                    } else {
+                        exitReelsFullscreen(card, vWrap, videoElem);
+                    }
+                }
             }, false);
             
-            vWrap.addEventListener('touchmove', (e) => {
-                const currentY = e.touches[0].clientY;
-                const diff = Math.abs(touchStartY - currentY);
-                if(diff > 10) isSwiping = true;
+            // Swipe detection
+            let touchStartY = 0;
+            
+            vWrap.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
             }, false);
             
             vWrap.addEventListener('touchend', (e) => {
                 const touchEndY = e.changedTouches[0].clientY;
                 const diff = touchStartY - touchEndY;
                 
-                // Swipe detection works in both normal and fullscreen modes
-                if(Math.abs(diff) > 50 && isSwiping) {
-                    if(diff > 50) {
-                        // Swiped up - go to next short
-                        const nextCard = card.nextElementSibling;
-                        let nextVid = nextCard;
-                        while(nextVid && !nextVid.classList.contains('card')) {
-                            nextVid = nextVid.nextElementSibling;
+                if(Math.abs(diff) > 100) {
+                    if(diff > 100) {
+                        // SWIPE UP - next
+                        let nextCard = card.nextElementSibling;
+                        while(nextCard && !nextCard.classList.contains('card')) {
+                            nextCard = nextCard.nextElementSibling;
                         }
-                        if(nextVid && nextVid.classList.contains('card')) {
-                            // Exit fullscreen if in fullscreen
-                            if(isFullscreen) {
-                                exitReelsFullscreen(card, vWrap, videoElem);
-                                isFullscreen = false;
-                            }
-                            nextVid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            const nextVideo = nextVid.querySelector('video');
-                            if(nextVideo) nextVideo.play();
+                        if(nextCard) {
+                            nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            setTimeout(() => {
+                                const vid = nextCard.querySelector('video');
+                                if(vid) vid.play().catch(() => {});
+                            }, 300);
                         }
-                    } else if(diff < -50) {
-                        // Swiped down - go to previous short
-                        const prevCard = card.previousElementSibling;
-                        if(prevCard && prevCard.classList.contains('card')) {
-                            // Exit fullscreen if in fullscreen
-                            if(isFullscreen) {
-                                exitReelsFullscreen(card, vWrap, videoElem);
-                                isFullscreen = false;
-                            }
+                    } else if(diff < -100) {
+                        // SWIPE DOWN - previous
+                        let prevCard = card.previousElementSibling;
+                        while(prevCard && !prevCard.classList.contains('card')) {
+                            prevCard = prevCard.previousElementSibling;
+                        }
+                        if(prevCard) {
                             prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            const prevVideo = prevCard.querySelector('video');
-                            if(prevVideo) prevVideo.play();
+                            setTimeout(() => {
+                                const vid = prevCard.querySelector('video');
+                                if(vid) vid.play().catch(() => {});
+                            }, 300);
                         }
                     }
                 }
-                isSwiping = false;
             }, false);
-            
-            // Store fullscreen state
-            card.dataset.reelsFullscreen = 'false';
-            card.dataset.reelsVWrap = '';
         }
         
         // Load initial comments count and check if user liked
@@ -933,118 +930,120 @@ async function editDescription(videoId, btn) {
     }
 }
 
-// Shorts feature functions
-function reelsTapHandler(event, zone, videoId) {
-    event.stopPropagation();
-    const card = event.closest('.card');
-    const vWrap = card.querySelector('.v-wrap');
-    const video = vWrap.querySelector('video');
+// Shorts feature functions - Instagram style
+function showReelsFeedback(type) {
+    const feedback = document.createElement('div');
+    feedback.className = 'reels-feedback';
     
-    if(!video) return;
-    
-    if(zone === 'left') {
-        // Left tap - mute/unmute
-        video.muted = !video.muted;
-        
-        // Visual feedback
-        const feedback = document.createElement('div');
-        feedback.style.cssText = 'position:fixed; left:50px; top:50%; transform:translateY(-50%); color:white; font-size:2.5rem; z-index:10000; pointer-events:none; text-shadow:0 2px 10px rgba(0,0,0,0.8);';
-        feedback.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => feedback.remove(), 800);
-    } else if(zone === 'center') {
-        // Center tap - fullscreen
-        const isCurrentlyFullscreen = card.dataset.reelsFullscreen === 'true';
-        
-        if(!isCurrentlyFullscreen) {
-            // Enter fullscreen
-            enterReelsFullscreen(card, vWrap, video);
-            card.dataset.reelsFullscreen = 'true';
-        } else {
-            // Exit fullscreen
-            exitReelsFullscreen(card, vWrap, video);
-            card.dataset.reelsFullscreen = 'false';
-        }
-    } else if(zone === 'right') {
-        // Right tap - like video
-        const likeBtn = card.querySelector(`.like-btn[data-id="${videoId}"]`);
-        if(likeBtn) {
-            likeBtn.click();
-            
-            // Visual feedback for like
-            const feedback = document.createElement('div');
-            feedback.style.cssText = 'position:fixed; right:50px; top:50%; transform:translateY(-50%); color:#ff1493; font-size:3rem; z-index:10000; pointer-events:none; opacity:1; transition:all 0.6s ease-out;';
-            feedback.innerHTML = '<i class="fas fa-heart"></i>';
-            document.body.appendChild(feedback);
-            
-            setTimeout(() => {
-                feedback.style.opacity = '0';
-                feedback.style.transform = 'translateY(-150px)';
-            }, 100);
-            
-            setTimeout(() => feedback.remove(), 700);
-        }
+    if(type === 'mute') {
+        feedback.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        feedback.style.left = '30px';
+    } else if(type === 'unmute') {
+        feedback.innerHTML = '<i class="fas fa-volume-up"></i>';
+        feedback.style.left = '30px';
+    } else if(type === 'like') {
+        feedback.innerHTML = '<i class="fas fa-heart"></i>';
+        feedback.style.right = '30px';
+        feedback.style.left = 'auto';
     }
+    
+    document.body.appendChild(feedback);
+    setTimeout(() => feedback.remove(), 600);
 }
 
 function enterReelsFullscreen(card, vWrap, video) {
-    // Hide card header and action row
+    // Add fullscreen class
+    vWrap.classList.add('reels-fs');
+    card.classList.add('reels-fs-card');
+    
+    // Hide UI elements
     const header = card.querySelector('.card-header');
     const actionRow = card.querySelector('.action-row');
-    const descDiv = card.querySelector('div:last-child');
+    const desc = card.querySelector('div:last-child');
     
     if(header) header.style.display = 'none';
     if(actionRow) actionRow.style.display = 'none';
-    if(descDiv && descDiv.innerHTML.includes('@')) descDiv.style.display = 'none';
+    if(desc && desc.textContent.includes('@')) desc.style.display = 'none';
     
-    // Fullscreen the video
-    vWrap.classList.add('reels-fullscreen');
+    // Hide page UI
+    const pageHeader = document.querySelector('header');
+    const navTabs = document.querySelector('.nav-tabs');
+    if(pageHeader) pageHeader.style.display = 'none';
+    if(navTabs) navTabs.style.display = 'none';
+    
+    // Hide other cards
+    document.querySelectorAll('.card').forEach(c => {
+        if(c !== card) c.style.display = 'none';
+    });
+    
+    // Fullscreen styles
     vWrap.style.position = 'fixed';
-    vWrap.style.inset = '0';
+    vWrap.style.top = '0';
+    vWrap.style.left = '0';
     vWrap.style.width = '100vw';
     vWrap.style.height = '100vh';
-    vWrap.style.zIndex = '9998';
-    vWrap.style.aspectRatio = 'auto';
+    vWrap.style.zIndex = '9999';
+    vWrap.style.margin = '0';
+    vWrap.style.padding = '0';
     
-    // Make video fill the screen
-    video.style.width = '100vw';
-    video.style.height = '100vh';
+    // Video fill
+    video.style.width = '100%';
+    video.style.height = '100%';
     video.style.objectFit = 'cover';
     
-    // Hide overflow and prevent scroll
+    // Prevent scroll
     document.body.style.overflow = 'hidden';
     
-    // Auto-play video
-    if(video.paused) video.play();
+    // Play
+    video.play().catch(() => {});
 }
 
 function exitReelsFullscreen(card, vWrap, video) {
-    // Show card header and action row
+    // Remove fullscreen class
+    vWrap.classList.remove('reels-fs');
+    card.classList.remove('reels-fs-card');
+    
+    // Show UI elements
     const header = card.querySelector('.card-header');
     const actionRow = card.querySelector('.action-row');
-    const descDiv = card.querySelector('div:last-child');
+    const desc = card.querySelector('div:last-child');
     
     if(header) header.style.display = 'flex';
     if(actionRow) actionRow.style.display = 'flex';
-    if(descDiv && descDiv.innerHTML.includes('@')) descDiv.style.display = 'block';
+    if(desc && desc.textContent.includes('@')) desc.style.display = 'block';
     
-    // Exit fullscreen
-    vWrap.classList.remove('reels-fullscreen');
+    // Show page UI
+    const pageHeader = document.querySelector('header');
+    const navTabs = document.querySelector('.nav-tabs');
+    if(pageHeader) pageHeader.style.display = 'block';
+    if(navTabs) navTabs.style.display = 'flex';
+    
+    // Show all cards
+    document.querySelectorAll('.card').forEach(c => {
+        c.style.display = '';
+    });
+    
+    // Reset styles
     vWrap.style.position = '';
-    vWrap.style.inset = '';
+    vWrap.style.top = '';
+    vWrap.style.left = '';
     vWrap.style.width = '';
     vWrap.style.height = '';
     vWrap.style.zIndex = '';
-    vWrap.style.aspectRatio = '';
+    vWrap.style.margin = '';
+    vWrap.style.padding = '';
     
     // Reset video
-    video.style.width = '100%';
-    video.style.height = '100%';
-    video.style.objectFit = 'contain';
+    video.style.width = '';
+    video.style.height = '';
+    video.style.objectFit = '';
     
     // Restore scroll
     document.body.style.overflow = '';
+}
+
+function reelsTapHandler(event, zone, videoId) {
+    // This function is no longer used but kept for compatibility
 }
 
 function toggleVideoMute(video) {

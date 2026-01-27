@@ -120,52 +120,50 @@
     font-size: 0.8rem; cursor: pointer; text-decoration: underline; 
 }
 
-/* Instagram-style Reels for Shorts */
-.tap-overlay-reels {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 50;
-    display: flex;
-    pointer-events: auto;
+/* Instagram Reels Style Shorts */
+.reels-feedback {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 3rem;
+    z-index: 10000;
+    pointer-events: none;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    animation: reelsFade 0.6s ease-out forwards;
 }
 
-.tap-zone {
-    flex: 1;
-    cursor: pointer;
-    position: relative;
-    height: 100%;
+@keyframes reelsFade {
+    0% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-100px) scale(0.8);
+    }
 }
 
-.tap-left {
-    background: rgba(0, 0, 0, 0);
-}
-
-.tap-center {
-    background: rgba(0, 0, 0, 0);
-}
-
-.tap-right {
-    background: rgba(0, 0, 0, 0);
-}
-
-.tap-zone:active {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-/* Reels fullscreen mode */
-.reels-fullscreen {
+/* Fullscreen mode for reels */
+.reels-fs {
     position: fixed !important;
-    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 9998 !important;
+    z-index: 9999 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    aspect-ratio: auto !important;
+    transition: all 0.3s ease !important;
 }
 
-.reels-fullscreen video {
-    width: 100vw !important;
-    height: 100vh !important;
+.reels-fs video {
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover !important;
+}
+
+.reels-fs-card {
+    position: static !important;
 }

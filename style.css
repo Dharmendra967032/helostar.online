@@ -120,47 +120,52 @@
     font-size: 0.8rem; cursor: pointer; text-decoration: underline; 
 }
 
-/* Shorts enhanced features */
-.short-overlay {
+/* Instagram-style Reels for Shorts */
+.tap-overlay-reels {
     position: absolute;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
-    pointer-events: none;
-    z-index: 10;
-}
-
-.short-controls {
-    position: absolute;
-    bottom: 100px;
-    right: 15px;
+    z-index: 50;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
     pointer-events: auto;
-    z-index: 20;
 }
 
-.short-mute-btn,
-.short-comment-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.6);
-    border: 2px solid var(--helostar-pink);
-    color: white;
+.tap-zone {
+    flex: 1;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    position: relative;
+    height: 100%;
 }
 
-.short-mute-btn:active,
-.short-comment-btn:active {
-    background: rgba(211, 21, 157, 0.6);
-    transform: scale(0.9);
+.tap-left {
+    background: rgba(0, 0, 0, 0);
+}
+
+.tap-center {
+    background: rgba(0, 0, 0, 0);
+}
+
+.tap-right {
+    background: rgba(0, 0, 0, 0);
+}
+
+.tap-zone:active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Reels fullscreen mode */
+.reels-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9998 !important;
+}
+
+.reels-fullscreen video {
+    width: 100vw !important;
+    height: 100vh !important;
+    object-fit: cover !important;
 }

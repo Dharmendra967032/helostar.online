@@ -293,21 +293,31 @@
         videoElem.onended = () => playNextVideo(card);
         videoObserver.observe(videoElem);
         
-        // Add double-click fullscreen for shorts
+        // Instagram-style shorts experience
         if(isVertical) {
-            // Tap to toggle play/pause
-            vWrap.ontap = vWrap.onclick = function(e) {
-                if(e && e.target === videoElem) {
-                    videoElem.paused ? videoElem.play() : videoElem.pause();
-                }
-            };
-            
-            // Add swipe detection for shorts
+            let isFullscreen = false;
             let touchStartY = 0;
+            let touchStartX = 0;
             let isSwiping = false;
             
+            // Create invisible tap zones (Instagram reels style)
+            const tapOverlay = document.createElement('div');
+            tapOverlay.className = 'tap-overlay-reels';
+            tapOverlay.innerHTML = `
+                <div class="tap-zone tap-left" onclick="reelsTapHandler(event, 'left', '${v.id}')"></div>
+                <div class="tap-zone tap-center" onclick="reelsTapHandler(event, 'center', '${v.id}')"></div>
+                <div class="tap-zone tap-right" onclick="reelsTapHandler(event, 'right', '${v.id}')"></div>
+            `;
+            vWrap.appendChild(tapOverlay);
+            
+            // Store references for fullscreen control
+            vWrap.dataset.videoId = v.id;
+            vWrap.dataset.isMuted = 'false';
+            
+            // Swipe detection for reels
             vWrap.addEventListener('touchstart', (e) => {
                 touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
                 isSwiping = false;
             }, false);
             
@@ -318,43 +328,49 @@
             }, false);
             
             vWrap.addEventListener('touchend', (e) => {
-                if(!isSwiping) return;
-                
                 const touchEndY = e.changedTouches[0].clientY;
                 const diff = touchStartY - touchEndY;
                 
-                if(diff > 50) {
-                    // Swiped up - go to next video (only in shorts mode)
-                    const nextCard = card.nextElementSibling;
-                    while(nextCard && !nextCard.classList.contains('card')) {
-                        nextCard = nextCard.nextElementSibling;
-                    }
-                    if(nextCard && nextCard.classList.contains('card')) {
-                        nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        const nextVideo = nextCard.querySelector('video');
-                        if(nextVideo) nextVideo.play();
-                    }
-                } else if(diff < -50) {
-                    // Swiped down - go to previous video
-                    const prevCard = card.previousElementSibling;
-                    if(prevCard && prevCard.classList.contains('card')) {
-                        prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        const prevVideo = prevCard.querySelector('video');
-                        if(prevVideo) prevVideo.play();
+                // Swipe detection works in both normal and fullscreen modes
+                if(Math.abs(diff) > 50 && isSwiping) {
+                    if(diff > 50) {
+                        // Swiped up - go to next short
+                        const nextCard = card.nextElementSibling;
+                        let nextVid = nextCard;
+                        while(nextVid && !nextVid.classList.contains('card')) {
+                            nextVid = nextVid.nextElementSibling;
+                        }
+                        if(nextVid && nextVid.classList.contains('card')) {
+                            // Exit fullscreen if in fullscreen
+                            if(isFullscreen) {
+                                exitReelsFullscreen(card, vWrap, videoElem);
+                                isFullscreen = false;
+                            }
+                            nextVid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            const nextVideo = nextVid.querySelector('video');
+                            if(nextVideo) nextVideo.play();
+                        }
+                    } else if(diff < -50) {
+                        // Swiped down - go to previous short
+                        const prevCard = card.previousElementSibling;
+                        if(prevCard && prevCard.classList.contains('card')) {
+                            // Exit fullscreen if in fullscreen
+                            if(isFullscreen) {
+                                exitReelsFullscreen(card, vWrap, videoElem);
+                                isFullscreen = false;
+                            }
+                            prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            const prevVideo = prevCard.querySelector('video');
+                            if(prevVideo) prevVideo.play();
+                        }
                     }
                 }
+                isSwiping = false;
             }, false);
             
-            // Add tap zones for shorts interactions
-            const shortOverlay = document.createElement('div');
-            shortOverlay.className = 'short-overlay';
-            shortOverlay.innerHTML = `
-                <div class="short-controls" onclick="event.stopPropagation()">
-                    <button class="short-mute-btn" onclick="toggleVideoMute(event.closest('.v-wrap').querySelector('video'))"><i class="fas fa-volume-off"></i></button>
-                    <button class="short-comment-btn" onclick="toggleFullscreenComments(event.closest('.card'), '${v.id}')"><i class="fas fa-comment"></i></button>
-                </div>
-            `;
-            vWrap.appendChild(shortOverlay);
+            // Store fullscreen state
+            card.dataset.reelsFullscreen = 'false';
+            card.dataset.reelsVWrap = '';
         }
         
         // Load initial comments count and check if user liked
@@ -918,6 +934,119 @@ async function editDescription(videoId, btn) {
 }
 
 // Shorts feature functions
+function reelsTapHandler(event, zone, videoId) {
+    event.stopPropagation();
+    const card = event.closest('.card');
+    const vWrap = card.querySelector('.v-wrap');
+    const video = vWrap.querySelector('video');
+    
+    if(!video) return;
+    
+    if(zone === 'left') {
+        // Left tap - mute/unmute
+        video.muted = !video.muted;
+        
+        // Visual feedback
+        const feedback = document.createElement('div');
+        feedback.style.cssText = 'position:fixed; left:50px; top:50%; transform:translateY(-50%); color:white; font-size:2.5rem; z-index:10000; pointer-events:none; text-shadow:0 2px 10px rgba(0,0,0,0.8);';
+        feedback.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        document.body.appendChild(feedback);
+        
+        setTimeout(() => feedback.remove(), 800);
+    } else if(zone === 'center') {
+        // Center tap - fullscreen
+        const isCurrentlyFullscreen = card.dataset.reelsFullscreen === 'true';
+        
+        if(!isCurrentlyFullscreen) {
+            // Enter fullscreen
+            enterReelsFullscreen(card, vWrap, video);
+            card.dataset.reelsFullscreen = 'true';
+        } else {
+            // Exit fullscreen
+            exitReelsFullscreen(card, vWrap, video);
+            card.dataset.reelsFullscreen = 'false';
+        }
+    } else if(zone === 'right') {
+        // Right tap - like video
+        const likeBtn = card.querySelector(`.like-btn[data-id="${videoId}"]`);
+        if(likeBtn) {
+            likeBtn.click();
+            
+            // Visual feedback for like
+            const feedback = document.createElement('div');
+            feedback.style.cssText = 'position:fixed; right:50px; top:50%; transform:translateY(-50%); color:#ff1493; font-size:3rem; z-index:10000; pointer-events:none; opacity:1; transition:all 0.6s ease-out;';
+            feedback.innerHTML = '<i class="fas fa-heart"></i>';
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                feedback.style.transform = 'translateY(-150px)';
+            }, 100);
+            
+            setTimeout(() => feedback.remove(), 700);
+        }
+    }
+}
+
+function enterReelsFullscreen(card, vWrap, video) {
+    // Hide card header and action row
+    const header = card.querySelector('.card-header');
+    const actionRow = card.querySelector('.action-row');
+    const descDiv = card.querySelector('div:last-child');
+    
+    if(header) header.style.display = 'none';
+    if(actionRow) actionRow.style.display = 'none';
+    if(descDiv && descDiv.innerHTML.includes('@')) descDiv.style.display = 'none';
+    
+    // Fullscreen the video
+    vWrap.classList.add('reels-fullscreen');
+    vWrap.style.position = 'fixed';
+    vWrap.style.inset = '0';
+    vWrap.style.width = '100vw';
+    vWrap.style.height = '100vh';
+    vWrap.style.zIndex = '9998';
+    vWrap.style.aspectRatio = 'auto';
+    
+    // Make video fill the screen
+    video.style.width = '100vw';
+    video.style.height = '100vh';
+    video.style.objectFit = 'cover';
+    
+    // Hide overflow and prevent scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Auto-play video
+    if(video.paused) video.play();
+}
+
+function exitReelsFullscreen(card, vWrap, video) {
+    // Show card header and action row
+    const header = card.querySelector('.card-header');
+    const actionRow = card.querySelector('.action-row');
+    const descDiv = card.querySelector('div:last-child');
+    
+    if(header) header.style.display = 'flex';
+    if(actionRow) actionRow.style.display = 'flex';
+    if(descDiv && descDiv.innerHTML.includes('@')) descDiv.style.display = 'block';
+    
+    // Exit fullscreen
+    vWrap.classList.remove('reels-fullscreen');
+    vWrap.style.position = '';
+    vWrap.style.inset = '';
+    vWrap.style.width = '';
+    vWrap.style.height = '';
+    vWrap.style.zIndex = '';
+    vWrap.style.aspectRatio = '';
+    
+    // Reset video
+    video.style.width = '100%';
+    video.style.height = '100%';
+    video.style.objectFit = 'contain';
+    
+    // Restore scroll
+    document.body.style.overflow = '';
+}
+
 function toggleVideoMute(video) {
     if(!video) return;
     video.muted = !video.muted;

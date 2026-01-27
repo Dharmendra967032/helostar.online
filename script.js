@@ -73,46 +73,41 @@
             const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
             
             // Ask for thumbnail
-            alert("Video selected! Now please select a thumbnail image (or click Cancel to skip).");
-            
-            // Create file input for thumbnail
-            const thumbInput = document.createElement('input');
-            thumbInput.type = 'file';
-            thumbInput.accept = 'image/*';
+            const proceedWithoutThumb = confirm("Select thumbnail? (Cancel to skip and upload video)");
             
             let thumbnailUrl = null;
-            let uploadAttempted = false;
             
-            thumbInput.onchange = async (thumbEvent) => {
-                const thumbFile = thumbEvent.target.files[0];
-                if(thumbFile) {
-                    const thumbFileName = `thumb_${Date.now()}_${thumbFile.name}`;
-                    try {
-                        const { error: thumbErr } = await _supabase.storage
-                            .from('thumbnails')
-                            .upload(thumbFileName, thumbFile);
-                        
-                        if(!thumbErr) {
-                            const { data: thumbUrl } = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
-                            thumbnailUrl = thumbUrl.publicUrl;
-                        }
-                    } catch(err) {
-                        console.error('Thumbnail upload error:', err);
-                    }
-                }
+            if(proceedWithoutThumb) {
+                // Create file input for thumbnail
+                const thumbInput = document.createElement('input');
+                thumbInput.type = 'file';
+                thumbInput.accept = 'image/*';
                 
-                if(!uploadAttempted) {
-                    uploadAttempted = true;
+                thumbInput.onchange = async (thumbEvent) => {
+                    const thumbFile = thumbEvent.target.files[0];
+                    if(thumbFile) {
+                        try {
+                            const thumbFileName = `thumb_${Date.now()}_${thumbFile.name}`;
+                            const { error: thumbErr } = await _supabase.storage.from('thumbnails').upload(thumbFileName, thumbFile);
+                            
+                            if(!thumbErr) {
+                                const { data: thumbUrl } = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
+                                thumbnailUrl = thumbUrl.publicUrl;
+                            }
+                        } catch(err) {
+                            console.error('Thumbnail upload error:', err);
+                        }
+                    }
                     uploadVideo();
-                }
-            };
+                };
+                
+                thumbInput.click();
+            } else {
+                uploadVideo();
+            }
             
             async function uploadVideo() {
-                if(uploadAttempted) return; // Prevent double upload
-                uploadAttempted = true;
-                
                 try {
-                    alert("Uploading... please wait.");
                     const fileName = `${Date.now()}_${file.name}`;
                     
                     // 1. Upload to Supabase Storage
@@ -177,6 +172,18 @@
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         
         const { data: videos } = await q;
+        
+        // Pre-fetch all user profiles/avatars in one query
+        if(videos && videos.length > 0) {
+            const uniqueEmails = [...new Set(videos.map(v => v.owner))];
+            const { data: profiles } = await _supabase.from('profiles').select('email, avatar_url').in('email', uniqueEmails);
+            window.profileAvatarMap = {};
+            if(profiles) {
+                profiles.forEach(p => {
+                    window.profileAvatarMap[p.email] = p.avatar_url;
+                });
+            }
+        }
         feed.innerHTML = '';
         if(!videos || videos.length === 0) {
             feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">No videos found</p>';
@@ -225,9 +232,11 @@
             </div>
         </div>` : '';
         
+        const avatarUrl = window.profileAvatarMap && window.profileAvatarMap[v.owner] ? window.profileAvatarMap[v.owner] : 'https://via.placeholder.com/150';
+        
         card.innerHTML = `
         <div class="card-header">
-            <img src="${v.avatar_url || 'https://via.placeholder.com/150'}" class="user-avatar" style="cursor: ${currentUserEmail === v.owner ? 'pointer' : 'default'};"
+            <img src="${avatarUrl}" class="user-avatar" style="cursor: ${currentUserEmail === v.owner ? 'pointer' : 'default'};\" data-email="${v.owner}"
             onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
             <div style="flex:1;">
                 <div style="font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
@@ -286,29 +295,66 @@
         
         // Add double-click fullscreen for shorts
         if(isVertical) {
-            vWrap.ondblclick = () => toggleFullscreenShort(card, vWrap, actionRow);
+            // Tap to toggle play/pause
+            vWrap.ontap = vWrap.onclick = function(e) {
+                if(e && e.target === videoElem) {
+                    videoElem.paused ? videoElem.play() : videoElem.pause();
+                }
+            };
             
-            // Add swipe/touch detection for shorts
+            // Add swipe detection for shorts
             let touchStartY = 0;
+            let isSwiping = false;
+            
             vWrap.addEventListener('touchstart', (e) => {
                 touchStartY = e.touches[0].clientY;
+                isSwiping = false;
+            }, false);
+            
+            vWrap.addEventListener('touchmove', (e) => {
+                const currentY = e.touches[0].clientY;
+                const diff = Math.abs(touchStartY - currentY);
+                if(diff > 10) isSwiping = true;
             }, false);
             
             vWrap.addEventListener('touchend', (e) => {
+                if(!isSwiping) return;
+                
                 const touchEndY = e.changedTouches[0].clientY;
                 const diff = touchStartY - touchEndY;
                 
                 if(diff > 50) {
-                    // Swiped up - go to next video
-                    playNextVideo(card);
+                    // Swiped up - go to next video (only in shorts mode)
+                    const nextCard = card.nextElementSibling;
+                    while(nextCard && !nextCard.classList.contains('card')) {
+                        nextCard = nextCard.nextElementSibling;
+                    }
+                    if(nextCard && nextCard.classList.contains('card')) {
+                        nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const nextVideo = nextCard.querySelector('video');
+                        if(nextVideo) nextVideo.play();
+                    }
                 } else if(diff < -50) {
                     // Swiped down - go to previous video
                     const prevCard = card.previousElementSibling;
                     if(prevCard && prevCard.classList.contains('card')) {
                         prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const prevVideo = prevCard.querySelector('video');
+                        if(prevVideo) prevVideo.play();
                     }
                 }
             }, false);
+            
+            // Add tap zones for shorts interactions
+            const shortOverlay = document.createElement('div');
+            shortOverlay.className = 'short-overlay';
+            shortOverlay.innerHTML = `
+                <div class="short-controls" onclick="event.stopPropagation()">
+                    <button class="short-mute-btn" onclick="toggleVideoMute(event.closest('.v-wrap').querySelector('video'))"><i class="fas fa-volume-off"></i></button>
+                    <button class="short-comment-btn" onclick="toggleFullscreenComments(event.closest('.card'), '${v.id}')"><i class="fas fa-comment"></i></button>
+                </div>
+            `;
+            vWrap.appendChild(shortOverlay);
         }
         
         // Load initial comments count and check if user liked
@@ -319,6 +365,8 @@
         
         // Fetch and display user avatar
         fetchUserAvatar(v.owner, card);
+        
+        card.setAttribute('data-video-id', v.id);
     }
 
     async function loadFollowerCount(creatorEmail, card) {
@@ -336,11 +384,11 @@
 
     async function fetchUserAvatar(email, card) {
         try {
-            const { data, error } = await _supabase.from('profiles').select('avatar_url').eq('email', email);
-            if(!error && data && data.length > 0 && data[0].avatar_url) {
+            // Use pre-fetched avatar from map
+            if(window.profileAvatarMap && window.profileAvatarMap[email]) {
                 const avatarImg = card.querySelector('.user-avatar');
                 if(avatarImg) {
-                    avatarImg.src = data[0].avatar_url;
+                    avatarImg.src = window.profileAvatarMap[email];
                 }
             }
         } catch(err) {
@@ -590,8 +638,11 @@
     // --- VIDEO MENU ---
     function toggleVideoMenu(event, videoId) {
         event.stopPropagation();
-        const menu = document.getElementById(`menu-${videoId}`);
-        if(menu) {
+    // Close all other menus
+    document.querySelectorAll('.video-menu-dropdown').forEach(m => {
+        if(m.id !== `menu-${videoId}`) m.style.display = 'none';
+    });
+    // Toggle this menu
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
     }
@@ -795,6 +846,25 @@ async function deleteVideo(videoId, btn) {
     if(!confirm("Are you sure you want to delete this video permanently?")) return;
     
     try {
+        // Close the menu first
+        const menu = document.getElementById(`menu-${videoId}`);
+        if(menu) menu.style.display = 'none';
+        
+        // Find the video record to get file names
+        const { data: video } = await _supabase.from('videos').select('*').eq('id', videoId).single();
+        
+        // Delete video file from storage
+        if(video && video.url) {
+            const videoFileName = video.url.split('/').pop();
+            await _supabase.storage.from('videos').remove([videoFileName]).catch(e => console.log('Video file already gone or error:', e));
+        }
+        
+        // Delete thumbnail if exists
+        if(video && video.thumbnail_url) {
+            const thumbFileName = video.thumbnail_url.split('/').pop();
+            await _supabase.storage.from('thumbnails').remove([thumbFileName]).catch(e => console.log('Thumbnail already gone or error:', e));
+        }
+        
         // Delete from database
         const { error } = await _supabase.from('videos').delete().eq('id', videoId);
         
@@ -804,7 +874,12 @@ async function deleteVideo(videoId, btn) {
         }
         
         alert("Video deleted successfully!");
-        renderFeed();
+        // Find and remove card from DOM immediately
+        const card = document.querySelector(`[data-video-id="${videoId}"]`);
+        if(card) card.remove();
+        
+        // Then refresh feed
+        setTimeout(() => renderFeed(), 500);
     } catch(err) {
         console.error('Delete Error:', err);
         alert("Error deleting video: " + err.message);
@@ -837,5 +912,40 @@ async function editDescription(videoId, btn) {
     } catch(err) {
         console.error('Edit Error:', err);
         alert("Error updating description: " + err.message);
+    }
+}
+
+// Shorts feature functions
+function toggleVideoMute(video) {
+    if(!video) return;
+    video.muted = !video.muted;
+}
+
+function toggleFullscreenComments(card, videoId) {
+    const commPanel = card.querySelector(`#comm-panel-${videoId}`);
+    if(!commPanel) return;
+    
+    if(commPanel.style.display === 'none' || commPanel.style.display === '') {
+        // Show comments overlay
+        commPanel.style.position = 'fixed';
+        commPanel.style.bottom = '0';
+        commPanel.style.left = '0';
+        commPanel.style.right = '0';
+        commPanel.style.display = 'block';
+        commPanel.style.backgroundColor = 'rgba(0,0,0,0.95)';
+        commPanel.style.zIndex = '9999';
+        commPanel.style.height = 'auto';
+        commPanel.style.borderRadius = '20px 20px 0 0';
+        
+        // Pause video when showing comments
+        const video = card.querySelector('video');
+        if(video) video.pause();
+    } else {
+        // Hide comments overlay
+        commPanel.style.display = 'none';
+        
+        // Resume video
+        const video = card.querySelector('video');
+        if(video) video.play();
     }
 }

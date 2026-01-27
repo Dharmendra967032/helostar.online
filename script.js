@@ -638,11 +638,13 @@
     // --- VIDEO MENU ---
     function toggleVideoMenu(event, videoId) {
         event.stopPropagation();
-    // Close all other menus
-    document.querySelectorAll('.video-menu-dropdown').forEach(m => {
-        if(m.id !== `menu-${videoId}`) m.style.display = 'none';
-    });
-    // Toggle this menu
+        // Close all other menus
+        document.querySelectorAll('.video-menu-dropdown').forEach(m => {
+            if(m.id !== `menu-${videoId}`) m.style.display = 'none';
+        });
+        // Toggle this menu
+        const menu = document.getElementById(`menu-${videoId}`);
+        if(menu) {
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
     }

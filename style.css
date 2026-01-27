@@ -3,7 +3,7 @@
             --bg-color: #000;
             --helostar-pink: #d3159d;
             --glass-white: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-biorder: rgba(255, 255, 255, 0.15);
             --blur: blur(25px);
         }
 
@@ -60,7 +60,9 @@
         .comm-input-wrap { display: flex; gap: 10px; }
         .comm-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 5px; outline: none; }
         .comm-post-btn { background: var(--helostar-pink); border: none; color: white; padding: 0 15px; border-radius: 5px; cursor: pointer; }
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); font-size: 1.8rem; transition: all 0.3s ease; cursor: pointer; }
+        .fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(211, 21, 157, 0.6); }
+        .fab:active { transform: scale(0.95); }
         .hidden { display: none !important; }
         #authOverlay { 
             position: fixed; inset: 0; background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%); 
@@ -95,12 +97,19 @@
 
             /* Profile and Follow Button */
 .card-header { display: flex; align-items: center; padding: 10px 15px; gap: 10px; }
-.user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--helostar-pink); }
+.user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--helostar-pink); cursor: pointer; }
 .btn-follow { 
     background: var(--helostar-pink); border: none; color: white; padding: 6px 16px; 
     border-radius: 18px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.3s;
 }
 .btn-follow.following { background: #333; color: #ccc; }
+.btn-delete { 
+    background: transparent; border: none; color: #ff4d4d; 
+    padding: 6px 10px; border-radius: 50%; cursor: pointer; 
+    transition: 0.3s; font-size: 1rem; margin-left: auto;
+}
+.btn-delete:hover { background: rgba(255, 77, 77, 0.1); transform: scale(1.1); }
+.btn-delete:active { transform: scale(0.95); }
 
 /* Thumbnail preview for upload */
 .thumb-input-label { 

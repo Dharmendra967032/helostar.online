@@ -18,7 +18,10 @@
     firebase.auth().onAuthStateChanged(user => {
         if (user) { 
             currentUserEmail = user.email;
-            document.getElementById('userDisplay').innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
+            const userDisplay = document.getElementById('userDisplay');
+            if(userDisplay) {
+                userDisplay.innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
+            }
             start(false); 
         } else if (localStorage.getItem('guest')) {
             start(true);
@@ -41,31 +44,41 @@
 
     function start(g) {
         isGuest = g;
-        document.getElementById('authOverlay').classList.add('hidden');
+        const authOverlay = document.getElementById('authOverlay');
+        if(authOverlay) authOverlay.classList.add('hidden');
+        
         if(isGuest) {
-            document.getElementById('logoutMenuBtn').classList.add('hidden');
-            document.getElementById('userDisplay').innerHTML = `<i class="fas fa-user-secret"></i> Guest Mode`;
+            const logoutBtn = document.getElementById('logoutMenuBtn');
+            if(logoutBtn) logoutBtn.classList.add('hidden');
+            const userDisplay = document.getElementById('userDisplay');
+            if(userDisplay) userDisplay.innerHTML = `<i class="fas fa-user-secret"></i> Guest Mode`;
         } else {
-            document.getElementById('uploadBtn').style.display = 'flex';
+            const uploadBtn = document.getElementById('uploadBtn');
+            if(uploadBtn) uploadBtn.style.display = 'flex';
         }
         renderFeed();
     }
 
     // --- UPLOAD LOGIC ---
-    document.getElementById('fileIn').onchange = async (e) => {
-        if(isGuest) return alert("Please login to upload!");
-        const file = e.target.files[0];
-        if(!file) return;
+    const fileInElement = document.getElementById('fileIn');
+    if(fileInElement) {
+        fileInElement.onchange = async (e) => {
+            if(isGuest) return alert("Please login to upload!");
+            const file = e.target.files[0];
+            if(!file) return;
 
-        const desc = prompt("Enter video description:");
-        const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
-        
-        // Create file input for thumbnail
-        const thumbInput = document.createElement('input');
-        thumbInput.type = 'file';
+            const desc = prompt("Enter video description:");
+            if(desc === null) return; // User cancelled description prompt
+            
+            const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
+            
+            // Create file input for thumbnail
+            const thumbInput = document.createElement('input');
+            thumbInput.type = 'file';
         thumbInput.accept = 'image/*';
         
         let thumbnailUrl = null;
+        let uploadStarted = false;
         
         thumbInput.onchange = async (thumbEvent) => {
             const thumbFile = thumbEvent.target.files[0];
@@ -81,10 +94,16 @@
                 }
             }
             
-            uploadVideo();
+            if(!uploadStarted) {
+                uploadStarted = true;
+                uploadVideo();
+            }
         };
         
         async function uploadVideo() {
+            if(uploadStarted) return; // Prevent double upload
+            uploadStarted = true;
+            
             alert("Uploading... please wait.");
             const fileName = `${Date.now()}_${file.name}`;
             
@@ -117,13 +136,15 @@
         alert("Video selected! Now please select a thumbnail image (or click Cancel to skip).");
         thumbInput.click();
         
-        // If no thumbnail is selected, still upload
+        // If no thumbnail is selected after 2 seconds, still upload
         setTimeout(() => {
-            if(!thumbnailUrl && !thumbInput.files.length) {
+            if(!uploadStarted) {
+                uploadStarted = true;
                 uploadVideo();
             }
-        }, 100);
-    };
+        }, 2000);
+        };
+    }
 
     // --- INTERACTIONS ---
     async function incrementView(id) {
@@ -132,16 +153,22 @@
     }
     // --- FEED LOGIC ---
     async function renderFeed() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const searchInput = document.getElementById('searchInput');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
         const feed = document.getElementById('feed');
+        if(!feed) return;
+        
         feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">Loading...</p>';
         
-        let q = _supabase.from('videos').select('*, profiles(avatar_url)').order('created_at', {ascending: false});
+        let q = _supabase.from('videos').select('*').order('created_at', {ascending: false});
         if (currentCat !== 'All') q = q.eq('category', currentCat);
         
         const { data: videos } = await q;
         feed.innerHTML = '';
-        if(!videos) return;
+        if(!videos || videos.length === 0) {
+            feed.innerHTML = '<p style="text-align:center; padding:50px; opacity:0.4;">No videos found</p>';
+            return;
+        }
 
         const filtered = videos.filter(v => 
             v.description.toLowerCase().includes(searchTerm) || 
@@ -151,14 +178,14 @@
         filtered.forEach(v => {
             const vTemp = document.createElement('video');
             vTemp.src = v.url;
-            vTemp.onloadedmetadata = async () => {
+            vTemp.onloadedmetadata = () => {
                 const isVertical = vTemp.videoHeight > vTemp.videoWidth;
                 if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
-                    // Fetch profile data for this user
-                    const { data: profileData } = await _supabase.from('profiles').select('avatar_url').eq('email', v.owner).single();
-                    v.avatar_url = profileData?.avatar_url || null;
                     createCard(v, isVertical);
                 }
+            };
+            vTemp.onerror = () => {
+                console.error('Video load error:', v.url);
             };
         });
     }
@@ -173,7 +200,7 @@
         `<button class="btn-delete" onclick="deleteVideo(${v.id}, this)" style="background: #ff4d4d; border: none; color: white; padding: 6px 12px; border-radius: 18px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-left: 8px;">Delete</button>` : '';
         
         const editBtn = currentUserEmail === v.owner ? 
-        `<button class="btn-edit" onclick="editDescription(${v.id}, '${v.description.replace(/'/g, "\\'")}', this)" style="background: #4d9dff; border: none; color: white; padding: 6px 12px; border-radius: 18px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-left: 8px;">Edit</button>` : '';
+        `<button class="btn-edit" onclick="editDescription(${v.id}, this)" style="background: #4d9dff; border: none; color: white; padding: 6px 12px; border-radius: 18px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-left: 8px;">Edit</button>` : '';
         
         card.innerHTML = `
         <div class="card-header">
@@ -205,7 +232,7 @@
                 <button class="btn-act">
                     <i class="fas fa-eye"></i> <span class="view-count" data-id="${v.id}">${v.views || 0}</span>
                 </button>
-                <button class="btn-act" onclick="event.stopPropagation(); handleShare('${v.url}', '${v.description}')">
+                <button class="btn-act share-btn" onclick="event.stopPropagation(); handleShare('${v.url}', this)" data-desc="${v.description.replace(/"/g, '&quot;')}">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
@@ -263,6 +290,23 @@
         loadCommentsCount(v.id);
         checkUserLike(v.id);
         checkUserFollow(v.owner);
+        
+        // Fetch and display user avatar
+        fetchUserAvatar(v.owner, card);
+    }
+
+    async function fetchUserAvatar(email, card) {
+        try {
+            const { data, error } = await _supabase.from('profiles').select('avatar_url').eq('email', email);
+            if(!error && data && data.length > 0 && data[0].avatar_url) {
+                const avatarImg = card.querySelector('.user-avatar');
+                if(avatarImg) {
+                    avatarImg.src = data[0].avatar_url;
+                }
+            }
+        } catch(err) {
+            console.error('Avatar fetch error:', err);
+        }
     }
 
     function pauseAllOtherVideos(currentVideo) {
@@ -307,16 +351,6 @@
     }
 
     // --- INTERACTIONS ---
-    async function incrementView(id) {
-        const viewSpan = document.querySelector(`.view-count[data-id="${id}"]`);
-        if(viewSpan && !viewSpan.dataset.counted) {
-            viewSpan.dataset.counted = 'true';
-            let currentViews = parseInt(viewSpan.innerText);
-            viewSpan.innerText = currentViews + 1;
-            await _supabase.from('videos').update({ views: currentViews + 1 }).eq('id', id);
-        }
-    }
-
     async function handleLike(btn, id) {
         if(isGuest) return alert("Login to like!");
         
@@ -375,7 +409,8 @@
         }
     }
 
-    function handleShare(url, desc) {
+    function handleShare(url, btn) {
+        const desc = btn.dataset.desc;
         if (navigator.share) {
             navigator.share({ title: 'Helostar', text: desc, url: url });
         } else {
@@ -662,7 +697,10 @@ async function deleteVideo(videoId, btn) {
 }
 
 // Edit description function
-async function editDescription(videoId, currentDesc, btn) {
+async function editDescription(videoId, btn) {
+    const descSpan = document.getElementById(`desc-${videoId}`);
+    const currentDesc = descSpan ? descSpan.innerText : '';
+    
     const newDesc = prompt("Edit video description:", currentDesc);
     if(newDesc === null) return; // User cancelled
     if(newDesc === currentDesc) return alert("Description is the same!");
@@ -681,7 +719,6 @@ async function editDescription(videoId, currentDesc, btn) {
         }
         
         // Update the description on the page
-        const descSpan = document.getElementById(`desc-${videoId}`);
         if(descSpan) {
             descSpan.innerText = newDesc;
         }

@@ -60,7 +60,7 @@
         .comm-input-wrap { display: flex; gap: 10px; }
         .comm-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 5px; outline: none; }
         .comm-post-btn { background: var(--helostar-pink); border: none; color: white; padding: 0 15px; border-radius: 5px; cursor: pointer; }
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--helostar-pink); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; border: none; z-index: 1001; box-shadow: 0 4px 15px rgba(211, 21, 157, 0.4); }
+        .fab { position: fixed; bottom: 30px; right: 25px; background: none; border: none; display: none; align-items: center; justify-content: center; color: var(--helostar-pink); font-size: 2rem; z-index: 1001; cursor: pointer; }
         .hidden { display: none !important; }
         #authOverlay { 
             position: fixed; inset: 0; background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%); 

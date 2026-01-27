@@ -209,11 +209,21 @@
         const followBtn = currentUserEmail !== v.owner ? 
         `<button class="btn-follow" data-creator="${v.owner}" data-video-id="${v.id}" onclick="toggleFollow('${v.owner}', this)"><span class="follow-text">Follow</span></button>` : `<span style="font-size:0.8rem; color:#999;">Your Video</span>`;
         
-        const deleteBtn = currentUserEmail === v.owner ? 
-        `<button class="btn-delete" onclick="deleteVideo(${v.id}, this)" style="background: #ff4d4d; border: none; color: white; padding: 6px 12px; border-radius: 18px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-left: 8px;">Delete</button>` : '';
-        
-        const editBtn = currentUserEmail === v.owner ? 
-        `<button class="btn-edit" onclick="editDescription(${v.id}, this)" style="background: #4d9dff; border: none; color: white; padding: 6px 12px; border-radius: 18px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-left: 8px;">Edit</button>` : '';
+        // 3-dot menu for owner only
+        const menuBtn = currentUserEmail === v.owner ? 
+        `<div class="video-menu-wrapper">
+            <button class="video-menu-btn" onclick="toggleVideoMenu(event, ${v.id})">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="video-menu-dropdown" id="menu-${v.id}" style="display: none;">
+                <div class="video-menu-item" onclick="editDescription(${v.id}, null)">
+                    <i class="fas fa-edit"></i> Edit Description
+                </div>
+                <div class="video-menu-item delete-item" onclick="deleteVideo(${v.id}, null)">
+                    <i class="fas fa-trash"></i> Delete Video
+                </div>
+            </div>
+        </div>` : '';
         
         card.innerHTML = `
         <div class="card-header">
@@ -224,8 +234,7 @@
                 <div class="follower-count" data-creator="${v.owner}" style="font-size:0.75rem; color:#999;">0 followers</div>
             </div>
             ${followBtn}
-            ${deleteBtn}
-            ${editBtn}
+            ${menuBtn}
         </div>
             
             <div class="v-wrap ${isVertical ? 'v-short' : 'v-full'}">
@@ -433,11 +442,16 @@
         const { data } = await _supabase.from('follows').select('*').eq('follower_email', currentUserEmail).eq('following_email', creatorEmail);
         
         if(data && data.length > 0) {
-            const followBtn = document.querySelector(`.btn-follow[data-creator="${creatorEmail}"]`);
-            if(followBtn) {
+            const followBtns = document.querySelectorAll(`.btn-follow[data-creator="${creatorEmail}"]`);
+            followBtns.forEach(followBtn => {
                 followBtn.classList.add('following');
-                followBtn.querySelector('.follow-text').innerText = 'Following';
-            }
+                const textSpan = followBtn.querySelector('.follow-text');
+                if(textSpan) {
+                    textSpan.innerText = 'Following';
+                } else {
+                    followBtn.innerText = 'Following';
+                }
+            });
         }
         
         // Get follower count
@@ -573,6 +587,15 @@
         }
     }
     
+    // --- VIDEO MENU ---
+    function toggleVideoMenu(event, videoId) {
+        event.stopPropagation();
+        const menu = document.getElementById(`menu-${videoId}`);
+        if(menu) {
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+    
     // --- UI HELPERS ---
     function toggleSearch() {
         const container = document.getElementById('searchContainer');
@@ -600,6 +623,13 @@
             const dropdowns = document.getElementsByClassName("dropdown-content");
             for (let d of dropdowns) { if (d.classList.contains('show')) d.classList.remove('show'); }
         }
+        
+        // Close video menus when clicking elsewhere
+        if (!event.target.closest('.video-menu-wrapper')) {
+            document.querySelectorAll('.video-menu-dropdown').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
     }
 
     async function toggleFollow(targetEmail, btn) {
@@ -619,7 +649,12 @@
             // Update UI for all cards belonging to this creator
             document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
                 b.classList.remove('following');
-                b.querySelector('.follow-text').innerText = "Follow";
+                const textSpan = b.querySelector('.follow-text');
+                if(textSpan) {
+                    textSpan.innerText = "Follow";
+                } else {
+                    b.innerText = "Follow";
+                }
             });
             
             // Update follower count
@@ -637,7 +672,12 @@
         if (!error) {
             document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
                 b.classList.add('following');
-                b.querySelector('.follow-text').innerText = "Following";
+                const textSpan = b.querySelector('.follow-text');
+                if(textSpan) {
+                    textSpan.innerText = "Following";
+                } else {
+                    b.innerText = "Following";
+                }
             });
             
             // Update follower count
@@ -699,35 +739,53 @@ async function updateProfilePicture() {
     const fileIn = document.createElement('input');
     fileIn.type = 'file'; fileIn.accept = 'image/*';
     fileIn.onchange = async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
+        try {
+            const file = e.target.files[0];
+            if(!file) return;
 
-        const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
-        
-        // 1. Upload to 'avatars' bucket
-        const { data, error } = await _supabase.storage.from('avatars').upload(fileName, file);
-        if(error) return alert("Upload failed: " + error.message);
-
-        const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
-        
-        // 2. Update profiles table (Using email as the key)
-        const { error: updateErr } = await _supabase.from('profiles').upsert({ 
-            email: currentUserEmail, 
-            avatar_url: urlData.publicUrl 
-        }, { onConflict: 'email' });
-        
-        if(updateErr) return alert("Update failed: " + updateErr.message);
-        
-        // 3. Update all avatar images on the page
-        document.querySelectorAll('.user-avatar').forEach(img => {
-            if(img.onclick && img.onclick.toString().includes('updateProfilePicture')) {
-                img.src = urlData.publicUrl;
+            const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
+            
+            // 1. Upload to 'avatars' bucket
+            const { error: uploadErr } = await _supabase.storage.from('avatars').upload(fileName, file);
+            if(uploadErr) {
+                alert("Upload failed: " + uploadErr.message);
+                return;
             }
-        });
-        
-        alert("Profile Picture Updated!");
-        // Reload to refresh everything
-        location.reload();
+
+            const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+            
+            // 2. Update profiles table - try insert first, then update if exists
+            const { error: insertErr } = await _supabase.from('profiles').insert({ 
+                email: currentUserEmail, 
+                avatar_url: urlData.publicUrl 
+            });
+            
+            if(insertErr) {
+                // If insert fails (already exists), update instead
+                const { error: updateErr } = await _supabase.from('profiles').update({ 
+                    avatar_url: urlData.publicUrl 
+                }).eq('email', currentUserEmail);
+                
+                if(updateErr) {
+                    alert("Update failed: " + updateErr.message);
+                    return;
+                }
+            }
+            
+            // 3. Update all avatar images on the page
+            document.querySelectorAll('.user-avatar').forEach(img => {
+                if(img.style.cursor === 'pointer') {
+                    img.src = urlData.publicUrl;
+                }
+            });
+            
+            alert("Profile Picture Updated!");
+            // Reload to refresh everything
+            location.reload();
+        } catch(err) {
+            console.error('Profile update error:', err);
+            alert("Error: " + err.message);
+        }
     };
     fileIn.click();
 }
@@ -736,18 +794,12 @@ async function updateProfilePicture() {
 async function deleteVideo(videoId, btn) {
     if(!confirm("Are you sure you want to delete this video permanently?")) return;
     
-    // Disable button while deleting
-    btn.disabled = true;
-    btn.innerText = "Deleting...";
-    
     try {
         // Delete from database
         const { error } = await _supabase.from('videos').delete().eq('id', videoId);
         
         if(error) {
             alert("Error deleting video: " + error.message);
-            btn.disabled = false;
-            btn.innerText = "Delete";
             return;
         }
         
@@ -756,8 +808,6 @@ async function deleteVideo(videoId, btn) {
     } catch(err) {
         console.error('Delete Error:', err);
         alert("Error deleting video: " + err.message);
-        btn.disabled = false;
-        btn.innerText = "Delete";
     }
 }
 
@@ -770,16 +820,11 @@ async function editDescription(videoId, btn) {
     if(newDesc === null) return; // User cancelled
     if(newDesc === currentDesc) return alert("Description is the same!");
     
-    btn.disabled = true;
-    btn.innerText = "Saving...";
-    
     try {
         const { error } = await _supabase.from('videos').update({ description: newDesc }).eq('id', videoId);
         
         if(error) {
             alert("Error updating description: " + error.message);
-            btn.disabled = false;
-            btn.innerText = "Edit";
             return;
         }
         
@@ -789,12 +834,8 @@ async function editDescription(videoId, btn) {
         }
         
         alert("Description updated successfully!");
-        btn.disabled = false;
-        btn.innerText = "Edit";
     } catch(err) {
         console.error('Edit Error:', err);
         alert("Error updating description: " + err.message);
-        btn.disabled = false;
-        btn.innerText = "Edit";
     }
 }

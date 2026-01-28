@@ -87,13 +87,12 @@
             
             const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
             
-            let thumbnailUrl = null;
-            let uploadAttempted = false;
-            
             // Ask for thumbnail
-            const selectThumb = confirm("Select a thumbnail image? (OK to select, Cancel to skip)");
+            const proceedWithoutThumb = confirm("Select thumbnail? (Cancel to skip and upload video)");
             
-            if(selectThumb) {
+            let thumbnailUrl = null;
+            
+            if(proceedWithoutThumb) {
                 // Create file input for thumbnail
                 const thumbInput = document.createElement('input');
                 thumbInput.type = 'file';
@@ -103,42 +102,26 @@
                     const thumbFile = thumbEvent.target.files[0];
                     if(thumbFile) {
                         try {
-                            console.log('Uploading thumbnail...');
                             const thumbFileName = `thumb_${Date.now()}_${thumbFile.name}`;
                             const { error: thumbErr } = await _supabase.storage.from('thumbnails').upload(thumbFileName, thumbFile);
                             
                             if(!thumbErr) {
-                                const thumbUrlData = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
-                                if(thumbUrlData && thumbUrlData.data) {
-                                    thumbnailUrl = thumbUrlData.data.publicUrl;
-                                    console.log('Thumbnail uploaded successfully:', thumbnailUrl);
-                                }
-                            } else {
-                                console.warn('Thumbnail upload error:', thumbErr.message);
+                                const { data: thumbUrl } = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
+                                thumbnailUrl = thumbUrl.publicUrl;
                             }
                         } catch(err) {
                             console.error('Thumbnail upload error:', err);
                         }
                     }
-                    uploadAttempted = true;
                     uploadVideo();
                 };
                 
                 thumbInput.click();
-                
-                // If user cancels thumbnail selection, still upload after 5 seconds
-                setTimeout(() => {
-                    if(!uploadAttempted) {
-                        uploadAttempted = true;
-                        uploadVideo();
-                    }
-                }, 5000);
             } else {
                 uploadVideo();
             }
             
             async function uploadVideo() {
-                if(uploadAttempted && currentTab) return; // Prevent double uploads
                 try {
                     const fileName = `${Date.now()}_${file.name}`;
                     
@@ -193,6 +176,8 @@
                     alert("Upload failed: " + err.message);
                 }
             }
+            
+            // Click the thumbnail input
             thumbInput.click();
             
             // If no thumbnail is selected after 3 seconds, still upload
@@ -251,12 +236,9 @@
             vTemp.src = v.url;
             vTemp.onloadedmetadata = () => {
                 const isVertical = vTemp.videoHeight > vTemp.videoWidth;
-                // Only show vertical videos in shorts tab
-                if (currentTab === 'short' && isVertical) {
+                if ((currentTab === 'short' && isVertical) || (currentTab === 'full' && !isVertical)) {
                     createCard(v, isVertical);
                 }
-                // Full width videos disabled for now to prevent scrolling issues
-                // Re-enable when full width scroll is properly fixed
             };
             vTemp.onerror = () => {
                 console.error('Video load error:', v.url);
@@ -286,7 +268,7 @@
             </div>
         </div>` : '';
         
-        const avatarUrl = window.profileAvatarMap && window.profileAvatarMap[v.owner] && window.profileAvatarMap[v.owner] !== null ? window.profileAvatarMap[v.owner] : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(v.owner.split('@')[0]);
+        const avatarUrl = window.profileAvatarMap && window.profileAvatarMap[v.owner] ? window.profileAvatarMap[v.owner] : 'https://via.placeholder.com/150';
         
         card.innerHTML = `
         <div class="card-header">

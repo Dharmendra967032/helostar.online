@@ -111,7 +111,7 @@
 
             /* Profile and Follow Button */
 .card-header { display: flex; align-items: center; padding: 10px 15px; gap: 10px; }
-.user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--helostar-pink); background: linear-gradient(135deg, #d3159d, #a01080); flex-shrink: 0; transition: transform 0.2s; display: block; min-width: 45px; min-height: 45px; font-size: 0; }
+.user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--helostar-pink); background: #333; flex-shrink: 0; transition: transform 0.2s; }
 .user-avatar[style*="cursor: pointer"]:hover { transform: scale(1.1); }
 .btn-follow { 
     background: var(--helostar-pink); border: none; color: white; padding: 6px 16px; 

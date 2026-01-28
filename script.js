@@ -500,8 +500,14 @@
     }
 
     // --- INTERACTIONS ---
+    const likeCooldown = {}; // Track cooldown per video ID
     async function handleLike(btn, id) {
         if (isGuest || !currentUserEmail) return alert('Please login to like videos');
+
+        // Cooldown check (500ms per video)
+        if (likeCooldown[id]) return;
+        likeCooldown[id] = true;
+        setTimeout(() => { delete likeCooldown[id]; }, 500);
 
         // Disable button to prevent rapid clicks
         if (btn) {
@@ -513,32 +519,31 @@
             // Check existing like by this user
             const { data: existing } = await _supabase.from('likes').select('*').eq('video_id', id).eq('user_email', currentUserEmail);
 
+            // If already liked, do nothing (one-time only)
+            if (existing && existing.length > 0) {
+                console.log('Already liked - no action');
+                return;
+            }
+
             const hCountEl = document.querySelector(`.like-btn[data-id="${id}"] .count`);
             const sideCountEl = document.querySelector(`.side-actions .like-side[data-id="${id}"] .small-count`);
 
-            // Get actual current like count from DB (not DOM)
+            // Get actual current like count from DB
             const { data: videoData } = await _supabase.from('videos').select('likes').eq('id', id).single();
             let currentLikes = (videoData && videoData.likes) || 0;
 
-            if (existing && existing.length > 0) {
-                // Already liked -> unlike
-                await _supabase.from('likes').delete().eq('video_id', id).eq('user_email', currentUserEmail);
-                const newLikes = Math.max(0, currentLikes - 1);
-                if (hCountEl) hCountEl.innerText = newLikes;
-                if (sideCountEl) sideCountEl.innerText = newLikes;
-                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.remove('liked'));
-                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.remove('liked'));
-                await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
-            } else {
-                // Like (only if user hasn't liked already)
-                await _supabase.from('likes').insert([{ video_id: id, user_email: currentUserEmail }]);
-                const newLikes = currentLikes + 1;
-                if (hCountEl) hCountEl.innerText = newLikes;
-                if (sideCountEl) sideCountEl.innerText = newLikes;
-                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
-                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
-                await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
-            }
+            // Insert like record
+            await _supabase.from('likes').insert([{ video_id: id, user_email: currentUserEmail }]);
+            const newLikes = currentLikes + 1;
+
+            // Update UI
+            if (hCountEl) hCountEl.innerText = newLikes;
+            if (sideCountEl) sideCountEl.innerText = newLikes;
+            document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
+            document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
+            
+            // Update video likes count in DB
+            await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
         } catch (err) {
             console.error('Like error:', err);
         } finally {
@@ -1136,14 +1141,27 @@ function swapFullscreenToCard(fromCard, toCard) {
     const toVWrap = toCard.querySelector('.v-wrap');
     const toVid = toCard.querySelector('video');
 
-    // Exit fullscreen on current
-    try { exitReelsFullscreen(fromCard, fromVWrap, fromVid); } catch(e) {}
+    if (!toVWrap || !toVid) return;
 
-    // Enter fullscreen on target
-    try { enterReelsFullscreen(toCard, toVWrap, toVid); } catch(e) {}
+    // Pause previous video
+    if (fromVid) fromVid.pause();
 
-    // Play target video
-    try { toVid.play().catch(()=>{}); } catch(e) {}
+    // Apply fullscreen styles directly to new card (faster than exit/enter)
+    toVWrap.classList.add('reels-fs');
+    toVWrap.style.position = 'fixed';
+    toVWrap.style.top = '0';
+    toVWrap.style.left = '0';
+    toVWrap.style.width = '100vw';
+    toVWrap.style.height = '100vh';
+    toVWrap.style.zIndex = '9999';
+    toVWrap.style.margin = '0';
+    toVWrap.style.padding = '0';
+    toVid.style.width = '100%';
+    toVid.style.height = '100%';
+    toVid.style.objectFit = 'cover';
+
+    // Play new video
+    toVid.play().catch(()=>{});
 }
 
 function reelsTapHandler(event, zone, videoId) {

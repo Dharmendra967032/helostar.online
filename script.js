@@ -126,18 +126,35 @@
                     const fileName = `${Date.now()}_${file.name}`;
                     
                     // 1. Upload to Supabase Storage
+                    console.log('Starting video upload:', fileName);
                     const { error: uploadErr } = await _supabase.storage
                         .from('videos')
                         .upload(fileName, file);
 
-                    if(uploadErr) return alert("Upload failed: " + uploadErr.message);
+                    if(uploadErr) {
+                        console.error('Storage upload error:', uploadErr);
+                        return alert("Upload failed: " + uploadErr.message);
+                    }
+                    
+                    console.log('Video stored successfully');
 
                     // 2. Get Public URL
-                    const { data: urlData } = _supabase.storage.from('videos').getPublicUrl(fileName);
+                    let urlData = null;
+                    try {
+                        urlData = _supabase.storage.from('videos').getPublicUrl(fileName);
+                    } catch(urlErr) {
+                        console.error('URL generation error:', urlErr);
+                        return alert("Could not generate video URL");
+                    }
+                    
+                    if(!urlData || !urlData.data) {
+                        return alert("Could not get video URL");
+                    }
 
                     // 3. Save to Database
+                    console.log('Saving to database...');
                     const { error: dbErr } = await _supabase.from('videos').insert([{
-                        url: urlData.publicUrl,
+                        url: urlData.data.publicUrl,
                         thumbnail_url: thumbnailUrl || '',
                         description: desc || "No description",
                         owner: currentUserEmail,
@@ -146,8 +163,12 @@
                         views: 0
                     }]);
 
-                    if(dbErr) return alert("Database error: " + dbErr.message);
-
+                    if(dbErr) {
+                        console.error('Database insert error:', dbErr);
+                        return alert("Database error: " + dbErr.message);
+                    }
+                    
+                    console.log('Upload complete!');
                     alert("Upload Success!");
                     renderFeed();
                 } catch(err) {
@@ -819,11 +840,14 @@
 
     function toggleFullscreenShort(card, vWrap, actionRow) {
         const isFullscreen = vWrap.classList.contains('fullscreen-short');
+        const video = vWrap.querySelector('video');
         
         if(!isFullscreen) {
             // Enter fullscreen
             vWrap.classList.add('fullscreen-short');
             card.classList.add('fullscreen-active');
+            
+            // Position and style action row
             actionRow.style.position = 'fixed';
             actionRow.style.bottom = '60px';
             actionRow.style.left = '15px';
@@ -831,9 +855,7 @@
             actionRow.style.zIndex = '1000';
             actionRow.style.background = 'transparent';
             actionRow.style.width = 'auto';
-            document.body.style.overflow = 'hidden';
-            document.body.style.margin = '0';
-            document.body.style.padding = '0';
+            actionRow.style.display = 'flex';
             
             // Style action buttons to be transparent
             actionRow.querySelectorAll('.btn-act').forEach(btn => {
@@ -847,6 +869,15 @@
             });
             document.querySelector('header').style.display = 'none';
             document.querySelector('.nav-tabs').style.display = 'none';
+            
+            // Enable smooth scrolling while in fullscreen
+            document.body.style.overflow = 'scroll';
+            document.body.style.overscrollBehavior = 'contain';
+            
+            // Play video
+            if(video && video.paused) {
+                video.play().catch(() => {});
+            }
         } else {
             // Exit fullscreen
             vWrap.classList.remove('fullscreen-short');
@@ -858,9 +889,7 @@
             actionRow.style.zIndex = 'auto';
             actionRow.style.background = 'transparent';
             actionRow.style.width = '100%';
-            document.body.style.overflow = 'auto';
-            document.body.style.margin = '';
-            document.body.style.padding = '';
+            actionRow.style.display = 'flex';
             
             // Reset button styles
             actionRow.querySelectorAll('.btn-act').forEach(btn => {
@@ -872,6 +901,10 @@
             document.querySelectorAll('.card').forEach(c => c.style.display = 'block');
             document.querySelector('header').style.display = 'block';
             document.querySelector('.nav-tabs').style.display = 'flex';
+            
+            // Restore scroll behavior
+            document.body.style.overflow = 'auto';
+            document.body.style.overscrollBehavior = 'auto';
         }
     }
     
@@ -949,51 +982,72 @@
                 .eq('follower_email', currentUserEmail)
                 .eq('following_email', targetEmail);
             
-            if (!error) {
-                // Update UI for all cards belonging to this creator
-                document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
-                    b.classList.remove('following');
-                    const textSpan = b.querySelector('.follow-text');
-                    if(textSpan) {
-                        textSpan.innerText = "Follow";
-                    } else {
-                        b.innerText = "Follow";
-                    }
-                });
-                
-                // Update follower count
+            if (error) {
+                // RLS policy error - try to show helpful message
+                if(error.message.includes('row-level security') || error.message.includes('RLS')) {
+                    console.warn('RLS policy active on follows table. Ensure policies allow DELETE for authenticated users.');
+                    alert("Unable to unfollow at this moment. Please try again.");
+                    return;
+                }
+                throw error;
+            }
+            
+            // Update UI for all cards belonging to this creator
+            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                b.classList.remove('following');
+                const textSpan = b.querySelector('.follow-text');
+                if(textSpan) {
+                    textSpan.innerText = "Follow";
+                } else {
+                    b.innerText = "Follow";
+                }
+            });
+            
+            // Update follower count
+            try {
                 const { data: followers } = await _supabase.from('follows').select('*').eq('following_email', targetEmail);
                 const followerCount = followers ? followers.length : 0;
                 document.querySelectorAll(`.follower-count[data-creator="${targetEmail}"]`).forEach(el => {
                     el.innerText = followerCount + (followerCount === 1 ? ' follower' : ' followers');
                 });
-            } else {
-                alert("Error unfollowing: " + error.message);
+            } catch(e) {
+                console.warn('Could not fetch updated follower count');
             }
         } else {
             // Follow Logic
             const { error } = await _supabase.from('follows')
                 .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
             
-            if (!error) {
-                document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
-                    b.classList.add('following');
-                    const textSpan = b.querySelector('.follow-text');
-                    if(textSpan) {
-                        textSpan.innerText = "Following";
-                    } else {
-                        b.innerText = "Following";
-                    }
-                });
-                
-                // Update follower count
+            if (error) {
+                // RLS policy error - provide helpful feedback
+                if(error.message.includes('row-level security') || error.message.includes('RLS') || error.message.includes('policy')) {
+                    console.warn('RLS policy error on follows table INSERT. Admin needs to configure RLS policies.');
+                    console.warn('Error details:', error);
+                    alert("Follow feature is temporarily unavailable. Please contact support.");
+                    return;
+                }
+                throw error;
+            }
+            
+            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                b.classList.add('following');
+                const textSpan = b.querySelector('.follow-text');
+                if(textSpan) {
+                    textSpan.innerText = "Following";
+                } else {
+                    b.innerText = "Following";
+                }
+            });
+            
+            // Update follower count
+            try {
                 const { data: followers } = await _supabase.from('follows').select('*').eq('following_email', targetEmail);
                 const followerCount = followers ? followers.length : 0;
                 document.querySelectorAll(`.follower-count[data-creator="${targetEmail}"]`).forEach(el => {
                     el.innerText = followerCount + (followerCount === 1 ? ' follower' : ' followers');
                 });
-            } else {
-                alert("Error following: " + error.message);
+            } catch(e) {
+                console.warn('Could not fetch updated follower count');
             }
         }
     } catch(err) {

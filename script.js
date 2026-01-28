@@ -394,9 +394,11 @@
                                 swapFullscreenToCard(card, nextCard);
                             } else {
                                 nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                setTimeout(() => {
-                                    if(nextVid) nextVid.play().catch(() => {});
-                                }, 300);
+                                // Auto-play immediately
+                                if(nextVid) {
+                                    nextVid.currentTime = 0;
+                                    nextVid.play().catch(() => {});
+                                }
                             }
                         }
                     } else if(diff < -100) {
@@ -413,9 +415,11 @@
                                 swapFullscreenToCard(card, prevCard);
                             } else {
                                 prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                setTimeout(() => {
-                                    if(prevVid) prevVid.play().catch(() => {});
-                                }, 300);
+                                // Auto-play immediately
+                                if(prevVid) {
+                                    prevVid.currentTime = 0;
+                                    prevVid.play().catch(() => {});
+                                }
                             }
                         }
                     }
@@ -558,6 +562,18 @@
             let currentLikes = (videoData && videoData.likes) || 0;
             const newLikes = currentLikes + 1;
 
+            // Update UI BEFORE DB to show immediate feedback
+            if (hCountEl) {
+                hCountEl.innerText = newLikes;
+                console.log(`Updated horizontal count to ${newLikes}`);
+            }
+            if (sideCountEl) {
+                sideCountEl.innerText = newLikes;
+                console.log(`Updated side count to ${newLikes}`);
+            }
+            document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
+            document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
+            
             // Insert like record with constraint (upsert would replace, insert fails if exists)
             const { error: insertErr } = await _supabase.from('likes').insert([{ 
                 video_id: id, 
@@ -568,18 +584,14 @@
                 console.error('Insert like error (user may have already liked):', insertErr);
                 return;
             }
-
-            // Update UI
-            if (hCountEl) hCountEl.innerText = newLikes;
-            if (sideCountEl) sideCountEl.innerText = newLikes;
-            document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
-            document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
             
             // Update video likes count in DB
             const { error: updateErr } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
             
             if (updateErr) {
                 console.error('Update video likes error:', updateErr);
+            } else {
+                console.log(`Video ${id} likes updated to ${newLikes} in DB`);
             }
         } catch (err) {
             console.error('Like error:', err);

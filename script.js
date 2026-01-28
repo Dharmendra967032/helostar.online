@@ -283,6 +283,46 @@
                 <div style="color:var(--helostar-pink); font-size:0.75rem; margin-top:5px;">#${v.category}</div>
             </div>`;
         document.getElementById('feed').appendChild(card);
+
+        // Add right-side action buttons only for vertical shorts
+        if (isVertical) {
+            const vwrapEl = card.querySelector('.v-wrap');
+            if (vwrapEl) {
+                const side = document.createElement('div');
+                side.className = 'side-actions';
+
+                // Like button
+                const likeBtnSide = document.createElement('div');
+                likeBtnSide.className = 'action-btn like-side';
+                likeBtnSide.setAttribute('data-id', v.id);
+                likeBtnSide.innerHTML = `<i class="fas fa-heart"></i><div class="small-count">${v.likes || 0}</div>`;
+                likeBtnSide.addEventListener('click', (e) => { e.stopPropagation(); handleLike(likeBtnSide, v.id); likeBtnSide.classList.add('like-pop'); setTimeout(()=> likeBtnSide.classList.remove('like-pop'), 350); });
+
+                // Comment button (opens fullscreen comments)
+                const commBtnSide = document.createElement('div');
+                commBtnSide.className = 'action-btn comm-side';
+                commBtnSide.innerHTML = `<i class="fas fa-comment"></i><div class="small-count comment-count" data-id="${v.id}">0</div>`;
+                commBtnSide.addEventListener('click', (e) => { e.stopPropagation(); toggleFullscreenComments(card, v.id); });
+
+                // Views
+                const viewBtnSide = document.createElement('div');
+                viewBtnSide.className = 'action-btn view-side';
+                viewBtnSide.innerHTML = `<i class="fas fa-eye"></i><div class="small-count view-count" data-id="${v.id}">${v.views || 0}</div>`;
+
+                // Share
+                const shareBtnSide = document.createElement('div');
+                shareBtnSide.className = 'action-btn share-side';
+                shareBtnSide.innerHTML = `<i class="fas fa-paper-plane"></i><div class="small-count">Share</div>`;
+                shareBtnSide.addEventListener('click', (e) => { e.stopPropagation(); handleShareDirect(v.url, v.description); });
+
+                side.appendChild(likeBtnSide);
+                side.appendChild(commBtnSide);
+                side.appendChild(viewBtnSide);
+                side.appendChild(shareBtnSide);
+
+                vwrapEl.appendChild(side);
+            }
+        }
         
         // Attach video reference and auto-play/pause logic
         const videoElem = card.querySelector('video');
@@ -346,11 +386,16 @@
                             nextCard = nextCard.nextElementSibling;
                         }
                         if(nextCard) {
-                            nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            setTimeout(() => {
-                                const vid = nextCard.querySelector('video');
-                                if(vid) vid.play().catch(() => {});
-                            }, 300);
+                            // If in reels fullscreen, swap fullscreen to next card
+                            if (vWrap.classList.contains('reels-fs')) {
+                                swapFullscreenToCard(card, nextCard);
+                            } else {
+                                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setTimeout(() => {
+                                    const vid = nextCard.querySelector('video');
+                                    if(vid) vid.play().catch(() => {});
+                                }, 300);
+                            }
                         }
                     } else if(diff < -100) {
                         // SWIPE DOWN - previous
@@ -359,11 +404,15 @@
                             prevCard = prevCard.previousElementSibling;
                         }
                         if(prevCard) {
-                            prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            setTimeout(() => {
-                                const vid = prevCard.querySelector('video');
-                                if(vid) vid.play().catch(() => {});
-                            }, 300);
+                            if (vWrap.classList.contains('reels-fs')) {
+                                swapFullscreenToCard(card, prevCard);
+                            } else {
+                                prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setTimeout(() => {
+                                    const vid = prevCard.querySelector('video');
+                                    if(vid) vid.play().catch(() => {});
+                                }, 300);
+                            }
                         }
                     }
                 }
@@ -452,25 +501,42 @@
 
     // --- INTERACTIONS ---
     async function handleLike(btn, id) {
-        if(isGuest) return alert("Login to like!");
-        
-        
-        btn.classList.toggle('liked');
-        btn.dataset.liked = 'true';
-        const countSpan = btn.querySelector('.count');
-        let currentLikes = parseInt(countSpan.innerText);
-        
-        const newLikes = currentLikes + 1;
-        countSpan.innerText = newLikes;
+        if (isGuest || !currentUserEmail) return alert('Please login to like videos');
 
-        // Save like to database with user email
-        await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
-        
-        // Save like record to track user likes
-        await _supabase.from('likes').insert([{
-            video_id: id,
-            user_email: currentUserEmail
-        }]).select();
+        if (btn) btn.disabled = true;
+
+        try {
+            // Check existing like by this user
+            const { data: existing } = await _supabase.from('likes').select('*').eq('video_id', id).eq('user_email', currentUserEmail);
+
+            const hCountEl = document.querySelector(`.like-btn[data-id="${id}"] .count`);
+            const sideCountEl = document.querySelector(`.side-actions .like-side[data-id="${id}"] .small-count`);
+            const currentLikes = parseInt((hCountEl && hCountEl.innerText) || (sideCountEl && sideCountEl.innerText) || '0');
+
+            if (existing && existing.length > 0) {
+                // Unlike
+                await _supabase.from('likes').delete().eq('video_id', id).eq('user_email', currentUserEmail);
+                const newLikes = Math.max(0, currentLikes - 1);
+                if (hCountEl) hCountEl.innerText = newLikes;
+                if (sideCountEl) sideCountEl.innerText = newLikes;
+                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.remove('liked'));
+                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.remove('liked'));
+                await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+            } else {
+                // Like
+                await _supabase.from('likes').insert([{ video_id: id, user_email: currentUserEmail }]);
+                const newLikes = currentLikes + 1;
+                if (hCountEl) hCountEl.innerText = newLikes;
+                if (sideCountEl) sideCountEl.innerText = newLikes;
+                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
+                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
+                await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+            }
+        } catch (err) {
+            console.error('Like error:', err);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
     }
 
     async function checkUserLike(videoId) {
@@ -478,11 +544,14 @@
         const { data } = await _supabase.from('likes').select('*').eq('video_id', videoId).eq('user_email', currentUserEmail);
         
         if(data && data.length > 0) {
-            const likeBtn = document.querySelector(`.like-btn[data-id="${videoId}"]`);
-            if(likeBtn) {
-                likeBtn.classList.add('liked');
-                likeBtn.dataset.liked = 'true';
-            }
+            // Mark both horizontal and side like buttons
+            document.querySelectorAll(`.like-btn[data-id="${videoId}"]`).forEach(b => {
+                b.classList.add('liked');
+                b.dataset.liked = 'true';
+            });
+            document.querySelectorAll(`.side-actions .like-side[data-id="${videoId}"]`).forEach(b => {
+                b.classList.add('liked');
+            });
         }
     }
 
@@ -527,6 +596,16 @@
         const desc = btn.dataset.desc;
         if (navigator.share) {
             navigator.share({ title: 'Helostar', text: desc, url: url });
+        } else {
+            navigator.clipboard.writeText(url);
+            alert('Link copied to clipboard!');
+        }
+    }
+
+    // Direct share helper for side button (no DOM button available)
+    function handleShareDirect(url, desc) {
+        if (navigator.share) {
+            navigator.share({ title: 'Helostar', text: desc || 'Check this out', url: url });
         } else {
             navigator.clipboard.writeText(url);
             alert('Link copied to clipboard!');
@@ -969,12 +1048,8 @@ function enterReelsFullscreen(card, vWrap, video) {
     if(pageHeader) pageHeader.style.display = 'none';
     if(navTabs) navTabs.style.display = 'none';
     
-    // Hide other cards
-    document.querySelectorAll('.card').forEach(c => {
-        if(c !== card) c.style.display = 'none';
-    });
-    
-    // Fullscreen styles
+    // Keep other cards visible so swipe navigation works; apply focused fullscreen styles
+    vWrap.classList.add('reels-fs');
     vWrap.style.position = 'fixed';
     vWrap.style.top = '0';
     vWrap.style.left = '0';
@@ -983,14 +1058,11 @@ function enterReelsFullscreen(card, vWrap, video) {
     vWrap.style.zIndex = '9999';
     vWrap.style.margin = '0';
     vWrap.style.padding = '0';
-    
+
     // Video fill
     video.style.width = '100%';
     video.style.height = '100%';
     video.style.objectFit = 'cover';
-    
-    // Prevent scroll
-    document.body.style.overflow = 'hidden';
     
     // Play
     video.play().catch(() => {});
@@ -1017,9 +1089,7 @@ function exitReelsFullscreen(card, vWrap, video) {
     if(navTabs) navTabs.style.display = 'flex';
     
     // Show all cards
-    document.querySelectorAll('.card').forEach(c => {
-        c.style.display = '';
-    });
+    // leave other cards as they are; just remove fullscreen styles from this card
     
     // Reset styles
     vWrap.style.position = '';
@@ -1037,7 +1107,25 @@ function exitReelsFullscreen(card, vWrap, video) {
     video.style.objectFit = '';
     
     // Restore scroll
-    document.body.style.overflow = '';
+    // body overflow unchanged to allow smooth swiping while in fullscreen mode
+}
+
+// Swap fullscreen from one card to another (used for swiping while in reels fullscreen)
+function swapFullscreenToCard(fromCard, toCard) {
+    if(!toCard || !fromCard) return;
+    const fromVWrap = fromCard.querySelector('.v-wrap');
+    const fromVid = fromCard.querySelector('video');
+    const toVWrap = toCard.querySelector('.v-wrap');
+    const toVid = toCard.querySelector('video');
+
+    // Exit fullscreen on current
+    try { exitReelsFullscreen(fromCard, fromVWrap, fromVid); } catch(e) {}
+
+    // Enter fullscreen on target
+    try { enterReelsFullscreen(toCard, toVWrap, toVid); } catch(e) {}
+
+    // Play target video
+    try { toVid.play().catch(()=>{}); } catch(e) {}
 }
 
 function reelsTapHandler(event, zone, videoId) {

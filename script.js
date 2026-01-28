@@ -355,6 +355,9 @@
             let touchStartX = 0;
             let swiping = false;
             let isSwipeAttempt = false;
+            let lastTapTime = 0;
+            let lastTapX = 0;
+            let lastTapY = 0;
             
             vWrap.addEventListener('touchstart', (e) => {
                 if(swiping) return;
@@ -370,6 +373,8 @@
                 const touchEndX = e.changedTouches[0].clientX;
                 const diffY = touchStartY - touchEndY;
                 const diffX = touchStartX - touchEndX;
+                const currentTime = new Date().getTime();
+                const tapDuration = currentTime - lastTapTime;
                 
                 // Check if this is a vertical swipe (swipe-first priority)
                 if(Math.abs(diffY) > 100 && Math.abs(diffY) > Math.abs(diffX)) {
@@ -443,30 +448,50 @@
                     // Reset swipe flag after action
                     setTimeout(() => { swiping = false; }, 500);
                 } else if(!isSwipeAttempt && Math.abs(diffY) < 100 && Math.abs(diffX) < 100) {
-                    // TAP (small or no movement) - handle left/center/right taps
+                    // TAP (small or no movement) - handle single/double tap
                     const touchX = e.changedTouches[0].clientX;
+                    const touchY = e.changedTouches[0].clientY;
                     const rect = vWrap.getBoundingClientRect();
                     const relativeTouchX = touchX - rect.left;
                     const relativeWidth = rect.width;
+                    const tapDistance = Math.hypot(touchX - lastTapX, touchY - lastTapY);
                     
-                    if (relativeTouchX < relativeWidth / 3) {
-                        // LEFT - mute/unmute
-                        videoElem.muted = !videoElem.muted;
-                        showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
-                    } else if (relativeTouchX > (relativeWidth * 2 / 3)) {
-                        // RIGHT - like
+                    // Check for double tap (within 300ms and 50px distance)
+                    if (tapDuration < 300 && tapDistance < 50) {
+                        // DOUBLE TAP - Like/Unlike
                         const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
                         if(likeBtn) {
                             likeBtn.click();
-                            showReelsFeedback('like');
+                            // Show heart animation at tap location
+                            showHeartAnimation(touchX - rect.left, touchY - rect.top);
                         }
+                        lastTapTime = 0; // Reset to prevent triple tap
                     } else {
-                        // CENTER - fullscreen
-                        const isFs = vWrap.classList.contains('reels-fs');
-                        if(!isFs) {
-                            enterReelsFullscreen(card, vWrap, videoElem);
+                        // SINGLE TAP
+                        lastTapTime = currentTime;
+                        lastTapX = touchX;
+                        lastTapY = touchY;
+                        
+                        if (relativeTouchX < relativeWidth / 3) {
+                            // LEFT - mute/unmute
+                            videoElem.muted = !videoElem.muted;
+                            showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
+                        } else if (relativeTouchX > (relativeWidth * 2 / 3)) {
+                            // RIGHT - fullscreen
+                            const isFs = vWrap.classList.contains('reels-fs');
+                            if(!isFs) {
+                                enterReelsFullscreen(card, vWrap, videoElem);
+                            } else {
+                                exitReelsFullscreen(card, vWrap, videoElem);
+                            }
                         } else {
-                            exitReelsFullscreen(card, vWrap, videoElem);
+                            // CENTER - fullscreen
+                            const isFs = vWrap.classList.contains('reels-fs');
+                            if(!isFs) {
+                                enterReelsFullscreen(card, vWrap, videoElem);
+                            } else {
+                                exitReelsFullscreen(card, vWrap, videoElem);
+                            }
                         }
                     }
                 }
@@ -901,60 +926,82 @@
     }
 
     async function toggleFollow(targetEmail, btn) {
-    if (isGuest) return alert("Login to follow creators!");
-    if (targetEmail === currentUserEmail) return alert("You cannot follow yourself!");
+    if (isGuest) {
+        alert("Login to follow creators!");
+        return;
+    }
+    if (targetEmail === currentUserEmail) {
+        alert("You cannot follow yourself!");
+        return;
+    }
 
-    const isFollowing = btn.classList.contains('following');
+    // Prevent double clicks
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
     
-    if (isFollowing) {
-        // Unfollow Logic
-        const { error } = await _supabase.from('follows')
-            .delete()
-            .eq('follower_email', currentUserEmail)
-            .eq('following_email', targetEmail);
+    try {
+        const isFollowing = btn.classList.contains('following');
         
-        if (!error) {
-            // Update UI for all cards belonging to this creator
-            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
-                b.classList.remove('following');
-                const textSpan = b.querySelector('.follow-text');
-                if(textSpan) {
-                    textSpan.innerText = "Follow";
-                } else {
-                    b.innerText = "Follow";
-                }
-            });
+        if (isFollowing) {
+            // Unfollow Logic
+            const { error } = await _supabase.from('follows')
+                .delete()
+                .eq('follower_email', currentUserEmail)
+                .eq('following_email', targetEmail);
             
-            // Update follower count
-            const { data: followers } = await _supabase.from('follows').select('*').eq('following_email', targetEmail);
-            const followerCount = followers ? followers.length : 0;
-            document.querySelectorAll(`.follower-count[data-creator="${targetEmail}"]`).forEach(el => {
-                el.innerText = followerCount + (followerCount === 1 ? ' follower' : ' followers');
-            });
-        }
-    } else {
-        // Follow Logic
-        const { error } = await _supabase.from('follows')
-            .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
-        
-        if (!error) {
-            document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
-                b.classList.add('following');
-                const textSpan = b.querySelector('.follow-text');
-                if(textSpan) {
-                    textSpan.innerText = "Following";
-                } else {
-                    b.innerText = "Following";
-                }
-            });
+            if (!error) {
+                // Update UI for all cards belonging to this creator
+                document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                    b.classList.remove('following');
+                    const textSpan = b.querySelector('.follow-text');
+                    if(textSpan) {
+                        textSpan.innerText = "Follow";
+                    } else {
+                        b.innerText = "Follow";
+                    }
+                });
+                
+                // Update follower count
+                const { data: followers } = await _supabase.from('follows').select('*').eq('following_email', targetEmail);
+                const followerCount = followers ? followers.length : 0;
+                document.querySelectorAll(`.follower-count[data-creator="${targetEmail}"]`).forEach(el => {
+                    el.innerText = followerCount + (followerCount === 1 ? ' follower' : ' followers');
+                });
+            } else {
+                alert("Error unfollowing: " + error.message);
+            }
+        } else {
+            // Follow Logic
+            const { error } = await _supabase.from('follows')
+                .insert([{ follower_email: currentUserEmail, following_email: targetEmail }]);
             
-            // Update follower count
-            const { data: followers } = await _supabase.from('follows').select('*').eq('following_email', targetEmail);
-            const followerCount = followers ? followers.length : 0;
-            document.querySelectorAll(`.follower-count[data-creator="${targetEmail}"]`).forEach(el => {
-                el.innerText = followerCount + (followerCount === 1 ? ' follower' : ' followers');
-            });
+            if (!error) {
+                document.querySelectorAll(`.btn-follow[data-creator="${targetEmail}"]`).forEach(b => {
+                    b.classList.add('following');
+                    const textSpan = b.querySelector('.follow-text');
+                    if(textSpan) {
+                        textSpan.innerText = "Following";
+                    } else {
+                        b.innerText = "Following";
+                    }
+                });
+                
+                // Update follower count
+                const { data: followers } = await _supabase.from('follows').select('*').eq('following_email', targetEmail);
+                const followerCount = followers ? followers.length : 0;
+                document.querySelectorAll(`.follower-count[data-creator="${targetEmail}"]`).forEach(el => {
+                    el.innerText = followerCount + (followerCount === 1 ? ' follower' : ' followers');
+                });
+            } else {
+                alert("Error following: " + error.message);
+            }
         }
+    } catch(err) {
+        console.error('Toggle follow error:', err);
+        alert("Error: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
     }
 }
 
@@ -1096,10 +1143,15 @@ async function updateProfilePicture() {
                 }
             }
             
-            // 3. Update all avatar images on the page
+            // 3. Update profileAvatarMap for future cards
+            if(!window.profileAvatarMap) window.profileAvatarMap = {};
+            window.profileAvatarMap[currentUserEmail] = urlData.publicUrl;
+            
+            // 4. Update all avatar images on the page
             document.querySelectorAll('.user-avatar').forEach(img => {
-                if(img.style.cursor === 'pointer') {
+                if(img.dataset.email === currentUserEmail || img.style.cursor === 'pointer') {
                     img.src = urlData.publicUrl;
+                    img.dataset.email = currentUserEmail;
                 }
             });
             
@@ -1189,6 +1241,24 @@ async function editDescription(videoId, btn) {
 }
 
 // Shorts feature functions - Instagram style
+function showHeartAnimation(x, y) {
+    const heart = document.createElement('div');
+    heart.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        font-size: 60px;
+        color: #8b0000;
+        pointer-events: none;
+        z-index: 10000;
+        animation: heartPopUp 0.6s ease-out forwards;
+        text-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
+    `;
+    heart.innerHTML = '❤️';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 600);
+}
+
 function showReelsFeedback(type) {
     const feedback = document.createElement('div');
     feedback.className = 'reels-feedback';
@@ -1217,20 +1287,28 @@ function enterReelsFullscreen(card, vWrap, video) {
     // Hide UI elements
     const header = card.querySelector('.card-header');
     const actionRow = card.querySelector('.action-row');
-    const desc = card.querySelector('div:last-child');
+    const sideActions = card.querySelector('.side-actions');
+    let descElement = null;
+    
+    // Find description element
+    const lastDiv = card.querySelector('div:last-child');
+    if(lastDiv && lastDiv.textContent.includes('@')) {
+        descElement = lastDiv;
+    }
     
     if(header) header.style.display = 'none';
     if(actionRow) actionRow.style.display = 'none';
-    if(desc && desc.textContent.includes('@')) desc.style.display = 'none';
+    if(sideActions) sideActions.style.display = 'none';
     
     // Hide page UI
     const pageHeader = document.querySelector('header');
     const navTabs = document.querySelector('.nav-tabs');
+    const uploadBtn = document.getElementById('uploadBtn');
     if(pageHeader) pageHeader.style.display = 'none';
     if(navTabs) navTabs.style.display = 'none';
+    if(uploadBtn) uploadBtn.style.display = 'none';
     
-    // Keep other cards visible so swipe navigation works; apply focused fullscreen styles
-    vWrap.classList.add('reels-fs');
+    // Apply fullscreen styles to v-wrap
     vWrap.style.position = 'fixed';
     vWrap.style.top = '0';
     vWrap.style.left = '0';
@@ -1245,6 +1323,23 @@ function enterReelsFullscreen(card, vWrap, video) {
     video.style.height = '100%';
     video.style.objectFit = 'cover';
     
+    // Show description transparently at bottom
+    if(descElement) {
+        descElement.style.display = 'block';
+        descElement.style.position = 'fixed';
+        descElement.style.bottom = '20px';
+        descElement.style.left = '0';
+        descElement.style.right = '0';
+        descElement.style.zIndex = '10000';
+        descElement.style.background = 'rgba(0, 0, 0, 0.5)';
+        descElement.style.color = '#fff';
+        descElement.style.padding = '15px 20px';
+        descElement.style.fontSize = '0.9rem';
+        descElement.style.backdropFilter = 'blur(10px)';
+        descElement.style.borderTop = '1px solid rgba(255, 255, 255, 0.1)';
+    }
+    
+
     // Play
     video.play().catch(() => {});
 }
@@ -1257,17 +1352,29 @@ function exitReelsFullscreen(card, vWrap, video) {
     // Show UI elements
     const header = card.querySelector('.card-header');
     const actionRow = card.querySelector('.action-row');
-    const desc = card.querySelector('div:last-child');
+    const sideActions = card.querySelector('.side-actions');
+    let descElement = null;
+    
+    // Find description element
+    const lastDiv = card.querySelector('div:last-child');
+    if(lastDiv && lastDiv.textContent.includes('@')) {
+        descElement = lastDiv;
+    }
     
     if(header) header.style.display = 'flex';
     if(actionRow) actionRow.style.display = 'flex';
-    if(desc && desc.textContent.includes('@')) desc.style.display = 'block';
+    if(sideActions) sideActions.style.display = 'block';
+    if(descElement) {
+        descElement.style.cssText = ''; // Reset all styles
+    }
     
     // Show page UI
     const pageHeader = document.querySelector('header');
     const navTabs = document.querySelector('.nav-tabs');
+    const uploadBtn = document.getElementById('uploadBtn');
     if(pageHeader) pageHeader.style.display = 'block';
     if(navTabs) navTabs.style.display = 'flex';
+    if(uploadBtn) uploadBtn.style.display = 'flex';
     
     // Show all cards
     // leave other cards as they are; just remove fullscreen styles from this card

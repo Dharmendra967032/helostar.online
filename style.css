@@ -57,10 +57,10 @@
         .side-actions .action-btn:hover { transform: scale(1.12); }
 
         /* Like interactive style: transparent by default, dark red filled button when liked */
-        .side-actions .action-btn.liked { background: linear-gradient(135deg, #8b0000 0%, #5c0000 100%); border-color: #5c0000; box-shadow: 0 8px 20px rgba(139,0,0,0.35); }
-        .side-actions .action-btn.liked i.fas.fa-heart { color: #ff4d6d; filter: drop-shadow(0 4px 12px rgba(255,77,109,0.4)); transform: scale(1.15); }
+        .side-actions .action-btn.liked { background: transparent; border: none; }
+        .side-actions .action-btn.liked i.fas.fa-heart { color: #8b0000; filter: drop-shadow(0 4px 12px rgba(139,0,0,0.4)); transform: scale(1.2); }
         .action-btn.liked, .btn-act.liked { color: var(--helostar-pink) !important; }
-        .action-btn.liked i.fas.fa-heart, .btn-act.liked i.fas.fa-heart { color: #ff4d6d; transition: transform 180ms ease, filter 180ms ease; }
+        .action-btn.liked i.fas.fa-heart, .btn-act.liked i.fas.fa-heart { color: #8b0000; transition: transform 180ms ease, filter 180ms ease; }
         .like-pop { animation: pop .32s cubic-bezier(.2,.8,.2,1); }
         @keyframes pop { 0% { transform: scale(0.8); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
         .btn-act { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 25px; background: var(--glass-white); border: 1px solid var(--glass-border); font-size: 0.8rem; color: white; border: none; }

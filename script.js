@@ -503,7 +503,11 @@
     async function handleLike(btn, id) {
         if (isGuest || !currentUserEmail) return alert('Please login to like videos');
 
-        if (btn) btn.disabled = true;
+        // Disable button to prevent rapid clicks
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+        }
 
         try {
             // Check existing like by this user
@@ -511,10 +515,13 @@
 
             const hCountEl = document.querySelector(`.like-btn[data-id="${id}"] .count`);
             const sideCountEl = document.querySelector(`.side-actions .like-side[data-id="${id}"] .small-count`);
-            const currentLikes = parseInt((hCountEl && hCountEl.innerText) || (sideCountEl && sideCountEl.innerText) || '0');
+
+            // Get actual current like count from DB (not DOM)
+            const { data: videoData } = await _supabase.from('videos').select('likes').eq('id', id).single();
+            let currentLikes = (videoData && videoData.likes) || 0;
 
             if (existing && existing.length > 0) {
-                // Unlike
+                // Already liked -> unlike
                 await _supabase.from('likes').delete().eq('video_id', id).eq('user_email', currentUserEmail);
                 const newLikes = Math.max(0, currentLikes - 1);
                 if (hCountEl) hCountEl.innerText = newLikes;
@@ -523,7 +530,7 @@
                 document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.remove('liked'));
                 await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
             } else {
-                // Like
+                // Like (only if user hasn't liked already)
                 await _supabase.from('likes').insert([{ video_id: id, user_email: currentUserEmail }]);
                 const newLikes = currentLikes + 1;
                 if (hCountEl) hCountEl.innerText = newLikes;
@@ -535,7 +542,10 @@
         } catch (err) {
             console.error('Like error:', err);
         } finally {
-            if (btn) btn.disabled = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
         }
     }
 
@@ -651,6 +661,14 @@
             await new Promise(r => setTimeout(r, 300));
             await loadComments(id);
             await loadCommentsCount(id);
+            
+            // Auto-hide comments panel after successful post
+            const panel = document.getElementById(`comm-panel-${id}`);
+            if(panel) {
+                setTimeout(() => {
+                    panel.style.display = 'none';
+                }, 800);
+            }
         } catch(err) {
             console.error('Comment Error:', err);
             alert('Error posting comment: ' + err.message);

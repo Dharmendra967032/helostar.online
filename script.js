@@ -454,9 +454,7 @@
     async function handleLike(btn, id) {
         if(isGuest) return alert("Login to like!");
         
-        const isAlreadyLiked = btn.dataset.liked === 'true';
-        if(isAlreadyLiked) return alert("You already liked this video!");
-
+        
         btn.classList.toggle('liked');
         btn.dataset.liked = 'true';
         const countSpan = btn.querySelector('.count');

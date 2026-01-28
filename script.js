@@ -34,10 +34,25 @@
         entries.forEach(entry => {
             const vid = entry.target;
             if (entry.isIntersecting) {
+                // Pause all other videos before playing this one
+                document.querySelectorAll('video').forEach(v => {
+                    if(v !== vid) {
+                        try {
+                            v.pause();
+                            v.currentTime = 0;
+                            v.muted = false;
+                        } catch(e) {}
+                    }
+                });
+                // Play this video
+                vid.muted = false;
                 vid.play().catch(() => {});
                 incrementView(vid.dataset.id);
             } else {
-                vid.pause();
+                try {
+                    vid.pause();
+                    vid.currentTime = 0;
+                } catch(e) {}
             }
         });
     }, observerOptions);
@@ -335,51 +350,34 @@
         
         // Instagram-style shorts experience
         if(isVertical) {
-            // Add tap listener to v-wrap directly
-            vWrap.addEventListener('touchend', (e) => {
-                const touchX = e.changedTouches[0].clientX;
-                const touchY = e.changedTouches[0].clientY;
-                const rect = vWrap.getBoundingClientRect();
-                const relativeTouchX = touchX - rect.left;
-                const relativeHeight = rect.height;
-                const relativeWidth = rect.width;
-                
-                // Determine which third was tapped
-                if (relativeTouchX < relativeWidth / 3) {
-                    // LEFT - mute/unmute
-                    videoElem.muted = !videoElem.muted;
-                    showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
-                } else if (relativeTouchX > (relativeWidth * 2 / 3)) {
-                    // RIGHT - like
-                    const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
-                    if(likeBtn) {
-                        likeBtn.click();
-                        showReelsFeedback('like');
-                    }
-                } else {
-                    // CENTER - fullscreen
-                    const isFs = vWrap.classList.contains('reels-fs');
-                    if(!isFs) {
-                        enterReelsFullscreen(card, vWrap, videoElem);
-                    } else {
-                        exitReelsFullscreen(card, vWrap, videoElem);
-                    }
-                }
-            }, false);
-            
-            // Swipe detection
+            // Unified touch handler for both taps and swipes
             let touchStartY = 0;
+            let touchStartX = 0;
+            let swiping = false;
+            let isSwipeAttempt = false;
             
             vWrap.addEventListener('touchstart', (e) => {
+                if(swiping) return;
                 touchStartY = e.touches[0].clientY;
-            }, false);
+                touchStartX = e.touches[0].clientX;
+                isSwipeAttempt = false;
+            }, { passive: true });
             
             vWrap.addEventListener('touchend', (e) => {
-                const touchEndY = e.changedTouches[0].clientY;
-                const diff = touchStartY - touchEndY;
+                if(swiping) return;
                 
-                if(Math.abs(diff) > 100) {
-                    if(diff > 100) {
+                const touchEndY = e.changedTouches[0].clientY;
+                const touchEndX = e.changedTouches[0].clientX;
+                const diffY = touchStartY - touchEndY;
+                const diffX = touchStartX - touchEndX;
+                
+                // Check if this is a vertical swipe (swipe-first priority)
+                if(Math.abs(diffY) > 100 && Math.abs(diffY) > Math.abs(diffX)) {
+                    // VERTICAL SWIPE
+                    swiping = true;
+                    isSwipeAttempt = true;
+                    
+                    if(diffY > 100) {
                         // SWIPE UP - next
                         let nextCard = card.nextElementSibling;
                         while(nextCard && !nextCard.classList.contains('card')) {
@@ -387,21 +385,30 @@
                         }
                         if(nextCard) {
                             const nextVid = nextCard.querySelector('video');
-                            // Pause current and all other videos
-                            pauseAllOtherVideos(nextVid);
+                            // Pause ALL videos first
+                            document.querySelectorAll('video').forEach(v => {
+                                try {
+                                    v.pause();
+                                    v.currentTime = 0;
+                                    v.muted = false;
+                                } catch(err) {}
+                            });
+                            
                             // If in reels fullscreen, swap fullscreen to next card
                             if (vWrap.classList.contains('reels-fs')) {
                                 swapFullscreenToCard(card, nextCard);
                             } else {
                                 nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                // Auto-play immediately
-                                if(nextVid) {
-                                    nextVid.currentTime = 0;
-                                    nextVid.play().catch(() => {});
-                                }
+                                // Auto-play after scroll completes
+                                setTimeout(() => {
+                                    if(nextVid && nextVid.paused) {
+                                        nextVid.muted = false;
+                                        nextVid.play().catch(err => console.log('Play error:', err));
+                                    }
+                                }, 100);
                             }
                         }
-                    } else if(diff < -100) {
+                    } else if(diffY < -100) {
                         // SWIPE DOWN - previous
                         let prevCard = card.previousElementSibling;
                         while(prevCard && !prevCard.classList.contains('card')) {
@@ -409,22 +416,61 @@
                         }
                         if(prevCard) {
                             const prevVid = prevCard.querySelector('video');
-                            // Pause current and all other videos
-                            pauseAllOtherVideos(prevVid);
+                            // Pause ALL videos first
+                            document.querySelectorAll('video').forEach(v => {
+                                try {
+                                    v.pause();
+                                    v.currentTime = 0;
+                                    v.muted = false;
+                                } catch(err) {}
+                            });
+                            
                             if (vWrap.classList.contains('reels-fs')) {
                                 swapFullscreenToCard(card, prevCard);
                             } else {
                                 prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                // Auto-play immediately
-                                if(prevVid) {
-                                    prevVid.currentTime = 0;
-                                    prevVid.play().catch(() => {});
-                                }
+                                // Auto-play after scroll completes
+                                setTimeout(() => {
+                                    if(prevVid && prevVid.paused) {
+                                        prevVid.muted = false;
+                                        prevVid.play().catch(err => console.log('Play error:', err));
+                                    }
+                                }, 100);
                             }
                         }
                     }
+                    
+                    // Reset swipe flag after action
+                    setTimeout(() => { swiping = false; }, 500);
+                } else if(!isSwipeAttempt && Math.abs(diffY) < 100 && Math.abs(diffX) < 100) {
+                    // TAP (small or no movement) - handle left/center/right taps
+                    const touchX = e.changedTouches[0].clientX;
+                    const rect = vWrap.getBoundingClientRect();
+                    const relativeTouchX = touchX - rect.left;
+                    const relativeWidth = rect.width;
+                    
+                    if (relativeTouchX < relativeWidth / 3) {
+                        // LEFT - mute/unmute
+                        videoElem.muted = !videoElem.muted;
+                        showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
+                    } else if (relativeTouchX > (relativeWidth * 2 / 3)) {
+                        // RIGHT - like
+                        const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
+                        if(likeBtn) {
+                            likeBtn.click();
+                            showReelsFeedback('like');
+                        }
+                    } else {
+                        // CENTER - fullscreen
+                        const isFs = vWrap.classList.contains('reels-fs');
+                        if(!isFs) {
+                            enterReelsFullscreen(card, vWrap, videoElem);
+                        } else {
+                            exitReelsFullscreen(card, vWrap, videoElem);
+                        }
+                    }
                 }
-            }, false);
+            }, { passive: true });
         }
         
         // Load initial comments count and check if user liked
@@ -469,8 +515,13 @@
     function pauseAllOtherVideos(currentVideo) {
         document.querySelectorAll('video').forEach(vid => {
             if (vid !== currentVideo) {
-                vid.pause();
-                vid.currentTime = 0; // Reset to start
+                try {
+                    vid.pause();
+                    vid.currentTime = 0;
+                    vid.muted = false;
+                } catch (e) {
+                    console.error('Error pausing video:', e);
+                }
             }
         });
     }
@@ -496,15 +547,17 @@
                     }
                 }
                 
-                // Auto-swipe/scroll to next video
-                setTimeout(() => {
-                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 200);
+                // Auto-swipe/scroll to next video with minimal delay
+                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
-                // Auto-play next video
+                // The IntersectionObserver will auto-play when visible
+                // Just ensure the video is ready and not muted
                 setTimeout(() => {
-                    nextVideo.play().catch(() => {});
-                }, 1200);
+                    if(nextVideo && nextVideo.paused) {
+                        nextVideo.muted = false;
+                        nextVideo.play().catch(() => {});
+                    }
+                }, 300);
             }
         }
         
@@ -905,6 +958,62 @@
     }
 }
 
+// ========== AUDIO REUSE FEATURE (Instagram-style) ==========
+// Get list of audios from videos (grouped by unique audio tracks)
+async function getAvailableAudios() {
+    try {
+        const { data, error } = await _supabase
+            .from('videos')
+            .select('id, url, description, owner')
+            .not('audio_url', 'is', null)
+            .limit(50);
+        
+        if(error) {
+            console.log('Audio fetch (expected if no audio_url column):', error.message);
+            return [];
+        }
+        return data || [];
+    } catch(e) {
+        // audio_url column may not exist yet - this is expected
+        console.log('Audio reuse feature requires audio_url column in videos table');
+        return [];
+    }
+}
+
+// Display audio selector dialog
+async function showAudioSelector() {
+    const audios = await getAvailableAudios();
+    if(audios.length === 0) {
+        alert('No audios available yet. Upload videos to create reusable audios.');
+        return null;
+    }
+    
+    let html = '<div style="max-height: 300px; overflow-y: auto;">';
+    audios.forEach(audio => {
+        html += `<div style="padding:10px; border-bottom:1px solid #333; cursor:pointer;" onclick="selectAudio('${audio.id}', '${audio.audio_url || audio.url}')">
+            <div><b>@${audio.owner.split('@')[0]}</b></div>
+            <div style="font-size:0.8rem; color:#999;">${audio.description}</div>
+        </div>`;
+    });
+    html += '</div>';
+    document.getElementById('audioSelector')?.remove();
+    const div = document.createElement('div');
+    div.id = 'audioSelector';
+    div.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#1a1a1a; padding:20px; border-radius:10px; z-index:10000; max-width:300px;';
+    div.innerHTML = html;
+    document.body.appendChild(div);
+}
+
+// Called when user selects an audio
+function selectAudio(audioId, audioUrl) {
+    window.selectedAudioUrl = audioUrl;
+    window.selectedAudioId = audioId;
+    document.getElementById('audioSelector')?.remove();
+    alert('Audio selected! Now upload your video.');
+}
+
+// ========== END AUDIO REUSE FEATURE ==========
+
 // Triggered when user clicks the upload button
 async function handleUpload() {
     if(isGuest) return alert("Please login to upload!");
@@ -1192,33 +1301,52 @@ function swapFullscreenToCard(fromCard, toCard) {
 
     if (!toVWrap || !toVid) return;
 
-    // Pause ALL other videos first to prevent audio conflicts
-    document.querySelectorAll('video').forEach(vid => {
-        if (vid !== toVid) {
-            vid.pause();
-            vid.currentTime = 0;
+    try {
+        // Pause ALL videos and reset audio
+        document.querySelectorAll('video').forEach(vid => {
+            try {
+                vid.pause();
+                vid.currentTime = 0;
+                vid.muted = false;
+            } catch (e) {}
+        });
+
+        // Clean up previous fullscreen
+        if (fromVWrap) {
+            fromVWrap.classList.remove('reels-fs');
+            fromVWrap.style.cssText = '';
         }
-    });
 
-    // Remove fullscreen from previous
-    if (fromVWrap) fromVWrap.classList.remove('reels-fs');
+        // Apply fullscreen to new card
+        toVWrap.classList.add('reels-fs');
+        toVWrap.style.position = 'fixed';
+        toVWrap.style.top = '0';
+        toVWrap.style.left = '0';
+        toVWrap.style.width = '100vw';
+        toVWrap.style.height = '100vh';
+        toVWrap.style.zIndex = '9999';
+        toVWrap.style.margin = '0';
+        toVWrap.style.padding = '0';
+        
+        toVid.style.width = '100%';
+        toVid.style.height = '100%';
+        toVid.style.objectFit = 'cover';
 
-    // Apply fullscreen styles directly to new card (faster transition)
-    toVWrap.classList.add('reels-fs');
-    toVWrap.style.position = 'fixed';
-    toVWrap.style.top = '0';
-    toVWrap.style.left = '0';
-    toVWrap.style.width = '100vw';
-    toVWrap.style.height = '100vh';
-    toVWrap.style.zIndex = '9999';
-    toVWrap.style.margin = '0';
-    toVWrap.style.padding = '0';
-    toVid.style.width = '100%';
-    toVid.style.height = '100%';
-    toVid.style.objectFit = 'cover';
-
-    // Play new video
-    toVid.play().catch(()=>{});
+        // Play with proper promise handling
+        if (toVid.paused) {
+            const playPromise = toVid.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.log('Play failed, retrying...');
+                    setTimeout(() => {
+                        toVid.play().catch(e => console.log('Retry failed'));
+                    }, 100);
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Swap error:', e);
+    }
 }
 
 function reelsTapHandler(event, zone, videoId) {

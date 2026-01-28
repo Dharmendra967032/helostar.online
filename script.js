@@ -386,14 +386,16 @@
                             nextCard = nextCard.nextElementSibling;
                         }
                         if(nextCard) {
+                            const nextVid = nextCard.querySelector('video');
+                            // Pause current and all other videos
+                            pauseAllOtherVideos(nextVid);
                             // If in reels fullscreen, swap fullscreen to next card
                             if (vWrap.classList.contains('reels-fs')) {
                                 swapFullscreenToCard(card, nextCard);
                             } else {
                                 nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 setTimeout(() => {
-                                    const vid = nextCard.querySelector('video');
-                                    if(vid) vid.play().catch(() => {});
+                                    if(nextVid) nextVid.play().catch(() => {});
                                 }, 300);
                             }
                         }
@@ -404,13 +406,15 @@
                             prevCard = prevCard.previousElementSibling;
                         }
                         if(prevCard) {
+                            const prevVid = prevCard.querySelector('video');
+                            // Pause current and all other videos
+                            pauseAllOtherVideos(prevVid);
                             if (vWrap.classList.contains('reels-fs')) {
                                 swapFullscreenToCard(card, prevCard);
                             } else {
                                 prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 setTimeout(() => {
-                                    const vid = prevCard.querySelector('video');
-                                    if(vid) vid.play().catch(() => {});
+                                    if(prevVid) prevVid.play().catch(() => {});
                                 }, 300);
                             }
                         }
@@ -460,7 +464,10 @@
 
     function pauseAllOtherVideos(currentVideo) {
         document.querySelectorAll('video').forEach(vid => {
-            if (vid !== currentVideo) vid.pause();
+            if (vid !== currentVideo) {
+                vid.pause();
+                vid.currentTime = 0; // Reset to start
+            }
         });
     }
 
@@ -505,7 +512,10 @@
         if (isGuest || !currentUserEmail) return alert('Please login to like videos');
 
         // Cooldown check (500ms per video)
-        if (likeCooldown[id]) return;
+        if (likeCooldown[id]) {
+            console.log('Like cooldown active');
+            return;
+        }
         likeCooldown[id] = true;
         setTimeout(() => { delete likeCooldown[id]; }, 500);
 
@@ -516,12 +526,21 @@
         }
 
         try {
-            // Check existing like by this user
-            const { data: existing } = await _supabase.from('likes').select('*').eq('video_id', id).eq('user_email', currentUserEmail);
+            // Check existing like by this user FOR THIS VIDEO
+            const { data: existing, error: checkErr } = await _supabase
+                .from('likes')
+                .select('*')
+                .eq('video_id', id)
+                .eq('user_email', currentUserEmail);
+
+            if (checkErr) {
+                console.error('Check like error:', checkErr);
+                return;
+            }
 
             // If already liked, do nothing (one-time only)
             if (existing && existing.length > 0) {
-                console.log('Already liked - no action');
+                console.log('User already liked this video - no action');
                 return;
             }
 
@@ -529,12 +548,26 @@
             const sideCountEl = document.querySelector(`.side-actions .like-side[data-id="${id}"] .small-count`);
 
             // Get actual current like count from DB
-            const { data: videoData } = await _supabase.from('videos').select('likes').eq('id', id).single();
-            let currentLikes = (videoData && videoData.likes) || 0;
+            const { data: videoData, error: videoErr } = await _supabase.from('videos').select('likes').eq('id', id).single();
+            
+            if (videoErr) {
+                console.error('Video fetch error:', videoErr);
+                return;
+            }
 
-            // Insert like record
-            await _supabase.from('likes').insert([{ video_id: id, user_email: currentUserEmail }]);
+            let currentLikes = (videoData && videoData.likes) || 0;
             const newLikes = currentLikes + 1;
+
+            // Insert like record with constraint (upsert would replace, insert fails if exists)
+            const { error: insertErr } = await _supabase.from('likes').insert([{ 
+                video_id: id, 
+                user_email: currentUserEmail 
+            }]);
+            
+            if (insertErr) {
+                console.error('Insert like error (user may have already liked):', insertErr);
+                return;
+            }
 
             // Update UI
             if (hCountEl) hCountEl.innerText = newLikes;
@@ -543,7 +576,11 @@
             document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
             
             // Update video likes count in DB
-            await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+            const { error: updateErr } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+            
+            if (updateErr) {
+                console.error('Update video likes error:', updateErr);
+            }
         } catch (err) {
             console.error('Like error:', err);
         } finally {
@@ -1143,10 +1180,18 @@ function swapFullscreenToCard(fromCard, toCard) {
 
     if (!toVWrap || !toVid) return;
 
-    // Pause previous video
-    if (fromVid) fromVid.pause();
+    // Pause ALL other videos first to prevent audio conflicts
+    document.querySelectorAll('video').forEach(vid => {
+        if (vid !== toVid) {
+            vid.pause();
+            vid.currentTime = 0;
+        }
+    });
 
-    // Apply fullscreen styles directly to new card (faster than exit/enter)
+    // Remove fullscreen from previous
+    if (fromVWrap) fromVWrap.classList.remove('reels-fs');
+
+    // Apply fullscreen styles directly to new card (faster transition)
     toVWrap.classList.add('reels-fs');
     toVWrap.style.position = 'fixed';
     toVWrap.style.top = '0';

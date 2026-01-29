@@ -2,81 +2,31 @@
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
-        if (window.firebase && firebase.initializeApp) {
-            try {
-                firebase.initializeApp({
-                    apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
-                    authDomain: "helostar-134d9.firebaseapp.com",
-                    projectId: "helostar-134d9"
-                });
-            } catch(e) {
-                console.warn('Firebase initializeApp failed:', e.message || e);
-            }
-        } else {
-            console.warn('Firebase SDK not found; auth features will be disabled until SDK loads.');
-        }
+    firebase.initializeApp({
+      apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
+      authDomain: "helostar-134d9.firebaseapp.com",
+      projectId: "helostar-134d9"
+    });
 
-        let _supabase;
-        if (window.supabase && supabase.createClient) {
-                try {
-                        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                } catch(e) {
-                        console.warn('Supabase client creation failed:', e.message || e);
-                        _supabase = null;
-                }
-        } else {
-                console.warn('Supabase SDK not found; storage/DB features will be disabled until SDK loads.');
-                // Minimal chainable/thenable stub to avoid runtime crashes when SDK missing.
-                const makeQuery = () => {
-                    const q = {
-                        select() { return q; },
-                        order() { return q; },
-                        eq() { return q; },
-                        limit() { return q; },
-                        in() { return q; },
-                        single() { return q; },
-                        then(resolve) { resolve({ data: [] }); return Promise.resolve(); },
-                        catch() { return q; }
-                    };
-                    return q;
-                };
-
-                _supabase = {
-                    from: () => makeQuery(),
-                    storage: {
-                        from: () => ({
-                            upload: async () => ({ error: { message: 'Supabase storage not loaded' } }),
-                            getPublicUrl: () => ({ data: { publicUrl: '' } }),
-                            remove: async () => ({ error: { message: 'Supabase storage not loaded' } })
-                        })
-                    },
-                    rpc: async () => ({ error: { message: 'Supabase not loaded' } })
-                };
-        }
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUserEmail = null;
     let currentTab = 'short';
     let currentCat = 'All';
     let isGuest = false;
 
     // --- AUTH ---
-    if (window.firebase && firebase.auth) {
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) { 
-                currentUserEmail = user.email;
-                const userDisplay = document.getElementById('userDisplay');
-                if(userDisplay) {
-                    userDisplay.innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
-                }
-                start(false); 
-            } else if (localStorage.getItem('guest')) {
-                start(true);
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) { 
+            currentUserEmail = user.email;
+            const userDisplay = document.getElementById('userDisplay');
+            if(userDisplay) {
+                userDisplay.innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
             }
-        });
-    } else {
-        console.warn('Firebase SDK not available. Auth disabled until SDK loads.');
-        // Fallback to guest if configured
-        if (localStorage.getItem('guest')) start(true);
-    }
+            start(false); 
+        } else if (localStorage.getItem('guest')) {
+            start(true);
+        }
+    });
 
 // --- AUTO-PLAY / AUTO-PAUSE LOGIC ---
     const observerOptions = { threshold: 0.6 };
@@ -335,7 +285,8 @@
         
         card.innerHTML = `
         <div class="card-header">
-            <img src="${avatarUrl}" class="user-avatar" style="cursor: ${currentUserEmail === v.owner ? 'pointer' : 'default'};" data-email="${v.owner}" ${currentUserEmail === v.owner ? 'onclick="updateProfilePicture()"' : ''}>
+            <img src="${avatarUrl}" class="user-avatar" style="cursor: ${currentUserEmail === v.owner ? 'pointer' : 'default'};\" data-email="${v.owner}"
+            onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
             <div style="flex:1;">
                 <div style="font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
                 <div class="follower-count" data-creator="${v.owner}" style="font-size:0.75rem; color:#999;">0 followers</div>
@@ -351,7 +302,6 @@
                 ${isVertical ? 'loop playsinline' : 'controls'}
                 onclick="togglePlay(this)"
             ></video>
-                ${isVertical ? '<div class="mute-center"><i class="fas fa-volume-mute"></i></div>' : ''}
                
             </div>
             
@@ -484,15 +434,18 @@
                             });
                             
                             // If in reels fullscreen, swap fullscreen to next card
-                            // Scroll to next card (no fullscreen swapping)
-                            nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            // Auto-play after scroll completes
-                            setTimeout(() => {
-                                if(nextVid && nextVid.paused) {
-                                    nextVid.muted = false;
-                                    nextVid.play().catch(err => console.log('Play error:', err));
-                                }
-                            }, 100);
+                            if (vWrap.classList.contains('reels-fs')) {
+                                swapFullscreenToCard(card, nextCard);
+                            } else {
+                                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                // Auto-play after scroll completes
+                                setTimeout(() => {
+                                    if(nextVid && nextVid.paused) {
+                                        nextVid.muted = false;
+                                        nextVid.play().catch(err => console.log('Play error:', err));
+                                    }
+                                }, 100);
+                            }
                         }
                     } else if(diffY < -100) {
                         // SWIPE DOWN - previous
@@ -511,15 +464,18 @@
                                 } catch(err) {}
                             });
                             
-                            // Scroll to previous card (no fullscreen swapping)
-                            prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            // Auto-play after scroll completes
-                            setTimeout(() => {
-                                if(prevVid && prevVid.paused) {
-                                    prevVid.muted = false;
-                                    prevVid.play().catch(err => console.log('Play error:', err));
-                                }
-                            }, 100);
+                            if (vWrap.classList.contains('reels-fs')) {
+                                swapFullscreenToCard(card, prevCard);
+                            } else {
+                                prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                // Auto-play after scroll completes
+                                setTimeout(() => {
+                                    if(prevVid && prevVid.paused) {
+                                        prevVid.muted = false;
+                                        prevVid.play().catch(err => console.log('Play error:', err));
+                                    }
+                                }, 100);
+                            }
                         }
                     }
                     
@@ -535,41 +491,45 @@
                     const tapDistance = Math.hypot(touchX - lastTapX, touchY - lastTapY);
                     
                     // Check for double tap (within 300ms and 50px distance)
-                        if (tapDuration < 300 && tapDistance < 50) {
-                            // DOUBLE TAP - Like
-                            const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
-                            if(likeBtn) {
-                                likeBtn.click();
-                                // Show heart animation at tap location
-                                showHeartAnimation(touchX - rect.left, touchY - rect.top);
-                            }
-                            lastTapTime = 0; // Reset to prevent triple tap
-                        } else {
-                            // SINGLE TAP - toggle mute/unmute (no fullscreen)
-                            lastTapTime = currentTime;
-                            lastTapX = touchX;
-                            lastTapY = touchY;
+                    if (tapDuration < 300 && tapDistance < 50) {
+                        // DOUBLE TAP - Like/Unlike
+                        const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
+                        if(likeBtn) {
+                            likeBtn.click();
+                            // Show heart animation at tap location
+                            showHeartAnimation(touchX - rect.left, touchY - rect.top);
+                        }
+                        lastTapTime = 0; // Reset to prevent triple tap
+                    } else {
+                        // SINGLE TAP
+                        lastTapTime = currentTime;
+                        lastTapX = touchX;
+                        lastTapY = touchY;
+                        
+                        if (relativeTouchX < relativeWidth / 3) {
+                            // LEFT - mute/unmute
                             videoElem.muted = !videoElem.muted;
                             showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
+                        } else if (relativeTouchX > (relativeWidth * 2 / 3)) {
+                            // RIGHT - fullscreen
+                            const isFs = vWrap.classList.contains('reels-fs');
+                            if(!isFs) {
+                                enterReelsFullscreen(card, vWrap, videoElem);
+                            } else {
+                                exitReelsFullscreen(card, vWrap, videoElem);
+                            }
+                        } else {
+                            // CENTER - fullscreen
+                            const isFs = vWrap.classList.contains('reels-fs');
+                            if(!isFs) {
+                                enterReelsFullscreen(card, vWrap, videoElem);
+                            } else {
+                                exitReelsFullscreen(card, vWrap, videoElem);
+                            }
                         }
                     }
                 }
             }, { passive: true });
-
-            // Center mute button listener (if present)
-            const muteCenterBtn = card.querySelector('.mute-center');
-            if (muteCenterBtn) {
-                muteCenterBtn.addEventListener('click', (ev) => {
-                    ev.stopPropagation();
-                    const vid = card.querySelector('video');
-                    if(!vid) return;
-                    vid.muted = !vid.muted;
-                    showReelsFeedback(vid.muted ? 'mute' : 'unmute');
-                    // update icon
-                    const icon = muteCenterBtn.querySelector('i');
-                    if(icon) icon.className = vid.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
-                });
-            }
         }
         
         // Load initial comments count and check if user liked
@@ -996,9 +956,9 @@
         document.getElementById(t === 'short' ? 'tShort' : 'tFull').classList.add('active');
         renderFeed();
     }
-    function logout() { localStorage.clear(); if (window.firebase && firebase.auth) { firebase.auth().signOut().then(() => location.reload()); } else { location.reload(); } }
+    function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
-    function signInWithGoogle() { if (window.firebase && firebase.auth) { return firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); } alert('Firebase not loaded yet. Please wait and try again.'); }
+    function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
     window.onclick = function(event) {
         if (!event.target.matches('.menu-trigger') && !event.target.closest('.dropdown-content')) {
@@ -1272,12 +1232,8 @@ async function updateProfilePicture() {
             });
             
             alert("Profile Picture Updated!");
-            // Update visible user display (if present)
-            const userDisplay = document.getElementById('userDisplay');
-            if(userDisplay && userDisplay.querySelector('img')) {
-                userDisplay.querySelector('img').src = urlData.publicUrl;
-            }
-            // No full reload: avatars updated above
+            // Reload to refresh everything
+            location.reload();
         } catch(err) {
             console.error('Profile update error:', err);
             alert("Error: " + err.message);
@@ -1400,19 +1356,180 @@ function showReelsFeedback(type) {
 }
 
 function enterReelsFullscreen(card, vWrap, video) {
-    // Fullscreen shorts disabled. No-op to avoid full-width behavior.
-    return;
+    // Add fullscreen class
+    vWrap.classList.add('reels-fs');
+    card.classList.add('reels-fs-card');
+    
+    // Hide UI elements
+    const header = card.querySelector('.card-header');
+    const actionRow = card.querySelector('.action-row');
+    const sideActions = card.querySelector('.side-actions');
+    let descElement = null;
+    
+    // Find description element
+    const lastDiv = card.querySelector('div:last-child');
+    if(lastDiv && lastDiv.textContent.includes('@')) {
+        descElement = lastDiv;
+    }
+    
+    if(header) header.style.display = 'none';
+    if(actionRow) actionRow.style.display = 'none';
+    if(sideActions) sideActions.style.display = 'none';
+    
+    // Hide page UI
+    const pageHeader = document.querySelector('header');
+    const navTabs = document.querySelector('.nav-tabs');
+    const uploadBtn = document.getElementById('uploadBtn');
+    if(pageHeader) pageHeader.style.display = 'none';
+    if(navTabs) navTabs.style.display = 'none';
+    if(uploadBtn) uploadBtn.style.display = 'none';
+    
+    // Apply fullscreen styles to v-wrap
+    vWrap.style.position = 'fixed';
+    vWrap.style.top = '0';
+    vWrap.style.left = '0';
+    vWrap.style.width = '100vw';
+    vWrap.style.height = '100vh';
+    vWrap.style.zIndex = '9999';
+    vWrap.style.margin = '0';
+    vWrap.style.padding = '0';
+
+    // Video fill
+    video.style.width = '100%';
+    video.style.height = '100%';
+    video.style.objectFit = 'cover';
+    
+    // Show description transparently at bottom
+    if(descElement) {
+        descElement.style.display = 'block';
+        descElement.style.position = 'fixed';
+        descElement.style.bottom = '20px';
+        descElement.style.left = '0';
+        descElement.style.right = '0';
+        descElement.style.zIndex = '10000';
+        descElement.style.background = 'rgba(0, 0, 0, 0.5)';
+        descElement.style.color = '#fff';
+        descElement.style.padding = '15px 20px';
+        descElement.style.fontSize = '0.9rem';
+        descElement.style.backdropFilter = 'blur(10px)';
+        descElement.style.borderTop = '1px solid rgba(255, 255, 255, 0.1)';
+    }
+    
+
+    // Play
+    video.play().catch(() => {});
 }
 
 function exitReelsFullscreen(card, vWrap, video) {
-    // Fullscreen shorts disabled. No-op.
-    return;
+    // Remove fullscreen class
+    vWrap.classList.remove('reels-fs');
+    card.classList.remove('reels-fs-card');
+    
+    // Show UI elements
+    const header = card.querySelector('.card-header');
+    const actionRow = card.querySelector('.action-row');
+    const sideActions = card.querySelector('.side-actions');
+    let descElement = null;
+    
+    // Find description element
+    const lastDiv = card.querySelector('div:last-child');
+    if(lastDiv && lastDiv.textContent.includes('@')) {
+        descElement = lastDiv;
+    }
+    
+    if(header) header.style.display = 'flex';
+    if(actionRow) actionRow.style.display = 'flex';
+    if(sideActions) sideActions.style.display = 'block';
+    if(descElement) {
+        descElement.style.cssText = ''; // Reset all styles
+    }
+    
+    // Show page UI
+    const pageHeader = document.querySelector('header');
+    const navTabs = document.querySelector('.nav-tabs');
+    const uploadBtn = document.getElementById('uploadBtn');
+    if(pageHeader) pageHeader.style.display = 'block';
+    if(navTabs) navTabs.style.display = 'flex';
+    if(uploadBtn) uploadBtn.style.display = 'flex';
+    
+    // Show all cards
+    // leave other cards as they are; just remove fullscreen styles from this card
+    
+    // Reset styles
+    vWrap.style.position = '';
+    vWrap.style.top = '';
+    vWrap.style.left = '';
+    vWrap.style.width = '';
+    vWrap.style.height = '';
+    vWrap.style.zIndex = '';
+    vWrap.style.margin = '';
+    vWrap.style.padding = '';
+    
+    // Reset video
+    video.style.width = '';
+    video.style.height = '';
+    video.style.objectFit = '';
+    
+    // Restore scroll
+    // body overflow unchanged to allow smooth swiping while in fullscreen mode
 }
 
 // Swap fullscreen from one card to another (used for swiping while in reels fullscreen)
 function swapFullscreenToCard(fromCard, toCard) {
-    // Fullscreen swap disabled. No-op.
-    return;
+    if(!toCard || !fromCard) return;
+    const fromVWrap = fromCard.querySelector('.v-wrap');
+    const fromVid = fromCard.querySelector('video');
+    const toVWrap = toCard.querySelector('.v-wrap');
+    const toVid = toCard.querySelector('video');
+
+    if (!toVWrap || !toVid) return;
+
+    try {
+        // Pause ALL videos and reset audio
+        document.querySelectorAll('video').forEach(vid => {
+            try {
+                vid.pause();
+                vid.currentTime = 0;
+                vid.muted = false;
+            } catch (e) {}
+        });
+
+        // Clean up previous fullscreen
+        if (fromVWrap) {
+            fromVWrap.classList.remove('reels-fs');
+            fromVWrap.style.cssText = '';
+        }
+
+        // Apply fullscreen to new card
+        toVWrap.classList.add('reels-fs');
+        toVWrap.style.position = 'fixed';
+        toVWrap.style.top = '0';
+        toVWrap.style.left = '0';
+        toVWrap.style.width = '100vw';
+        toVWrap.style.height = '100vh';
+        toVWrap.style.zIndex = '9999';
+        toVWrap.style.margin = '0';
+        toVWrap.style.padding = '0';
+        
+        toVid.style.width = '100%';
+        toVid.style.height = '100%';
+        toVid.style.objectFit = 'cover';
+
+        // Play with proper promise handling
+        if (toVid.paused) {
+            const playPromise = toVid.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.log('Play failed, retrying...');
+                    setTimeout(() => {
+                        toVid.play().catch(e => console.log('Retry failed'));
+                    }, 100);
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Swap error:', e);
+    }
 }
 
 function reelsTapHandler(event, zone, videoId) {

@@ -56,11 +56,12 @@
                     vid.play().catch(() => {});
                 } catch(e) {}
                 incrementView(vid.dataset.id);
-            } else {
+                } else {
                 try {
                     // If video is currently in reels fullscreen / fullscreen-short, do not auto-pause it
+                    // Also do NOT auto-pause vertical shorts (they should keep playing unless explicitly stopped elsewhere)
                     const wrapper = vid.closest('.v-wrap');
-                    if (wrapper && (wrapper.classList.contains('reels-fs') || wrapper.classList.contains('fullscreen-short'))) {
+                    if (wrapper && (wrapper.classList.contains('reels-fs') || wrapper.classList.contains('fullscreen-short') || wrapper.classList.contains('v-short'))) {
                         return;
                     }
                     vid.pause();
@@ -312,7 +313,7 @@
                 src="${v.url}" 
                 poster="${v.thumbnail_url || ''}" 
                 ${isVertical ? 'loop playsinline' : 'controls'}
-                onclick="togglePlay(this)"
+                ${isVertical ? '' : 'onclick="togglePlay(this)"'}
             ></video>
                 ${isVertical ? '<div class="mute-center"><i class="fas fa-volume-mute"></i></div>' : ''}
                
@@ -518,15 +519,12 @@
                         lastTapTime = currentTime;
                         lastTapX = touchX;
                         lastTapY = touchY;
-                        // Prefer a dedicated center mute toggle. Right side enters fullscreen.
+                        // Prefer a dedicated center mute toggle. Right side used to enter fullscreen,
+                        // but for fixed-size shorts we disable fullscreen-on-right-tap so shorts remain fixed-size.
                         if (relativeTouchX > (relativeWidth * 2 / 3)) {
-                            // RIGHT - fullscreen
-                            const isFs = vWrap.classList.contains('reels-fs');
-                            if(!isFs) {
-                                enterReelsFullscreen(card, vWrap, videoElem);
-                            } else {
-                                exitReelsFullscreen(card, vWrap, videoElem);
-                            }
+                            // RIGHT - do NOT expand. Treat same as center: toggle mute/unmute to avoid pausing/expansion.
+                            videoElem.muted = !videoElem.muted;
+                            showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
                         } else {
                             // CENTER / LEFT - toggle mute/unmute
                             videoElem.muted = !videoElem.muted;
@@ -595,6 +593,9 @@
         document.querySelectorAll('video').forEach(vid => {
             if (vid !== currentVideo) {
                 try {
+                    // Do not pause vertical shorts; they should keep playing
+                    const wrapper = vid.closest('.v-wrap');
+                    if (wrapper && wrapper.classList.contains('v-short')) return;
                     vid.pause();
                     vid.currentTime = 0;
                     vid.muted = false;

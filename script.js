@@ -34,16 +34,10 @@
         entries.forEach(entry => {
             const vid = entry.target;
             if (entry.isIntersecting) {
-                // Pause all other videos before playing this one, but don't pause videos
-                // that are currently in reels/fullscreen mode so they keep playing
+                // Pause all other videos before playing this one
                 document.querySelectorAll('video').forEach(v => {
                     if(v !== vid) {
                         try {
-                            const wrapper = v.closest('.v-wrap');
-                            if (wrapper && (wrapper.classList.contains('reels-fs') || wrapper.classList.contains('fullscreen-short'))) {
-                                // keep fullscreen shorts playing
-                                return;
-                            }
                             v.pause();
                             v.currentTime = 0;
                             v.muted = false;
@@ -51,18 +45,11 @@
                     }
                 });
                 // Play this video
-                try {
-                    vid.muted = false;
-                    vid.play().catch(() => {});
-                } catch(e) {}
+                vid.muted = false;
+                vid.play().catch(() => {});
                 incrementView(vid.dataset.id);
             } else {
                 try {
-                    // If video is currently in reels fullscreen / fullscreen-short, do not auto-pause it
-                    const wrapper = vid.closest('.v-wrap');
-                    if (wrapper && (wrapper.classList.contains('reels-fs') || wrapper.classList.contains('fullscreen-short'))) {
-                        return;
-                    }
                     vid.pause();
                     vid.currentTime = 0;
                 } catch(e) {}
@@ -447,18 +434,15 @@
                             });
                             
                             // If in reels fullscreen, swap fullscreen to next card
-                            if (vWrap.classList.contains('reels-fs')) {
-                                swapFullscreenToCard(card, nextCard);
-                            } else {
-                                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                // Auto-play after scroll completes
-                                setTimeout(() => {
-                                    if(nextVid && nextVid.paused) {
-                                        nextVid.muted = false;
-                                        nextVid.play().catch(err => console.log('Play error:', err));
-                                    }
-                                }, 100);
-                            }
+                            // Scroll to next card (no fullscreen swapping)
+                            nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // Auto-play after scroll completes
+                            setTimeout(() => {
+                                if(nextVid && nextVid.paused) {
+                                    nextVid.muted = false;
+                                    nextVid.play().catch(err => console.log('Play error:', err));
+                                }
+                            }, 100);
                         }
                     } else if(diffY < -100) {
                         // SWIPE DOWN - previous
@@ -477,18 +461,15 @@
                                 } catch(err) {}
                             });
                             
-                            if (vWrap.classList.contains('reels-fs')) {
-                                swapFullscreenToCard(card, prevCard);
-                            } else {
-                                prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                // Auto-play after scroll completes
-                                setTimeout(() => {
-                                    if(prevVid && prevVid.paused) {
-                                        prevVid.muted = false;
-                                        prevVid.play().catch(err => console.log('Play error:', err));
-                                    }
-                                }, 100);
-                            }
+                            // Scroll to previous card (no fullscreen swapping)
+                            prevCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // Auto-play after scroll completes
+                            setTimeout(() => {
+                                if(prevVid && prevVid.paused) {
+                                    prevVid.muted = false;
+                                    prevVid.play().catch(err => console.log('Play error:', err));
+                                }
+                            }, 100);
                         }
                     }
                     
@@ -504,31 +485,20 @@
                     const tapDistance = Math.hypot(touchX - lastTapX, touchY - lastTapY);
                     
                     // Check for double tap (within 300ms and 50px distance)
-                    if (tapDuration < 300 && tapDistance < 50) {
-                        // DOUBLE TAP - Like/Unlike
-                        const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
-                        if(likeBtn) {
-                            likeBtn.click();
-                            // Show heart animation at tap location
-                            showHeartAnimation(touchX - rect.left, touchY - rect.top);
-                        }
-                        lastTapTime = 0; // Reset to prevent triple tap
-                    } else {
-                        // SINGLE TAP
-                        lastTapTime = currentTime;
-                        lastTapX = touchX;
-                        lastTapY = touchY;
-                        // Prefer a dedicated center mute toggle. Right side enters fullscreen.
-                        if (relativeTouchX > (relativeWidth * 2 / 3)) {
-                            // RIGHT - fullscreen
-                            const isFs = vWrap.classList.contains('reels-fs');
-                            if(!isFs) {
-                                enterReelsFullscreen(card, vWrap, videoElem);
-                            } else {
-                                exitReelsFullscreen(card, vWrap, videoElem);
+                        if (tapDuration < 300 && tapDistance < 50) {
+                            // DOUBLE TAP - Like
+                            const likeBtn = card.querySelector(`.like-btn[data-id="${v.id}"]`);
+                            if(likeBtn) {
+                                likeBtn.click();
+                                // Show heart animation at tap location
+                                showHeartAnimation(touchX - rect.left, touchY - rect.top);
                             }
+                            lastTapTime = 0; // Reset to prevent triple tap
                         } else {
-                            // CENTER / LEFT - toggle mute/unmute
+                            // SINGLE TAP - toggle mute/unmute (no fullscreen)
+                            lastTapTime = currentTime;
+                            lastTapX = touchX;
+                            lastTapY = touchY;
                             videoElem.muted = !videoElem.muted;
                             showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
                         }

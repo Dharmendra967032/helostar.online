@@ -1221,66 +1221,75 @@ async function handleUpload() {
     videoIn.click();
 }
 
+// --- UPDATED UPLOAD LOGIC ---
 async function updateProfilePicture() {
     const fileIn = document.createElement('input');
-    fileIn.type = 'file'; 
-    fileIn.accept = 'image/*';
+    fileIn.type = 'file'; fileIn.accept = 'image/*';
     
     fileIn.onchange = async (e) => {
         try {
             const file = e.target.files[0];
             if(!file) return;
 
-            // Use a clean filename
-            const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
-            
-            // 1. Upload to 'avatars' bucket
+            // Generate a unique path: "user_email/timestamp.png"
+            const fileExt = file.name.split('.').pop();
+            const filePath = `${currentUserEmail}/${Date.now()}.${fileExt}`;
+
+            // 1. Upload to Supabase Storage
             const { error: uploadErr } = await _supabase.storage
                 .from('avatars')
-                .upload(fileName, file);
+                .upload(filePath, file);
 
             if(uploadErr) throw uploadErr;
 
-            // 2. Get Public URL
+            // 2. Get the Public URL
             const { data: urlData } = _supabase.storage
                 .from('avatars')
-                .getPublicUrl(fileName);
+                .getPublicUrl(filePath);
             
             const publicUrl = urlData.publicUrl;
 
-            // 3. Use UPSERT (Updates if email exists, Inserts if not)
+            // 3. Save to Database PERMANENTLY (Upsert)
             const { error: dbErr } = await _supabase
                 .from('profiles')
                 .upsert({ 
                     email: currentUserEmail, 
-                    avatar_url: publicUrl 
-                }, { onConflict: 'email' }); // Ensure 'email' is a unique column in your DB
-            
+                    avatar_url: publicUrl,
+                    updated_at: new Date() 
+                }, { onConflict: 'email' });
+
             if(dbErr) throw dbErr;
-            
-            // 4. Update UI
-            updateUIAvatars(publicUrl);
-            
-            alert("Profile Picture Updated!");
+
+            // 4. Update the page immediately
+            refreshAvatarUI(publicUrl);
+            alert("Profile picture saved permanently!");
+
         } catch(err) {
-            console.error('Profile update error:', err);
-            alert("Error: " + err.message);
+            console.error('Error:', err);
+            alert("Update failed: " + err.message);
         }
     };
     fileIn.click();
 }
 
-// Helper to keep code clean
-function updateUIAvatars(url) {
-    if(!window.profileAvatarMap) window.profileAvatarMap = {};
-    window.profileAvatarMap[currentUserEmail] = url;
+// --- NEW: FETCH LOGIC (Run this when your app starts/user logs in) ---
+async function loadUserProfile() {
+    const { data, error } = await _supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('email', currentUserEmail)
+        .single();
 
+    if (data && data.avatar_url) {
+        refreshAvatarUI(data.avatar_url);
+    }
+}
+
+function refreshAvatarUI(url) {
     document.querySelectorAll('.user-avatar').forEach(img => {
-        if(img.dataset.email === currentUserEmail || img.style.cursor === 'pointer') {
+        if(img.dataset.email === currentUserEmail || img.id === 'navbarAvatar') {
             img.src = url;
             img.style.borderRadius = '50%';
-            img.style.width = '40px';
-            img.style.height = '40px';
             img.style.objectFit = 'cover';
         }
     });

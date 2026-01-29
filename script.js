@@ -707,55 +707,48 @@
                 return;
             }
 
-            const hCountEl = document.querySelector(`.like-btn[data-id="${id}"] .count`);
-            const sideCountEl = document.querySelector(`.side-actions .like-side[data-id="${id}"] .small-count`);
-
-            // Get actual current like count from DB
-            const { data: videoData, error: videoErr } = await _supabase.from('videos').select('likes').eq('id', id).single();
-            
-            if (videoErr) {
-                console.error('Video fetch error:', videoErr);
-                return;
-            }
-
-            let currentLikes = (videoData && videoData.likes) || 0;
+            const hCountEl = document.querySelector(`.like-btn[data-id=\"${id}\"] .count`);
+            const sideCountEl = document.querySelector(`.side-actions .like-side[data-id=\"${id}\"] .small-count`);
 
             if (existing && existing.length > 0) {
                 // User already liked -> perform UNLIKE
-                const newLikes = Math.max(currentLikes - 1, 0);
-
-                // Update UI immediately
-                if (hCountEl) hCountEl.innerText = newLikes;
-                if (sideCountEl) sideCountEl.innerText = newLikes;
-                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => { b.classList.remove('liked'); b.dataset.liked = 'false'; });
-                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.remove('liked'));
-
-                // Delete like record
                 const { error: delErr } = await _supabase.from('likes').delete().eq('video_id', id).eq('user_email', currentUserEmail);
                 if (delErr) console.error('Unlike delete error:', delErr);
-
-                // Update video likes count in DB
-                const { error: updateErr } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
-                if (updateErr) console.error('Update video likes error (unlike):', updateErr);
             } else {
-                // Perform LIKE
-                const newLikes = currentLikes + 1;
-
-                // Update UI BEFORE DB to show immediate feedback
-                if (hCountEl) hCountEl.innerText = newLikes;
-                if (sideCountEl) sideCountEl.innerText = newLikes;
-                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => { b.classList.add('liked'); b.dataset.liked = 'true'; });
-                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
-
-                // Insert like record
+                // Perform LIKE (ignore insert errors; we'll compute authoritative count next)
                 const { error: insertErr } = await _supabase.from('likes').insert([{ video_id: id, user_email: currentUserEmail }]);
-                if (insertErr) {
-                    console.error('Insert like error:', insertErr);
-                }
+                if (insertErr) console.error('Insert like error:', insertErr);
+            }
 
-                // Update video likes count in DB
-                const { error: updateErr } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+            // Compute authoritative like count from likes table
+            let likesCount = 0;
+            try {
+                const { data: likesData, count } = await _supabase.from('likes').select('*', { count: 'exact' }).eq('video_id', id);
+                if (typeof count === 'number') likesCount = count; else likesCount = (likesData && likesData.length) ? likesData.length : 0;
+            } catch (cntErr) {
+                console.error('Count likes error:', cntErr);
+            }
+
+            // Update UI with authoritative count
+            if (hCountEl) hCountEl.innerText = likesCount;
+            if (sideCountEl) sideCountEl.innerText = likesCount;
+
+            // Update like button states based on whether current user still has a like
+            try {
+                const { data: nowLiked } = await _supabase.from('likes').select('*').eq('video_id', id).eq('user_email', currentUserEmail);
+                const liked = nowLiked && nowLiked.length > 0;
+                document.querySelectorAll(`.like-btn[data-id=\"${id}\"]`).forEach(b => { if(liked) { b.classList.add('liked'); b.dataset.liked = 'true'; } else { b.classList.remove('liked'); b.dataset.liked = 'false'; } });
+                document.querySelectorAll(`.side-actions .like-side[data-id=\"${id}\"]`).forEach(b => { if(liked) b.classList.add('liked'); else b.classList.remove('liked'); });
+            } catch (stateErr) {
+                console.error('Like state update error:', stateErr);
+            }
+
+            // Persist authoritative count to videos table
+            try {
+                const { error: updateErr } = await _supabase.from('videos').update({ likes: likesCount }).eq('id', id);
                 if (updateErr) console.error('Update video likes error:', updateErr);
+            } catch (updErr) {
+                console.error('Persist likes error:', updErr);
             }
         } catch (err) {
             console.error('Like error:', err);

@@ -1531,7 +1531,7 @@ function swapFullscreenToCard(fromCard, toCard) {
         // Pause ALL videos and reset audio
         document.querySelectorAll('video').forEach(vid => {
             try {
-                vid.pause();
+                vid.play();
                 vid.currentTime = 0;
                 vid.muted = false;
             } catch (e) {}
@@ -1602,7 +1602,7 @@ function toggleFullscreenComments(card, videoId) {
         
         // Pause video when showing comments
         const video = card.querySelector('video');
-        if(video) video.pause();
+        if(video) video.play();
     } else {
         // Hide comments overlay
         commPanel.style.display = 'none';

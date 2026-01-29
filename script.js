@@ -676,6 +676,16 @@
     }
 
     // --- INTERACTIONS ---
+async function incrementView(id) {
+        const viewSpan = document.querySelector(`.view-count[data-id="${id}"]`);
+        if(viewSpan && !viewSpan.dataset.counted) {
+            viewSpan.dataset.counted = 'true';
+            let currentViews = parseInt(viewSpan.innerText);
+            viewSpan.innerText = currentViews + 1;
+            await _supabase.from('videos').update({ views: currentViews + 1 }).eq('id', id);
+        }
+    }
+
     const likeCooldown = {}; // Track cooldown per video ID
     async function handleLike(btn, id) {
         if (isGuest || !currentUserEmail) return alert('Please login to like videos');

@@ -87,23 +87,35 @@
             
             const category = prompt("Enter category (Comedy, Party, Bhakti, Tech, Love, Sad, Others etc):") || 'All';
             
-            // Ask for thumbnail
-            const proceedWithoutThumb = confirm("Select thumbnail? (Cancel to skip and upload video)");
-            
             let thumbnailUrl = null;
+            let uploadAttempted = false;
             
-            if(proceedWithoutThumb) {
-                // Create file input for thumbnail
-                const thumbInput = document.createElement('input');
-                thumbInput.type = 'file';
-                thumbInput.accept = 'image/*';
-                
-                thumbInput.onchange = async (thumbEvent) => {
-                    const thumbFile = thumbEvent.target.files[0];
-                    if(thumbFile) {
+            // Create temporary video element to generate thumbnail
+            const tempVid = document.createElement('video');
+            tempVid.src = URL.createObjectURL(file);
+            
+            tempVid.onloadedmetadata = async () => {
+                // Generate thumbnail from video
+                const canvas = document.createElement('canvas');
+                canvas.width = tempVid.videoWidth;
+                canvas.height = tempVid.videoHeight;
+                const ctx = canvas.getContext('2d');
+                tempVid.currentTime = 0.5; // Get frame at 0.5 seconds
+            };
+            
+            tempVid.onseeked = async () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = tempVid.videoWidth;
+                    canvas.height = tempVid.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(tempVid, 0, 0);
+                    
+                    // Convert canvas to blob
+                    canvas.toBlob(async (blob) => {
                         try {
-                            const thumbFileName = `thumb_${Date.now()}_${thumbFile.name}`;
-                            const { error: thumbErr } = await _supabase.storage.from('thumbnails').upload(thumbFileName, thumbFile);
+                            const thumbFileName = `thumb_${Date.now()}.jpg`;
+                            const { error: thumbErr } = await _supabase.storage.from('thumbnails').upload(thumbFileName, blob);
                             
                             if(!thumbErr) {
                                 const { data: thumbUrl } = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
@@ -112,14 +124,15 @@
                         } catch(err) {
                             console.error('Thumbnail upload error:', err);
                         }
-                    }
+                        uploadVideo();
+                    }, 'image/jpeg');
+                } catch(err) {
+                    console.error('Thumbnail generation error:', err);
                     uploadVideo();
-                };
-                
-                thumbInput.click();
-            } else {
-                uploadVideo();
-            }
+                }
+            };
+            
+            tempVid.load();
             
             async function uploadVideo() {
                 try {
@@ -720,10 +733,12 @@
 
     async function loadCommentsCount(videoId) {
         const { data } = await _supabase.from('comments').select('*').eq('video_id', videoId);
-        const countSpan = document.querySelector(`.comment-count[data-id="${videoId}"]`);
-        if(countSpan) {
-            countSpan.innerText = data ? data.length : 0;
-        }
+        const commentCount = data ? data.length : 0;
+        
+        // Update all comment count elements for this video
+        document.querySelectorAll(`.comment-count[data-id="${videoId}"]`).forEach(countSpan => {
+            countSpan.innerText = commentCount;
+        });
     }
 
     async function checkUserFollow(creatorEmail) {
@@ -806,7 +821,8 @@
         try {
             const { error } = await _supabase.from('comments').insert([{ 
                 video_id: id, 
-                comment_text: commentText
+                comment_text: commentText,
+                user_email: currentUserEmail
             }]);
             
             if(error) throw error;
@@ -1201,11 +1217,17 @@ async function updateProfilePicture() {
             if(!window.profileAvatarMap) window.profileAvatarMap = {};
             window.profileAvatarMap[currentUserEmail] = urlData.publicUrl;
             
-            // 4. Update all avatar images on the page
+            // 4. Update all avatar images on the page with circular styling
             document.querySelectorAll('.user-avatar').forEach(img => {
                 if(img.dataset.email === currentUserEmail || img.style.cursor === 'pointer') {
                     img.src = urlData.publicUrl;
                     img.dataset.email = currentUserEmail;
+                    // Ensure circular display
+                    img.style.borderRadius = '50%';
+                    img.style.width = '40px';
+                    img.style.height = '40px';
+                    img.style.objectFit = 'cover';
+                    img.style.border = '2px solid var(--helostar-pink)';
                 }
             });
             

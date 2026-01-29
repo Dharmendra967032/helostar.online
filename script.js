@@ -2,31 +2,81 @@
     const SUPABASE_URL = "https://axufucktgyuorwqcykkq.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_Vuq82ePGI4vrov2ObLhJQQ_eZRtgkG5"; 
 
-    firebase.initializeApp({
-      apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
-      authDomain: "helostar-134d9.firebaseapp.com",
-      projectId: "helostar-134d9"
-    });
+        if (window.firebase && firebase.initializeApp) {
+            try {
+                firebase.initializeApp({
+                    apiKey: "AIzaSyAd_Gds3NO1NuiWWE7kOUST_epBn_cs2xY",
+                    authDomain: "helostar-134d9.firebaseapp.com",
+                    projectId: "helostar-134d9"
+                });
+            } catch(e) {
+                console.warn('Firebase initializeApp failed:', e.message || e);
+            }
+        } else {
+            console.warn('Firebase SDK not found; auth features will be disabled until SDK loads.');
+        }
 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let _supabase;
+        if (window.supabase && supabase.createClient) {
+                try {
+                        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } catch(e) {
+                        console.warn('Supabase client creation failed:', e.message || e);
+                        _supabase = null;
+                }
+        } else {
+                console.warn('Supabase SDK not found; storage/DB features will be disabled until SDK loads.');
+                // Minimal chainable/thenable stub to avoid runtime crashes when SDK missing.
+                const makeQuery = () => {
+                    const q = {
+                        select() { return q; },
+                        order() { return q; },
+                        eq() { return q; },
+                        limit() { return q; },
+                        in() { return q; },
+                        single() { return q; },
+                        then(resolve) { resolve({ data: [] }); return Promise.resolve(); },
+                        catch() { return q; }
+                    };
+                    return q;
+                };
+
+                _supabase = {
+                    from: () => makeQuery(),
+                    storage: {
+                        from: () => ({
+                            upload: async () => ({ error: { message: 'Supabase storage not loaded' } }),
+                            getPublicUrl: () => ({ data: { publicUrl: '' } }),
+                            remove: async () => ({ error: { message: 'Supabase storage not loaded' } })
+                        })
+                    },
+                    rpc: async () => ({ error: { message: 'Supabase not loaded' } })
+                };
+        }
     let currentUserEmail = null;
     let currentTab = 'short';
     let currentCat = 'All';
     let isGuest = false;
 
     // --- AUTH ---
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) { 
-            currentUserEmail = user.email;
-            const userDisplay = document.getElementById('userDisplay');
-            if(userDisplay) {
-                userDisplay.innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
+    if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) { 
+                currentUserEmail = user.email;
+                const userDisplay = document.getElementById('userDisplay');
+                if(userDisplay) {
+                    userDisplay.innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
+                }
+                start(false); 
+            } else if (localStorage.getItem('guest')) {
+                start(true);
             }
-            start(false); 
-        } else if (localStorage.getItem('guest')) {
-            start(true);
-        }
-    });
+        });
+    } else {
+        console.warn('Firebase SDK not available. Auth disabled until SDK loads.');
+        // Fallback to guest if configured
+        if (localStorage.getItem('guest')) start(true);
+    }
 
 // --- AUTO-PLAY / AUTO-PAUSE LOGIC ---
     const observerOptions = { threshold: 0.6 };
@@ -946,9 +996,9 @@
         document.getElementById(t === 'short' ? 'tShort' : 'tFull').classList.add('active');
         renderFeed();
     }
-    function logout() { localStorage.clear(); firebase.auth().signOut().then(() => location.reload()); }
+    function logout() { localStorage.clear(); if (window.firebase && firebase.auth) { firebase.auth().signOut().then(() => location.reload()); } else { location.reload(); } }
     function guestMode() { localStorage.setItem('guest', '1'); location.reload(); }
-    function signInWithGoogle() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function signInWithGoogle() { if (window.firebase && firebase.auth) { return firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); } alert('Firebase not loaded yet. Please wait and try again.'); }
 
     window.onclick = function(event) {
         if (!event.target.matches('.menu-trigger') && !event.target.closest('.dropdown-content')) {

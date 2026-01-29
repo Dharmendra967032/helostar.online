@@ -34,10 +34,16 @@
         entries.forEach(entry => {
             const vid = entry.target;
             if (entry.isIntersecting) {
-                // Pause all other videos before playing this one
+                // Pause all other videos before playing this one, but don't pause videos
+                // that are currently in reels/fullscreen mode so they keep playing
                 document.querySelectorAll('video').forEach(v => {
                     if(v !== vid) {
                         try {
+                            const wrapper = v.closest('.v-wrap');
+                            if (wrapper && (wrapper.classList.contains('reels-fs') || wrapper.classList.contains('fullscreen-short'))) {
+                                // keep fullscreen shorts playing
+                                return;
+                            }
                             v.pause();
                             v.currentTime = 0;
                             v.muted = false;
@@ -45,11 +51,18 @@
                     }
                 });
                 // Play this video
-                vid.muted = false;
-                vid.play().catch(() => {});
+                try {
+                    vid.muted = false;
+                    vid.play().catch(() => {});
+                } catch(e) {}
                 incrementView(vid.dataset.id);
             } else {
                 try {
+                    // If video is currently in reels fullscreen / fullscreen-short, do not auto-pause it
+                    const wrapper = vid.closest('.v-wrap');
+                    if (wrapper && (wrapper.classList.contains('reels-fs') || wrapper.classList.contains('fullscreen-short'))) {
+                        return;
+                    }
                     vid.pause();
                     vid.currentTime = 0;
                 } catch(e) {}
@@ -285,8 +298,7 @@
         
         card.innerHTML = `
         <div class="card-header">
-            <img src="${avatarUrl}" class="user-avatar" style="cursor: ${currentUserEmail === v.owner ? 'pointer' : 'default'};\" data-email="${v.owner}"
-            onclick="${currentUserEmail === v.owner ? 'updateProfilePicture()' : ''}">
+            <img src="${avatarUrl}" class="user-avatar" style="cursor: ${currentUserEmail === v.owner ? 'pointer' : 'default'};" data-email="${v.owner}" ${currentUserEmail === v.owner ? 'onclick="updateProfilePicture()"' : ''}>
             <div style="flex:1;">
                 <div style="font-weight:bold; font-size:0.9rem;">@${v.owner.split('@')[0]}</div>
                 <div class="follower-count" data-creator="${v.owner}" style="font-size:0.75rem; color:#999;">0 followers</div>
@@ -302,6 +314,7 @@
                 ${isVertical ? 'loop playsinline' : 'controls'}
                 onclick="togglePlay(this)"
             ></video>
+                ${isVertical ? '<div class="mute-center"><i class="fas fa-volume-mute"></i></div>' : ''}
                
             </div>
             
@@ -505,12 +518,8 @@
                         lastTapTime = currentTime;
                         lastTapX = touchX;
                         lastTapY = touchY;
-                        
-                        if (relativeTouchX < relativeWidth / 3) {
-                            // LEFT - mute/unmute
-                            videoElem.muted = !videoElem.muted;
-                            showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
-                        } else if (relativeTouchX > (relativeWidth * 2 / 3)) {
+                        // Prefer a dedicated center mute toggle. Right side enters fullscreen.
+                        if (relativeTouchX > (relativeWidth * 2 / 3)) {
                             // RIGHT - fullscreen
                             const isFs = vWrap.classList.contains('reels-fs');
                             if(!isFs) {
@@ -519,17 +528,28 @@
                                 exitReelsFullscreen(card, vWrap, videoElem);
                             }
                         } else {
-                            // CENTER - fullscreen
-                            const isFs = vWrap.classList.contains('reels-fs');
-                            if(!isFs) {
-                                enterReelsFullscreen(card, vWrap, videoElem);
-                            } else {
-                                exitReelsFullscreen(card, vWrap, videoElem);
-                            }
+                            // CENTER / LEFT - toggle mute/unmute
+                            videoElem.muted = !videoElem.muted;
+                            showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
                         }
                     }
                 }
             }, { passive: true });
+
+            // Center mute button listener (if present)
+            const muteCenterBtn = card.querySelector('.mute-center');
+            if (muteCenterBtn) {
+                muteCenterBtn.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    const vid = card.querySelector('video');
+                    if(!vid) return;
+                    vid.muted = !vid.muted;
+                    showReelsFeedback(vid.muted ? 'mute' : 'unmute');
+                    // update icon
+                    const icon = muteCenterBtn.querySelector('i');
+                    if(icon) icon.className = vid.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+                });
+            }
         }
         
         // Load initial comments count and check if user liked
@@ -1232,8 +1252,12 @@ async function updateProfilePicture() {
             });
             
             alert("Profile Picture Updated!");
-            // Reload to refresh everything
-            location.reload();
+            // Update visible user display (if present)
+            const userDisplay = document.getElementById('userDisplay');
+            if(userDisplay && userDisplay.querySelector('img')) {
+                userDisplay.querySelector('img').src = urlData.publicUrl;
+            }
+            // No full reload: avatars updated above
         } catch(err) {
             console.error('Profile update error:', err);
             alert("Error: " + err.message);
@@ -1416,6 +1440,23 @@ function enterReelsFullscreen(card, vWrap, video) {
     }
     
 
+    // Hide other cards so this short stays full until user presses back
+    document.querySelectorAll('.card').forEach(c => { if(c !== card) c.style.display = 'none'; });
+
+    // Prevent page scroll while in reels fullscreen
+    document.body.style.overflow = 'hidden';
+
+    // Add a back button overlay so user can exit fullscreen explicitly
+    let backBtn = vWrap.querySelector('.reels-back-btn');
+    if(!backBtn) {
+        backBtn = document.createElement('button');
+        backBtn.className = 'reels-back-btn';
+        backBtn.style.cssText = 'position:fixed; top:18px; left:18px; z-index:10001; background:rgba(0,0,0,0.5); border:none; color:#fff; padding:8px 10px; border-radius:8px; cursor:pointer;';
+        backBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
+        backBtn.addEventListener('click', (ev) => { ev.stopPropagation(); exitReelsFullscreen(card, vWrap, video); });
+        vWrap.appendChild(backBtn);
+    }
+
     // Play
     video.play().catch(() => {});
 }
@@ -1451,9 +1492,11 @@ function exitReelsFullscreen(card, vWrap, video) {
     if(pageHeader) pageHeader.style.display = 'block';
     if(navTabs) navTabs.style.display = 'flex';
     if(uploadBtn) uploadBtn.style.display = 'flex';
-    
-    // Show all cards
-    // leave other cards as they are; just remove fullscreen styles from this card
+    // Show all cards again
+    document.querySelectorAll('.card').forEach(c => c.style.display = 'block');
+
+    // Restore page scroll
+    document.body.style.overflow = '';
     
     // Reset styles
     vWrap.style.position = '';

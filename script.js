@@ -103,6 +103,7 @@
             
             let thumbnailUrl = null;
             let uploadAttempted = false;
+            let uploadStarted = false;
             
             // Create temporary video element to generate thumbnail
             const tempVid = document.createElement('video');
@@ -134,6 +135,7 @@
                             if(!thumbErr) {
                                 const { data: thumbUrl } = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
                                 thumbnailUrl = thumbUrl.publicUrl;
+                                uploadAttempted = true;
                             }
                         } catch(err) {
                             console.error('Thumbnail upload error:', err);
@@ -149,6 +151,8 @@
             tempVid.load();
             
             async function uploadVideo() {
+                if (uploadStarted) return;
+                uploadStarted = true;
                 try {
                     const fileName = `${Date.now()}_${file.name}`;
                     
@@ -204,7 +208,26 @@
                 }
             }
             
-            // Click the thumbnail input
+            // Create and click the thumbnail input so user can choose a cover image
+            const thumbInput = document.createElement('input');
+            thumbInput.type = 'file';
+            thumbInput.accept = 'image/*';
+            thumbInput.onchange = async (te) => {
+                uploadAttempted = true;
+                const thumbFile = te.target.files[0];
+                if(!thumbFile) return uploadVideo();
+                try {
+                    const thumbFileName = `thumb_${Date.now()}_${thumbFile.name}`;
+                    const { error: thumbErr } = await _supabase.storage.from('thumbnails').upload(thumbFileName, thumbFile);
+                    if(!thumbErr) {
+                        const { data: thumbUrl } = _supabase.storage.from('thumbnails').getPublicUrl(thumbFileName);
+                        thumbnailUrl = thumbUrl.publicUrl;
+                    }
+                } catch(err) {
+                    console.error('Thumbnail upload error (user file):', err);
+                }
+                uploadVideo();
+            };
             thumbInput.click();
             
             // If no thumbnail is selected after 3 seconds, still upload
@@ -430,7 +453,7 @@
                     swiping = true;
                     isSwipeAttempt = true;
                     
-                    if(diffY > 100) {
+                            if(diffY > 100) {
                         // SWIPE UP - next
                         let nextCard = card.nextElementSibling;
                         while(nextCard && !nextCard.classList.contains('card')) {
@@ -446,6 +469,10 @@
                                     v.muted = false;
                                 } catch(err) {}
                             });
+                                    // Suppress feedback while auto-scrolling/swapping
+                                    window.suppressReelsFeedback = true;
+                                    setTimeout(() => { window.suppressReelsFeedback = false; }, 900);
+
                             
                             // If in reels fullscreen, swap fullscreen to next card
                             if (vWrap.classList.contains('reels-fs')) {
@@ -467,7 +494,7 @@
                         while(prevCard && !prevCard.classList.contains('card')) {
                             prevCard = prevCard.previousElementSibling;
                         }
-                        if(prevCard) {
+                            if(prevCard) {
                             const prevVid = prevCard.querySelector('video');
                             // Pause ALL videos first
                             document.querySelectorAll('video').forEach(v => {
@@ -477,7 +504,10 @@
                                     v.muted = false;
                                 } catch(err) {}
                             });
-                            
+                                    // Suppress feedback while auto-scrolling/swapping
+                                    window.suppressReelsFeedback = true;
+                                    setTimeout(() => { window.suppressReelsFeedback = false; }, 900);
+
                             if (vWrap.classList.contains('reels-fs')) {
                                 swapFullscreenToCard(card, prevCard);
                             } else {
@@ -628,6 +658,8 @@
                 }
                 
                 // Auto-swipe/scroll to next video with minimal delay
+                window.suppressReelsFeedback = true;
+                setTimeout(() => { window.suppressReelsFeedback = false; }, 900);
                 nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
                 // The IntersectionObserver will auto-play when visible
@@ -675,12 +707,6 @@
                 return;
             }
 
-            // If already liked, do nothing (one-time only)
-            if (existing && existing.length > 0) {
-                console.log('User already liked this video - no action');
-                return;
-            }
-
             const hCountEl = document.querySelector(`.like-btn[data-id="${id}"] .count`);
             const sideCountEl = document.querySelector(`.side-actions .like-side[data-id="${id}"] .small-count`);
 
@@ -693,38 +719,43 @@
             }
 
             let currentLikes = (videoData && videoData.likes) || 0;
-            const newLikes = currentLikes + 1;
 
-            // Update UI BEFORE DB to show immediate feedback
-            if (hCountEl) {
-                hCountEl.innerText = newLikes;
-                console.log(`Updated horizontal count to ${newLikes}`);
-            }
-            if (sideCountEl) {
-                sideCountEl.innerText = newLikes;
-                console.log(`Updated side count to ${newLikes}`);
-            }
-            document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
-            document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
-            
-            // Insert like record with constraint (upsert would replace, insert fails if exists)
-            const { error: insertErr } = await _supabase.from('likes').insert([{ 
-                video_id: id, 
-                user_email: currentUserEmail 
-            }]);
-            
-            if (insertErr) {
-                console.error('Insert like error (user may have already liked):', insertErr);
-                return;
-            }
-            
-            // Update video likes count in DB
-            const { error: updateErr } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
-            
-            if (updateErr) {
-                console.error('Update video likes error:', updateErr);
+            if (existing && existing.length > 0) {
+                // User already liked -> perform UNLIKE
+                const newLikes = Math.max(currentLikes - 1, 0);
+
+                // Update UI immediately
+                if (hCountEl) hCountEl.innerText = newLikes;
+                if (sideCountEl) sideCountEl.innerText = newLikes;
+                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => { b.classList.remove('liked'); b.dataset.liked = 'false'; });
+                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.remove('liked'));
+
+                // Delete like record
+                const { error: delErr } = await _supabase.from('likes').delete().eq('video_id', id).eq('user_email', currentUserEmail);
+                if (delErr) console.error('Unlike delete error:', delErr);
+
+                // Update video likes count in DB
+                const { error: updateErr } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+                if (updateErr) console.error('Update video likes error (unlike):', updateErr);
             } else {
-                console.log(`Video ${id} likes updated to ${newLikes} in DB`);
+                // Perform LIKE
+                const newLikes = currentLikes + 1;
+
+                // Update UI BEFORE DB to show immediate feedback
+                if (hCountEl) hCountEl.innerText = newLikes;
+                if (sideCountEl) sideCountEl.innerText = newLikes;
+                document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(b => { b.classList.add('liked'); b.dataset.liked = 'true'; });
+                document.querySelectorAll(`.side-actions .like-side[data-id="${id}"]`).forEach(b => b.classList.add('liked'));
+
+                // Insert like record
+                const { error: insertErr } = await _supabase.from('likes').insert([{ video_id: id, user_email: currentUserEmail }]);
+                if (insertErr) {
+                    console.error('Insert like error:', insertErr);
+                }
+
+                // Update video likes count in DB
+                const { error: updateErr } = await _supabase.from('videos').update({ likes: newLikes }).eq('id', id);
+                if (updateErr) console.error('Update video likes error:', updateErr);
             }
         } catch (err) {
             console.error('Like error:', err);
@@ -1361,6 +1392,7 @@ function showHeartAnimation(x, y) {
 }
 
 function showReelsFeedback(type) {
+    if (window.suppressReelsFeedback) return;
     const feedback = document.createElement('div');
     feedback.className = 'reels-feedback';
     

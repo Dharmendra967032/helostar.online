@@ -1223,72 +1223,67 @@ async function handleUpload() {
 
 async function updateProfilePicture() {
     const fileIn = document.createElement('input');
-    fileIn.type = 'file'; fileIn.accept = 'image/*';
+    fileIn.type = 'file'; 
+    fileIn.accept = 'image/*';
+    
     fileIn.onchange = async (e) => {
         try {
             const file = e.target.files[0];
             if(!file) return;
 
+            // Use a clean filename
             const fileName = `avatar_${currentUserEmail}_${Date.now()}`;
             
             // 1. Upload to 'avatars' bucket
-            const { error: uploadErr } = await _supabase.storage.from('avatars').upload(fileName, file);
-            if(uploadErr) {
-                alert("Upload failed: " + uploadErr.message);
-                return;
-            }
+            const { error: uploadErr } = await _supabase.storage
+                .from('avatars')
+                .upload(fileName, file);
 
-            const { data: urlData } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+            if(uploadErr) throw uploadErr;
+
+            // 2. Get Public URL
+            const { data: urlData } = _supabase.storage
+                .from('avatars')
+                .getPublicUrl(fileName);
             
-            // 2. Update profiles table - try insert first, then update if exists
-            const { error: insertErr } = await _supabase.from('profiles').insert({ 
-                email: currentUserEmail, 
-                avatar_url: urlData.publicUrl 
-            });
+            const publicUrl = urlData.publicUrl;
+
+            // 3. Use UPSERT (Updates if email exists, Inserts if not)
+            const { error: dbErr } = await _supabase
+                .from('profiles')
+                .upsert({ 
+                    email: currentUserEmail, 
+                    avatar_url: publicUrl 
+                }, { onConflict: 'email' }); // Ensure 'email' is a unique column in your DB
             
-            if(insertErr) {
-                // If insert fails (already exists), update instead
-                const { error: updateErr } = await _supabase.from('profiles').update({ 
-                    avatar_url: urlData.publicUrl 
-                }).eq('email', currentUserEmail);
-                
-                if(updateErr) {
-                    alert("Update failed: " + updateErr.message);
-                    return;
-                }
-            }
+            if(dbErr) throw dbErr;
             
-            // 3. Update profileAvatarMap for future cards
-            if(!window.profileAvatarMap) window.profileAvatarMap = {};
-            window.profileAvatarMap[currentUserEmail] = urlData.publicUrl;
-            
-            // 4. Update all avatar images on the page with circular styling
-            document.querySelectorAll('.user-avatar').forEach(img => {
-                if(img.dataset.email === currentUserEmail || img.style.cursor === 'pointer') {
-                    img.src = urlData.publicUrl;
-                    img.dataset.email = currentUserEmail;
-                    // Ensure circular display
-                    img.style.borderRadius = '50%';
-                    img.style.width = '40px';
-                    img.style.height = '40px';
-                    img.style.objectFit = 'cover';
-                    img.style.border = '2px solid var(--helostar-pink)';
-                }
-            });
+            // 4. Update UI
+            updateUIAvatars(publicUrl);
             
             alert("Profile Picture Updated!");
-            // Update visible user display (if present)
-            const userDisplay = document.getElementById('userDisplay');
-            if(userDisplay && userDisplay.querySelector('img')) {
-                userDisplay.querySelector('img').src = urlData.publicUrl;
-            }
-            // No full reload: avatars updated above
         } catch(err) {
             console.error('Profile update error:', err);
             alert("Error: " + err.message);
         }
     };
     fileIn.click();
+}
+
+// Helper to keep code clean
+function updateUIAvatars(url) {
+    if(!window.profileAvatarMap) window.profileAvatarMap = {};
+    window.profileAvatarMap[currentUserEmail] = url;
+
+    document.querySelectorAll('.user-avatar').forEach(img => {
+        if(img.dataset.email === currentUserEmail || img.style.cursor === 'pointer') {
+            img.src = url;
+            img.style.borderRadius = '50%';
+            img.style.width = '40px';
+            img.style.height = '40px';
+            img.style.objectFit = 'cover';
+        }
+    });
 }
 
 // Delete video function

@@ -77,7 +77,21 @@
         <button id="tShort" class="tab-btn active" onclick="setTab('short')">SHORTS</button>
         <button id="tFull" class="tab-btn" onclick="setTab('full')">VIDEOS</button>
     </div>
+<div class="action-btn" onclick="toggleComments('${v.id}')">
+    <i class="fas fa-comment"></i>
+    <span class="comm-count" data-id="${v.id}">0</span>
+</div>
 
+<div id="comm-panel-${id}" class="comm-panel" style="display:none;">
+    <div class="panel-header">
+        <div class="drag-handle"></div> <span>Comments</span>
+    </div>
+    <div id="list-${id}" class="comm-list"></div>
+    <div class="comm-input-area">
+        <input id="input-${id}" placeholder="Add a comment...">
+        <button onclick="postComment('${id}')">Post</button>
+    </div>
+</div>
     <div class="container" id="feed"></div>
 
     <input type="file" id="fileIn" style="display:none" accept="video/*">

@@ -855,61 +855,74 @@ async function incrementView(id) {
     }
 
     function toggleComments(id) {
-        const panel = document.getElementById(`comm-panel-${id}`);
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        if(panel.style.display === 'block') loadComments(id);
-    }
-
-    async function loadComments(id) {
-        const list = document.getElementById(`list-${id}`);
-        const { data } = await _supabase.from('comments').select('*').eq('video_id', id);
+    const panel = document.getElementById(`comm-panel-${id}`);
+    
+    if (panel.style.display === 'none' || !panel.style.display) {
+        // Prepare for slide up
+        panel.style.display = 'flex';
+        panel.style.transform = 'translateY(100%)'; // Start off-screen
         
-        if(data && data.length) {
-            list.innerHTML = data.map(c => {
-                return `<div class="comm-item">${c.comment_text}</div>`;
-            }).join('');
+        // Trigger the slide-up animation in the next frame
+        requestAnimationFrame(() => {
+            panel.style.transform = 'translateY(0)';
+        });
+
+        loadComments(id);
+        initSwipeLogic(panel); // Initialize the swipe down listener
+    } else {
+        closePanel(panel);
+    }
+}
+
+function closePanel(panel) {
+    panel.style.transform = 'translateY(100%)'; // Slide down
+    setTimeout(() => {
+        panel.style.display = 'none';
+    }, 300); // Hide after animation ends
+}
+
+function initSwipeLogic(panel) {
+    let startY = 0;
+    let currentY = 0;
+
+    panel.ontouchstart = (e) => {
+        startY = e.touches[0].clientY;
+        panel.style.transition = 'none'; // Disable transition while dragging
+    };
+
+    panel.ontouchmove = (e) => {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        if (diff > 0) {
+            panel.style.transform = `translateY(${diff}px)`;
+        }
+    };
+
+    panel.ontouchend = () => {
+        panel.style.transition = 'transform 0.3s ease'; // Re-enable transition
+        const diff = currentY - startY;
+        
+        if (diff > 120) {
+            closePanel(panel);
         } else {
-            list.innerHTML = '<div style="font-size:0.85rem; color:#888;">No comments yet.</div>';
+            panel.style.transform = 'translateY(0)'; // Snap back up
         }
-    }
+    };
+}
 
-    async function postComment(id) {
-        if(isGuest) return alert("Please Login");
-        const input = document.getElementById(`input-${id}`);
-        if(!input.value.trim()) return;
-        
-        const commentText = input.value;
-        input.value = '';
-        input.disabled = true;
-        
-        try {
-            const { error } = await _supabase.from('comments').insert([{ 
-                video_id: id, 
-                comment_text: commentText,
-                user_email: currentUserEmail
-            }]);
-            
-            if(error) throw error;
-            
-            await new Promise(r => setTimeout(r, 300));
-            await loadComments(id);
-            await loadCommentsCount(id);
-            
-            // Auto-hide comments panel after successful post
-            const panel = document.getElementById(`comm-panel-${id}`);
-            if(panel) {
-                setTimeout(() => {
-                    panel.style.display = 'none';
-                }, 800);
-            }
-        } catch(err) {
-            console.error('Comment Error:', err);
-            alert('Error posting comment: ' + err.message);
-            input.value = commentText;
-        } finally {
-            input.disabled = false;
-        }
+async function updateUICommentCount(id) {
+    const { count, error } = await _supabase
+        .from('comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('video_id', id);
+
+    if (!error) {
+        const countElements = document.querySelectorAll(`.comm-count[data-id="${id}"]`);
+        countElements.forEach(el => {
+            el.innerText = count > 0 ? count : '0';
+        });
     }
+}
     function togglePlay(vid) { vid.paused ? vid.play() : vid.pause(); }
     
     function toggleMute(btn) {

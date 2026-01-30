@@ -555,6 +555,8 @@
                             // RIGHT - do NOT expand. Treat same as center: toggle mute/unmute to avoid pausing/expansion.
                             videoElem.muted = !videoElem.muted;
                             showReelsFeedback(videoElem.muted ? 'mute' : 'unmute');
+                            const icon = card.querySelector('.mute-center i');
+        if(icon) icon.className = videoElem.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
                         } else {
                             // CENTER / LEFT - toggle mute/unmute
                             videoElem.muted = !videoElem.muted;
@@ -580,6 +582,13 @@
             }
         }
         
+        function onVideoChange() {
+    // 1. Remove any active feedback overlays
+    const feedbacks = document.querySelectorAll('.reels-feedback-overlay');
+    feedbacks.forEach(el => el.remove());
+
+    // 2. You might also want to auto-mute or reset icons here
+}
         // Load initial comments count and check if user liked
         loadCommentsCount(v.id);
         checkUserLike(v.id);
